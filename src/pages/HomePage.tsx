@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
+import homeBg from '/helix-home-bg.jpeg?url';
 
 interface HomePageProps {
   onEnter: () => void;
@@ -12,7 +13,7 @@ export function HomePage({ onEnter }: HomePageProps) {
       {/* Background image */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: 'url(/helix-home-bg.jpeg)' }}
+        style={{ backgroundImage: `url(${homeBg})` }}
       />
 
       {/* Subtle dark overlay for contrast */}
