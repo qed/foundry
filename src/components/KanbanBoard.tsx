@@ -118,7 +118,7 @@ const Column = ({
     }
   };
   return (
-    <div className="flex-1 min-w-[300px] flex flex-col h-full">
+    <div className="flex-1 min-w-[260px] md:min-w-[300px] flex flex-col h-full">
       <div
         className={`flex items-center justify-between mb-4 pb-2 border-t-2 ${getStatusColor(status)} pt-2`}>
 
@@ -138,7 +138,7 @@ const Column = ({
             scale: 1.02,
             y: -2
           }}
-          className={`bg-background-secondary p-4 rounded border border-border cursor-pointer hover:border-accent-cyan/30 hover:shadow-glow-sm transition-all ${status === 'done' ? 'opacity-60 hover:opacity-100' : ''}`}>
+          className={`bg-background-secondary p-3 md:p-4 rounded border border-border cursor-pointer hover:border-accent-cyan/30 hover:shadow-glow-sm transition-all ${status === 'done' ? 'opacity-60 hover:opacity-100' : ''}`}>
 
             <div className="flex justify-between items-start mb-2">
               <span className="text-[10px] uppercase tracking-wider text-accent-cyan font-medium px-1.5 py-0.5 bg-accent-cyan/10 rounded border border-accent-cyan/20">
@@ -177,7 +177,7 @@ const Column = ({
 };
 export function KanbanBoard() {
   return (
-    <div className="flex gap-6 h-full overflow-x-auto pb-4">
+    <div className="flex gap-4 md:gap-6 h-full overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0">
       <Column
         title="To Do"
         status="todo"

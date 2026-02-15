@@ -88,12 +88,12 @@ export function ProjectDashboard({ onNavigate }: ProjectDashboardProps) {
   }];
 
   return (
-    <div className="space-y-8 pb-10">
+    <div className="space-y-6 md:space-y-8 pb-10">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-bold text-text-primary">MacroBot</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-text-primary">MacroBot</h1>
             <span className="px-2 py-0.5 rounded-full bg-accent-success/10 text-accent-success border border-accent-success/20 text-xs font-medium uppercase tracking-wider flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-accent-success animate-pulse"></span>
               Sprint Active
@@ -102,7 +102,7 @@ export function ProjectDashboard({ onNavigate }: ProjectDashboardProps) {
           <p className="text-text-secondary text-lg">AI Leasing Assistant</p>
         </div>
 
-        <div className="bg-background-secondary p-4 rounded-lg border border-border flex items-center gap-6 min-w-[300px]">
+        <div className="bg-background-secondary p-3 md:p-4 rounded-lg border border-border flex items-center gap-4 md:gap-6 w-full md:min-w-[300px] md:w-auto">
           <div className="flex-1">
             <div className="flex justify-between text-sm mb-2">
               <span className="text-text-secondary flex items-center gap-2">
@@ -117,9 +117,9 @@ export function ProjectDashboard({ onNavigate }: ProjectDashboardProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
         {/* Main Grid - Modules */}
-        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
           {modules.map((module) =>
           <motion.div
             key={module.id}
@@ -128,7 +128,7 @@ export function ProjectDashboard({ onNavigate }: ProjectDashboardProps) {
               y: -4
             }}
             onClick={() => onNavigate(module.id)}
-            className="bg-background-secondary border border-border p-6 rounded-xl cursor-pointer hover:shadow-glow-sm transition-all group relative overflow-hidden">
+            className="bg-background-secondary border border-border p-4 md:p-6 rounded-xl cursor-pointer hover:shadow-glow-sm transition-all group relative overflow-hidden">
 
               <div
               className={`absolute top-0 right-0 p-20 opacity-5 rounded-full blur-3xl -mr-10 -mt-10 transition-opacity group-hover:opacity-10 ${module.bg.replace('/10', '')}`}>
@@ -174,12 +174,12 @@ export function ProjectDashboard({ onNavigate }: ProjectDashboardProps) {
         {/* Right Column - Stats & Feed */}
         <div className="space-y-6">
           {/* Overall Progress */}
-          <div className="bg-background-secondary border border-border p-6 rounded-xl flex flex-col items-center justify-center relative overflow-hidden">
+          <div className="bg-background-secondary border border-border p-4 md:p-6 rounded-xl flex flex-col items-center justify-center relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background-primary/50 pointer-events-none"></div>
-            <h3 className="text-text-secondary text-sm uppercase tracking-wider mb-6 font-semibold">
+            <h3 className="text-text-secondary text-sm uppercase tracking-wider mb-4 md:mb-6 font-semibold">
               Overall Completion
             </h3>
-            <ProgressRing progress={38} size={180} strokeWidth={12} />
+            <ProgressRing progress={38} size={140} strokeWidth={10} />
             <div className="mt-6 text-center">
               <p className="text-text-tertiary text-sm">16 hours remaining</p>
               <p className="text-accent-cyan text-sm mt-1 font-medium">

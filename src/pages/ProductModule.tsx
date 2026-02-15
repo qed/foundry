@@ -118,9 +118,9 @@ const mockTreeData: TreeNode[] = [
 
 export function ProductModule() {
   return (
-    <div className="h-[calc(100vh-100px)] flex flex-col md:flex-row gap-6">
+    <div className="min-h-0 flex flex-col md:flex-row gap-4 md:gap-6 md:h-[calc(100vh-100px)]">
       {/* Left Panel: Feature Tree */}
-      <div className="w-full md:w-[55%] flex flex-col h-full bg-background-secondary rounded-lg border border-border overflow-hidden">
+      <div className="w-full md:w-[55%] flex flex-col h-[50vh] md:h-full bg-background-secondary rounded-lg border border-border overflow-hidden">
         {/* Header */}
         <div className="p-4 border-b border-border flex justify-between items-center bg-background-secondary">
           <div>
@@ -162,8 +162,8 @@ export function ProductModule() {
         </div>
 
         {/* Footer */}
-        <div className="p-3 border-t border-border bg-background-secondary text-xs text-text-tertiary flex justify-between">
-          <span>Last updated 5m ago by Alex</span>
+        <div className="p-3 border-t border-border bg-background-secondary text-xs text-text-tertiary flex justify-between flex-wrap gap-2">
+          <span className="hidden sm:inline">Last updated 5m ago by Alex</span>
           <div className="flex gap-3">
             <span className="flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-text-tertiary"></span>{' '}
@@ -182,7 +182,7 @@ export function ProductModule() {
       </div>
 
       {/* Right Panel: AI Chat */}
-      <div className="w-full md:w-[45%] h-full">
+      <div className="w-full md:w-[45%] h-[50vh] md:h-full">
         <ChatInterface />
       </div>
     </div>);

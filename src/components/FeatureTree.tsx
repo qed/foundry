@@ -41,13 +41,13 @@ const TreeNodeItem = ({
   const getLevelStyles = (type: TreeNode['type']) => {
     switch (type) {
       case 'epic':
-        return 'text-lg font-bold text-text-primary border-l-4 border-accent-cyan pl-3 py-2 bg-background-secondary/50 mb-2';
+        return 'text-base md:text-lg font-bold text-text-primary border-l-4 border-accent-cyan pl-2 md:pl-3 py-2 bg-background-secondary/50 mb-2';
       case 'feature':
-        return 'text-base font-medium text-text-primary ml-4 py-1.5';
+        return 'text-sm md:text-base font-medium text-text-primary ml-2 md:ml-4 py-1.5';
       case 'sub-feature':
-        return 'text-sm text-text-secondary ml-8 py-1';
+        return 'text-sm text-text-secondary ml-4 md:ml-8 py-1';
       case 'task':
-        return 'text-sm text-text-tertiary ml-12 py-0.5 border-l border-border pl-3';
+        return 'text-sm text-text-tertiary ml-6 md:ml-12 py-0.5 border-l border-border pl-2 md:pl-3';
       default:
         return '';
     }
