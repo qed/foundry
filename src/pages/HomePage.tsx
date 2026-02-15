@@ -9,15 +9,15 @@ interface HomePageProps {
 
 export function HomePage({ onEnter }: HomePageProps) {
   return (
-    <div className="relative w-full h-[100dvh] overflow-hidden">
-      {/* Background image — use min-h to cover portrait viewports */}
+    <div className="relative w-full h-[100dvh] overflow-hidden bg-[#0a0c10]">
+      {/* Background image — contain on mobile to show full logo, cover on desktop */}
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat min-h-full min-w-full"
+        className="absolute inset-0 bg-contain bg-center bg-no-repeat md:bg-cover"
         style={{ backgroundImage: `url(${homeBg})` }}
       />
 
       {/* Darker overlay on mobile for better contrast */}
-      <div className="absolute inset-0 bg-black/30 sm:bg-black/20" />
+      <div className="absolute inset-0 bg-black/10 md:bg-black/20" />
 
       {/* Enter button - top right */}
       <div className="absolute top-4 right-4 sm:top-8 sm:right-8 z-10">
