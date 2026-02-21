@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Sidebar } from './sidebar'
 import { Header } from './header'
 import { MobileNav } from './mobile-nav'
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 
 interface AppLayoutProps {
   children: React.ReactNode
@@ -11,6 +12,9 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  // Enable keyboard shortcuts (Cmd/Ctrl+1-5 for module switching)
+  useKeyboardShortcuts()
 
   return (
     <div className="flex h-screen overflow-hidden bg-bg-primary">
