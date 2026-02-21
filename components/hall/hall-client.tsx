@@ -12,6 +12,7 @@ import { HallEmptyState } from './hall-empty-state'
 import { NoResultsState } from './no-results-state'
 import { LoadMoreTrigger } from './load-more-trigger'
 import { IdeaCreateModal } from './idea-create-modal'
+import { IdeaDetailSlideOver } from './idea-detail-slide-over'
 import { Spinner } from '@/components/ui/spinner'
 import type { IdeaWithDetails, SortOption } from './types'
 import type { Tag } from '@/types/database'
@@ -60,6 +61,7 @@ export function HallClient({
   // Other state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [showNewIdeaModal, setShowNewIdeaModal] = useState(false)
+  const [selectedIdeaId, setSelectedIdeaId] = useState<string | null>(null)
 
   // Debounce search for API calls
   const [debouncedSearch, setDebouncedSearch] = useState(searchValue)
@@ -244,6 +246,7 @@ export function HallClient({
             ideas={ideas}
             orgSlug={orgSlug}
             projectId={projectId}
+            onIdeaClick={setSelectedIdeaId}
           />
         ) : (
           <IdeaList
@@ -252,6 +255,7 @@ export function HallClient({
             projectId={projectId}
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}
+            onIdeaClick={setSelectedIdeaId}
           />
         )}
       </div>
@@ -297,6 +301,19 @@ export function HallClient({
         onClose={() => setShowNewIdeaModal(false)}
         projectId={projectId}
         onIdeaCreated={handleIdeaCreated}
+      />
+
+      {/* Idea Detail Slide-Over */}
+      <IdeaDetailSlideOver
+        ideaId={selectedIdeaId}
+        isOpen={!!selectedIdeaId}
+        onClose={() => setSelectedIdeaId(null)}
+        onTagClick={(tagId) => {
+          const current = selectedTagIds.includes(tagId)
+            ? selectedTagIds
+            : [...selectedTagIds, tagId]
+          updateParams({ tags: current.join(',') })
+        }}
       />
     </div>
   )
