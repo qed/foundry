@@ -8,9 +8,10 @@ interface IdeaGridProps {
   orgSlug: string
   projectId: string
   isLoading?: boolean
+  onIdeaClick?: (ideaId: string) => void
 }
 
-export function IdeaGrid({ ideas, isLoading }: IdeaGridProps) {
+export function IdeaGrid({ ideas, isLoading, onIdeaClick }: IdeaGridProps) {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -27,9 +28,7 @@ export function IdeaGrid({ ideas, isLoading }: IdeaGridProps) {
         <IdeaCard
           key={idea.id}
           idea={idea}
-          onClick={() => {
-            // Detail view will be wired in a future phase
-          }}
+          onClick={() => onIdeaClick?.(idea.id)}
         />
       ))}
     </div>

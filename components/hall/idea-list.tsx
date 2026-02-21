@@ -13,6 +13,7 @@ interface IdeaListProps {
   selectedIds: Set<string>
   onSelectionChange: (ids: Set<string>) => void
   isLoading?: boolean
+  onIdeaClick?: (ideaId: string) => void
 }
 
 export function IdeaList({
@@ -20,6 +21,7 @@ export function IdeaList({
   selectedIds,
   onSelectionChange,
   isLoading,
+  onIdeaClick,
 }: IdeaListProps) {
   if (isLoading) {
     return (
@@ -78,6 +80,7 @@ export function IdeaList({
             idea={idea}
             isSelected={selectedIds.has(idea.id)}
             onToggle={() => toggleOne(idea.id)}
+            onClick={() => onIdeaClick?.(idea.id)}
           />
         ))}
       </div>
@@ -89,10 +92,12 @@ function IdeaListRow({
   idea,
   isSelected,
   onToggle,
+  onClick,
 }: {
   idea: IdeaWithDetails
   isSelected: boolean
   onToggle: () => void
+  onClick?: () => void
 }) {
   const statusCfg = STATUS_CONFIG[idea.status as IdeaStatus]
   const creatorInitials = idea.creator?.display_name
@@ -110,6 +115,7 @@ function IdeaListRow({
         'flex items-center gap-3 px-3 py-3 transition-colors hover:bg-bg-tertiary/50 cursor-pointer group',
         isSelected && 'bg-accent-cyan/5'
       )}
+      onClick={onClick}
     >
       <label className="flex items-center" onClick={(e) => e.stopPropagation()}>
         <input
