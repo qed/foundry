@@ -32,7 +32,8 @@ function LoginForm() {
         return
       }
 
-      router.push('/org')
+      const redirectTo = searchParams.get('redirectTo') || '/org'
+      router.push(redirectTo)
     } catch {
       setError('An unexpected error occurred')
     } finally {

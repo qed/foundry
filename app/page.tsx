@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth/context";
 
@@ -20,12 +19,7 @@ export default function Home() {
 
       {/* Auth controls - top right */}
       <div className="absolute top-4 right-4 sm:top-8 sm:right-8 z-10">
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, duration: 0.8, ease: "easeOut" }}
-          className="flex items-center gap-3"
-        >
+        <div className="flex items-center gap-3">
           {loading ? (
             <span className="text-text-tertiary text-sm">Loading...</span>
           ) : user ? (
@@ -53,7 +47,7 @@ export default function Home() {
               </Link>
             </>
           )}
-        </motion.div>
+        </div>
       </div>
     </div>
   );
