@@ -32,6 +32,8 @@ export const SORT_OPTIONS = [
   { value: 'newest', label: 'Newest' },
   { value: 'oldest', label: 'Oldest' },
   { value: 'updated', label: 'Recently Updated' },
+  { value: 'az', label: 'A → Z' },
+  { value: 'za', label: 'Z → A' },
 ]
 
-export type SortOption = 'newest' | 'oldest' | 'updated'
+export type SortOption = 'newest' | 'oldest' | 'updated' | 'az' | 'za'
