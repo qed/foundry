@@ -1,6 +1,7 @@
 import { requireAuth } from '@/lib/auth/server'
 import { createClient } from '@/lib/supabase/server'
 import { CreateOrgForm } from '@/components/org/create-org-form'
+import { TopBar } from '@/components/layout/top-bar'
 import Link from 'next/link'
 import { Plus, UserPlus, ArrowRight } from 'lucide-react'
 
@@ -14,28 +15,21 @@ export default async function OrgSelectorPage() {
   const hasOrgs = orgs && orgs.length > 0
 
   return (
-    <main className="min-h-screen bg-bg-primary">
-      <div className="max-w-3xl mx-auto p-8">
+    <div className="min-h-screen bg-bg-primary">
+      <TopBar />
+      <main className="max-w-3xl mx-auto p-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-text-primary">
-              {hasOrgs ? 'Your Organizations' : (
-                <>Welcome to <span className="text-gradient">Helix Foundry</span></>
-              )}
-            </h1>
-            <p className="text-text-secondary text-sm mt-1">
-              {hasOrgs
-                ? 'Select an organization or create a new one'
-                : 'Create your first organization to get started'}
-            </p>
-          </div>
-          <Link
-            href="/"
-            className="text-sm text-text-tertiary hover:text-text-secondary transition-colors"
-          >
-            Home
-          </Link>
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-text-primary">
+            {hasOrgs ? 'Your Organizations' : (
+              <>Welcome to <span className="text-gradient">Helix Foundry</span></>
+            )}
+          </h1>
+          <p className="text-text-secondary text-sm mt-1">
+            {hasOrgs
+              ? 'Select an organization or create a new one'
+              : 'Create your first organization to get started'}
+          </p>
         </div>
 
         {/* Existing organizations list */}
@@ -107,7 +101,7 @@ export default async function OrgSelectorPage() {
             </div>
           </Link>
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   )
 }

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { TopBar } from '@/components/layout/top-bar'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/toast-container'
@@ -66,63 +67,66 @@ export default function CreateOrgPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-4 bg-bg-primary">
-      <div className="w-full max-w-md">
-        <div className="glass-panel rounded-xl p-8">
-          <h1 className="text-2xl font-bold text-text-primary mb-2">
-            Create Organization
-          </h1>
-          <p className="text-text-secondary mb-6">
-            Every project starts with an organization. You can invite team
-            members later.
-          </p>
+    <div className="min-h-screen flex flex-col bg-bg-primary">
+      <TopBar />
+      <main className="flex-1 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="glass-panel rounded-xl p-8">
+            <h1 className="text-2xl font-bold text-text-primary mb-2">
+              Create Organization
+            </h1>
+            <p className="text-text-secondary mb-6">
+              Every project starts with an organization. You can invite team
+              members later.
+            </p>
 
-          {error && (
-            <div className="mb-4 p-3 bg-accent-error/20 text-accent-error rounded-lg text-sm">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleCreateOrg} className="space-y-4">
-            <Input
-              label="Organization Name"
-              value={orgName}
-              onChange={(e) => setOrgName(e.target.value)}
-              disabled={loading}
-              placeholder="Acme Corporation"
-              autoFocus
-            />
-
-            {slug && (
-              <div className="p-3 bg-bg-tertiary rounded-lg text-sm">
-                <p className="text-text-tertiary">URL slug:</p>
-                <p className="text-text-primary font-mono">{slug}</p>
+            {error && (
+              <div className="mb-4 p-3 bg-accent-error/20 text-accent-error rounded-lg text-sm">
+                {error}
               </div>
             )}
 
-            <Button
-              type="submit"
-              disabled={loading || !orgName.trim()}
-              isLoading={loading}
-              className="w-full"
-            >
-              Create Organization
-            </Button>
-          </form>
+            <form onSubmit={handleCreateOrg} className="space-y-4">
+              <Input
+                label="Organization Name"
+                value={orgName}
+                onChange={(e) => setOrgName(e.target.value)}
+                disabled={loading}
+                placeholder="Acme Corporation"
+                autoFocus
+              />
 
-          <div className="mt-6 pt-6 border-t border-border-default">
-            <p className="text-sm text-text-tertiary text-center">
-              Or{' '}
-              <Link
-                href="/onboarding/org-choice"
-                className="text-accent-cyan hover:text-accent-cyan/80"
+              {slug && (
+                <div className="p-3 bg-bg-tertiary rounded-lg text-sm">
+                  <p className="text-text-tertiary">URL slug:</p>
+                  <p className="text-text-primary font-mono">{slug}</p>
+                </div>
+              )}
+
+              <Button
+                type="submit"
+                disabled={loading || !orgName.trim()}
+                isLoading={loading}
+                className="w-full"
               >
-                go back
-              </Link>
-            </p>
+                Create Organization
+              </Button>
+            </form>
+
+            <div className="mt-6 pt-6 border-t border-border-default">
+              <p className="text-sm text-text-tertiary text-center">
+                Or{' '}
+                <Link
+                  href="/onboarding/org-choice"
+                  className="text-accent-cyan hover:text-accent-cyan/80"
+                >
+                  go back
+                </Link>
+              </p>
+            </div>
           </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   )
 }

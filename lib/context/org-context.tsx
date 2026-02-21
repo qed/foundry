@@ -31,3 +31,7 @@ export function useOrg() {
   }
   return context
 }
+
+export function useOptionalOrg() {
+  return useContext(OrgContext)
+}

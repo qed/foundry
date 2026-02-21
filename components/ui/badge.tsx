@@ -12,6 +12,7 @@ const badgeVariants = cva(
         success: 'bg-accent-success/20 text-accent-success',
         warning: 'bg-accent-warning/20 text-accent-warning',
         danger: 'bg-accent-error/20 text-accent-error',
+        purple: 'bg-accent-purple/20 text-accent-purple',
         outline: 'border border-border-default text-text-secondary',
       },
     },

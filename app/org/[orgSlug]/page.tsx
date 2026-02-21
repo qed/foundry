@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { requireAuth } from '@/lib/auth/server'
 import { CreateProjectForm } from '@/components/org/create-project-form'
+import { TopBar } from '@/components/layout/top-bar'
 import Link from 'next/link'
 
 interface OrgPageProps {
@@ -32,24 +33,17 @@ export default async function OrgPage({ params }: OrgPageProps) {
     .order('created_at', { ascending: false })
 
   return (
-    <main className="min-h-screen bg-bg-primary">
-      <div className="max-w-5xl mx-auto p-8">
+    <div className="min-h-screen bg-bg-primary">
+      <TopBar />
+      <main className="max-w-5xl mx-auto p-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-text-primary">{org.name}</h1>
-            <p className="text-text-secondary text-sm mt-1">
-              {projects && projects.length > 0
-                ? `${projects.length} project${projects.length === 1 ? '' : 's'}`
-                : 'No projects yet'}
-            </p>
-          </div>
-          <Link
-            href="/"
-            className="text-sm text-text-tertiary hover:text-text-secondary transition-colors"
-          >
-            Home
-          </Link>
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-text-primary">{org.name}</h1>
+          <p className="text-text-secondary text-sm mt-1">
+            {projects && projects.length > 0
+              ? `${projects.length} project${projects.length === 1 ? '' : 's'}`
+              : 'No projects yet'}
+          </p>
         </div>
 
         {/* Projects grid or create form */}
@@ -90,8 +84,8 @@ export default async function OrgPage({ params }: OrgPageProps) {
             <NewProjectCard orgId={org.id} orgSlug={orgSlug} />
           </div>
         )}
-      </div>
-    </main>
+      </main>
+    </div>
   )
 }
 

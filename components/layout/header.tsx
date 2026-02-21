@@ -4,10 +4,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useOrg } from '@/lib/context/org-context'
 import { useProject } from '@/lib/context/project-context'
-import { useCurrentUser } from '@/lib/context/current-user-context'
-import { useAuth } from '@/lib/auth/context'
-import { ChevronRight, LogOut, Settings, Menu } from 'lucide-react'
-import { useState, useEffect, useRef } from 'react'
+import { UserMenu } from './user-menu'
+import { ChevronRight, Menu } from 'lucide-react'
 
 const MODULE_NAMES: Record<string, string> = {
   hall: 'The Hall',
@@ -25,24 +23,6 @@ export function Header({ onMenuClick }: HeaderProps) {
   const pathname = usePathname()
   const { org } = useOrg()
   const { project } = useProject()
-  const { user } = useCurrentUser()
-  const { signOut } = useAuth()
-  const [menuOpen, setMenuOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    if (!menuOpen) return
-
-    function handleClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [menuOpen])
 
   // Extract active module from pathname
   const activeModule = Object.keys(MODULE_NAMES).find((m) =>
@@ -60,14 +40,6 @@ export function Header({ onMenuClick }: HeaderProps) {
       href: `/org/${org.slug}/project/${project.id}/${activeModule}`,
     })
   }
-
-  // Get user initials for avatar
-  const initials = user.display_name
-    ?.split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2) || 'U'
 
   return (
     <header className="flex items-center justify-between px-4 md:px-6 py-3 bg-bg-secondary border-b border-border-default">
@@ -103,56 +75,8 @@ export function Header({ onMenuClick }: HeaderProps) {
       </div>
 
       {/* Right side: user menu */}
-      <div className="relative ml-4" ref={menuRef}>
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="flex items-center gap-2 px-2 py-1.5 hover:bg-bg-tertiary rounded-lg transition-colors"
-        >
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-semibold text-white"
-            style={{
-              background: 'linear-gradient(135deg, #00d4ff, #8b5cf6)',
-            }}
-          >
-            {initials}
-          </div>
-          <span className="text-sm text-text-secondary hidden sm:inline">
-            {user.display_name?.split(' ')[0] || 'User'}
-          </span>
-        </button>
-
-        {menuOpen && (
-          <div className="absolute right-0 mt-2 w-52 bg-bg-tertiary rounded-lg shadow-xl border border-border-default z-50">
-            <div className="p-3 border-b border-border-default">
-              <p className="text-xs text-text-tertiary">Signed in as</p>
-              <p className="text-sm font-medium text-text-primary truncate">
-                {user.display_name || 'User'}
-              </p>
-            </div>
-
-            <div className="p-1.5">
-              <Link
-                href={`/org/${org.slug}`}
-                onClick={() => setMenuOpen(false)}
-                className="flex items-center gap-2 px-3 py-2 text-sm text-text-secondary hover:bg-bg-secondary hover:text-text-primary rounded-md transition-colors"
-              >
-                <Settings className="w-4 h-4" />
-                Organization
-              </Link>
-
-              <button
-                onClick={() => {
-                  setMenuOpen(false)
-                  signOut()
-                }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-text-secondary hover:bg-bg-secondary hover:text-accent-error rounded-md transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                Sign Out
-              </button>
-            </div>
-          </div>
-        )}
+      <div className="ml-4">
+        <UserMenu />
       </div>
     </header>
   )
