@@ -35,3 +35,7 @@ export function useProject() {
   }
   return context
 }
+
+export function useOptionalProject() {
+  return useContext(ProjectContext)
+}

@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useAuth } from "@/lib/auth/context";
+import { UserMenu } from "@/components/layout/user-menu";
 
 export default function Home() {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading } = useAuth();
 
   return (
     <div className="relative w-full h-[100dvh] overflow-hidden bg-bg-primary">
@@ -30,12 +31,7 @@ export default function Home() {
               >
                 Enter
               </Link>
-              <button
-                onClick={() => signOut()}
-                className="btn-secondary text-text-primary text-sm cursor-pointer"
-              >
-                Logout
-              </button>
+              <UserMenu />
             </>
           ) : (
             <>

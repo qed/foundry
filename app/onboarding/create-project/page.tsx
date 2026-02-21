@@ -2,6 +2,7 @@
 
 import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { TopBar } from '@/components/layout/top-bar'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
@@ -67,7 +68,7 @@ function CreateProjectForm() {
 
   if (!orgId || !orgSlug) {
     return (
-      <main className="min-h-screen flex items-center justify-center p-4 bg-bg-primary">
+      <main className="flex-1 flex items-center justify-center p-4">
         <div className="glass-panel rounded-xl p-6">
           <p className="text-accent-error">
             Invalid onboarding link. Please{' '}
@@ -85,7 +86,7 @@ function CreateProjectForm() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-4 bg-bg-primary">
+    <main className="flex-1 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="glass-panel rounded-xl p-8">
           <h1 className="text-2xl font-bold text-text-primary mb-2">
@@ -141,14 +142,17 @@ function CreateProjectForm() {
 
 export default function CreateProjectPage() {
   return (
-    <Suspense
-      fallback={
-        <main className="min-h-screen flex items-center justify-center p-4 bg-bg-primary">
-          <div className="text-text-secondary">Loading...</div>
-        </main>
-      }
-    >
-      <CreateProjectForm />
-    </Suspense>
+    <div className="min-h-screen flex flex-col bg-bg-primary">
+      <TopBar />
+      <Suspense
+        fallback={
+          <main className="flex-1 flex items-center justify-center p-4">
+            <div className="text-text-secondary">Loading...</div>
+          </main>
+        }
+      >
+        <CreateProjectForm />
+      </Suspense>
+    </div>
   )
 }
