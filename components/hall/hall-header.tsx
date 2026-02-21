@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { Search } from 'lucide-react'
+import { Search, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ViewToggle } from './view-toggle'
 
@@ -57,8 +57,17 @@ export function HallHeader({
           value={searchValue}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Search ideas by title or description..."
-          className="w-full pl-10 pr-4 py-2 bg-bg-secondary border border-border-default rounded-lg text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent-cyan focus:border-transparent"
+          className="w-full pl-10 pr-9 py-2 bg-bg-secondary border border-border-default rounded-lg text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent-cyan focus:border-transparent"
         />
+        {searchValue && (
+          <button
+            onClick={() => onSearchChange('')}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-secondary transition-colors"
+            aria-label="Clear search"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
       </div>
     </div>
   )

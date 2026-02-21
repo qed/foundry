@@ -14,6 +14,7 @@ import { LoadMoreTrigger } from './load-more-trigger'
 import { IdeaCreateModal } from './idea-create-modal'
 import { Spinner } from '@/components/ui/spinner'
 import type { IdeaWithDetails, SortOption } from './types'
+import type { Tag } from '@/types/database'
 
 const PAGE_SIZE = 12
 
@@ -23,6 +24,7 @@ interface HallClientProps {
   initialHasMore: boolean
   projectId: string
   orgSlug: string
+  initialTags: Tag[]
 }
 
 export function HallClient({
@@ -31,6 +33,7 @@ export function HallClient({
   initialHasMore,
   projectId,
   orgSlug,
+  initialTags,
 }: HallClientProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -41,6 +44,8 @@ export function HallClient({
   const searchValue = searchParams.get('search') || ''
   const statusFilter = searchParams.get('status') || null
   const sortBy = (searchParams.get('sort') as SortOption) || 'newest'
+  const tagsParam = searchParams.get('tags') || ''
+  const selectedTagIds = tagsParam ? tagsParam.split(',').filter(Boolean) : []
 
   // Data state
   const [ideas, setIdeas] = useState(initialIdeas)
@@ -48,6 +53,9 @@ export function HallClient({
   const [hasMore, setHasMore] = useState(initialHasMore)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [isRefetching, setIsRefetching] = useState(false)
+
+  // Project tags
+  const [projectTags] = useState(initialTags)
 
   // Other state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
@@ -74,6 +82,7 @@ export function HallClient({
       })
       if (debouncedSearch) params.set('search', debouncedSearch)
       if (statusFilter) params.set('status', statusFilter)
+      if (tagsParam) params.set('tags', tagsParam)
 
       const res = await fetch(`/api/hall/ideas?${params}`, signal ? { signal } : undefined)
       if (!res.ok) throw new Error('Failed to fetch ideas')
@@ -83,7 +92,7 @@ export function HallClient({
         hasMore: boolean
       }>
     },
-    [projectId, sortBy, debouncedSearch, statusFilter]
+    [projectId, sortBy, debouncedSearch, statusFilter, tagsParam]
   )
 
   // Refetch when filters/sort change
@@ -91,7 +100,7 @@ export function HallClient({
     // On first render with default filters, use server-provided data
     if (isFirstRender.current) {
       isFirstRender.current = false
-      if (!debouncedSearch && !statusFilter && sortBy === 'newest') {
+      if (!debouncedSearch && !statusFilter && !tagsParam && sortBy === 'newest') {
         return
       }
     }
@@ -109,6 +118,7 @@ export function HallClient({
         })
         if (debouncedSearch) params.set('search', debouncedSearch)
         if (statusFilter) params.set('status', statusFilter)
+        if (tagsParam) params.set('tags', tagsParam)
 
         const res = await fetch(`/api/hall/ideas?${params}`, {
           signal: controller.signal,
@@ -129,7 +139,7 @@ export function HallClient({
 
     doFetch()
     return () => controller.abort()
-  }, [debouncedSearch, statusFilter, sortBy, projectId])
+  }, [debouncedSearch, statusFilter, sortBy, tagsParam, projectId])
 
   // Load more (append next page)
   const loadMore = useCallback(() => {
@@ -180,7 +190,8 @@ export function HallClient({
     [searchParams, router, pathname]
   )
 
-  const hasActiveFilters = !!searchValue || !!statusFilter || sortBy !== 'newest'
+  const hasActiveFilters =
+    !!searchValue || !!statusFilter || selectedTagIds.length > 0 || sortBy !== 'newest'
   const showEmptyProject = ideas.length === 0 && !hasActiveFilters && !isRefetching
   const showNoResults = ideas.length === 0 && hasActiveFilters && !isRefetching
 
@@ -204,10 +215,18 @@ export function HallClient({
           onSortChange={(sort) =>
             updateParams({ sort: sort === 'newest' ? null : sort })
           }
+          selectedTagIds={selectedTagIds}
+          onTagsChange={(tagIds) =>
+            updateParams({ tags: tagIds.length > 0 ? tagIds.join(',') : null })
+          }
+          projectTags={projectTags}
+          searchValue={searchValue}
+          onClearSearch={() => updateParams({ search: null })}
           onClearAll={() =>
-            updateParams({ search: null, status: null, sort: null })
+            updateParams({ search: null, status: null, sort: null, tags: null })
           }
           hasActiveFilters={hasActiveFilters}
+          total={total}
         />
       )}
 
@@ -217,7 +236,7 @@ export function HallClient({
         ) : showNoResults ? (
           <NoResultsState
             onClearFilters={() =>
-              updateParams({ search: null, status: null, sort: null })
+              updateParams({ search: null, status: null, sort: null, tags: null })
             }
           />
         ) : viewMode === 'grid' ? (

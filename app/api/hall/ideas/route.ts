@@ -20,6 +20,8 @@ export async function GET(request: NextRequest) {
     const status = VALID_STATUSES.includes(statusParam as IdeaStatus)
       ? (statusParam as IdeaStatus)
       : null
+    const tagsParam = searchParams.get('tags') || ''
+    const tagIds = tagsParam ? tagsParam.split(',').filter(Boolean) : []
 
     if (!projectId) {
       return Response.json({ error: 'Project ID is required' }, { status: 400 })
@@ -39,6 +41,32 @@ export async function GET(request: NextRequest) {
       return Response.json({ error: 'Not authorized for this project' }, { status: 403 })
     }
 
+    // If tag filtering, find idea_ids that have ALL selected tags (AND logic)
+    let tagMatchedIdeaIds: string[] | null = null
+    if (tagIds.length > 0) {
+      const { data: ideaTagRows } = await supabase
+        .from('idea_tags')
+        .select('idea_id, tag_id')
+        .in('tag_id', tagIds)
+
+      if (ideaTagRows && ideaTagRows.length > 0) {
+        const ideaTagCounts = new Map<string, number>()
+        for (const row of ideaTagRows) {
+          ideaTagCounts.set(row.idea_id, (ideaTagCounts.get(row.idea_id) || 0) + 1)
+        }
+        tagMatchedIdeaIds = [...ideaTagCounts.entries()]
+          .filter(([, count]) => count >= tagIds.length)
+          .map(([ideaId]) => ideaId)
+      } else {
+        tagMatchedIdeaIds = []
+      }
+
+      // Short-circuit if no ideas match all tags
+      if (tagMatchedIdeaIds.length === 0) {
+        return Response.json({ ideas: [], total: 0, hasMore: false })
+      }
+    }
+
     // Build count query (same filters, no pagination)
     let countQuery = supabase
       .from('ideas')
@@ -50,6 +78,9 @@ export async function GET(request: NextRequest) {
     }
     if (search) {
       countQuery = countQuery.or(`title.ilike.%${search}%,body.ilike.%${search}%`)
+    }
+    if (tagMatchedIdeaIds !== null) {
+      countQuery = countQuery.in('id', tagMatchedIdeaIds)
     }
 
     const { count } = await countQuery
@@ -66,6 +97,9 @@ export async function GET(request: NextRequest) {
     }
     if (search) {
       query = query.or(`title.ilike.%${search}%,body.ilike.%${search}%`)
+    }
+    if (tagMatchedIdeaIds !== null) {
+      query = query.in('id', tagMatchedIdeaIds)
     }
 
     // Sort

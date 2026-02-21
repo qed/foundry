@@ -12,6 +12,13 @@ export default async function HallPage({ params }: HallPageProps) {
   const { orgSlug, projectId } = await params
   const supabase = await createClient()
 
+  // Fetch project tags (for filter dropdown)
+  const { data: projectTags } = await supabase
+    .from('tags')
+    .select('*')
+    .eq('project_id', projectId)
+    .order('name', { ascending: true })
+
   // Fetch total count
   const { count } = await supabase
     .from('ideas')
@@ -88,6 +95,7 @@ export default async function HallPage({ params }: HallPageProps) {
       initialHasMore={total > PAGE_SIZE}
       projectId={projectId}
       orgSlug={orgSlug}
+      initialTags={projectTags || []}
     />
   )
 }
