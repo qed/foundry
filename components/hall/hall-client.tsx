@@ -1,36 +1,165 @@
 'use client'
 
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Plus } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { HallHeader } from './hall-header'
 import { FilterBar } from './filter-bar'
 import { IdeaGrid } from './idea-grid'
 import { IdeaList } from './idea-list'
 import { HallEmptyState } from './hall-empty-state'
+import { NoResultsState } from './no-results-state'
+import { LoadMoreTrigger } from './load-more-trigger'
 import { IdeaCreateModal } from './idea-create-modal'
+import { Spinner } from '@/components/ui/spinner'
 import type { IdeaWithDetails, SortOption } from './types'
 
+const PAGE_SIZE = 12
+
 interface HallClientProps {
-  ideas: IdeaWithDetails[]
+  initialIdeas: IdeaWithDetails[]
+  initialTotal: number
+  initialHasMore: boolean
   projectId: string
   orgSlug: string
 }
 
-export function HallClient({ ideas, projectId, orgSlug }: HallClientProps) {
+export function HallClient({
+  initialIdeas,
+  initialTotal,
+  initialHasMore,
+  projectId,
+  orgSlug,
+}: HallClientProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
 
-  // Read URL state
+  // URL state
   const viewMode = (searchParams.get('view') as 'grid' | 'list') || 'grid'
   const searchValue = searchParams.get('search') || ''
   const statusFilter = searchParams.get('status') || null
   const sortBy = (searchParams.get('sort') as SortOption) || 'newest'
 
-  // Local state
+  // Data state
+  const [ideas, setIdeas] = useState(initialIdeas)
+  const [total, setTotal] = useState(initialTotal)
+  const [hasMore, setHasMore] = useState(initialHasMore)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [isRefetching, setIsRefetching] = useState(false)
+
+  // Other state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [showNewIdeaModal, setShowNewIdeaModal] = useState(false)
+
+  // Debounce search for API calls
+  const [debouncedSearch, setDebouncedSearch] = useState(searchValue)
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchValue), 300)
+    return () => clearTimeout(timer)
+  }, [searchValue])
+
+  // Track first render to skip initial fetch when using server data
+  const isFirstRender = useRef(true)
+
+  // Fetch from API helper
+  const fetchFromApi = useCallback(
+    async (offset: number, signal?: AbortSignal) => {
+      const params = new URLSearchParams({
+        projectId,
+        limit: String(PAGE_SIZE),
+        offset: String(offset),
+        sort: sortBy,
+      })
+      if (debouncedSearch) params.set('search', debouncedSearch)
+      if (statusFilter) params.set('status', statusFilter)
+
+      const res = await fetch(`/api/hall/ideas?${params}`, signal ? { signal } : undefined)
+      if (!res.ok) throw new Error('Failed to fetch ideas')
+      return res.json() as Promise<{
+        ideas: IdeaWithDetails[]
+        total: number
+        hasMore: boolean
+      }>
+    },
+    [projectId, sortBy, debouncedSearch, statusFilter]
+  )
+
+  // Refetch when filters/sort change
+  useEffect(() => {
+    // On first render with default filters, use server-provided data
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      if (!debouncedSearch && !statusFilter && sortBy === 'newest') {
+        return
+      }
+    }
+
+    const controller = new AbortController()
+
+    async function doFetch() {
+      setIsRefetching(true)
+      try {
+        const params = new URLSearchParams({
+          projectId,
+          limit: String(PAGE_SIZE),
+          offset: '0',
+          sort: sortBy,
+        })
+        if (debouncedSearch) params.set('search', debouncedSearch)
+        if (statusFilter) params.set('status', statusFilter)
+
+        const res = await fetch(`/api/hall/ideas?${params}`, {
+          signal: controller.signal,
+        })
+        if (!res.ok) throw new Error('Failed to fetch')
+        const data = await res.json()
+
+        setIdeas(data.ideas)
+        setTotal(data.total)
+        setHasMore(data.hasMore)
+        setSelectedIds(new Set())
+      } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') return
+      } finally {
+        if (!controller.signal.aborted) setIsRefetching(false)
+      }
+    }
+
+    doFetch()
+    return () => controller.abort()
+  }, [debouncedSearch, statusFilter, sortBy, projectId])
+
+  // Load more (append next page)
+  const loadMore = useCallback(() => {
+    if (isLoadingMore || !hasMore) return
+
+    setIsLoadingMore(true)
+
+    fetchFromApi(ideas.length)
+      .then((data) => {
+        setIdeas((prev) => [...prev, ...data.ideas])
+        setTotal(data.total)
+        setHasMore(data.hasMore)
+      })
+      .catch(() => {})
+      .finally(() => setIsLoadingMore(false))
+  }, [fetchFromApi, isLoadingMore, hasMore, ideas.length])
+
+  // Refetch after creating an idea (reset to page 1 with current filters)
+  const handleIdeaCreated = useCallback(() => {
+    setIsRefetching(true)
+
+    fetchFromApi(0)
+      .then((data) => {
+        setIdeas(data.ideas)
+        setTotal(data.total)
+        setHasMore(data.hasMore)
+      })
+      .catch(() => {})
+      .finally(() => setIsRefetching(false))
+  }, [fetchFromApi])
 
   // URL state updater
   const updateParams = useCallback(
@@ -51,49 +180,9 @@ export function HallClient({ ideas, projectId, orgSlug }: HallClientProps) {
     [searchParams, router, pathname]
   )
 
-  // Filtered and sorted ideas
-  const filteredIdeas = useMemo(() => {
-    let result = [...ideas]
-
-    // Search filter
-    if (searchValue) {
-      const query = searchValue.toLowerCase()
-      result = result.filter(
-        (idea) =>
-          idea.title.toLowerCase().includes(query) ||
-          (idea.body && idea.body.toLowerCase().includes(query))
-      )
-    }
-
-    // Status filter
-    if (statusFilter) {
-      result = result.filter((idea) => idea.status === statusFilter)
-    }
-
-    // Sort
-    result.sort((a, b) => {
-      switch (sortBy) {
-        case 'oldest':
-          return (
-            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-          )
-        case 'updated':
-          return (
-            new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
-          )
-        case 'newest':
-        default:
-          return (
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-          )
-      }
-    })
-
-    return result
-  }, [ideas, searchValue, statusFilter, sortBy])
-
-  const hasAnyIdeas = ideas.length > 0
-  const hasFilteredIdeas = filteredIdeas.length > 0
+  const hasActiveFilters = !!searchValue || !!statusFilter || sortBy !== 'newest'
+  const showEmptyProject = ideas.length === 0 && !hasActiveFilters && !isRefetching
+  const showNoResults = ideas.length === 0 && hasActiveFilters && !isRefetching
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
@@ -107,7 +196,7 @@ export function HallClient({ ideas, projectId, orgSlug }: HallClientProps) {
         onNewIdeaClick={() => setShowNewIdeaModal(true)}
       />
 
-      {hasAnyIdeas && (
+      {(ideas.length > 0 || hasActiveFilters) && (
         <FilterBar
           statusFilter={statusFilter}
           onStatusChange={(status) => updateParams({ status })}
@@ -118,36 +207,60 @@ export function HallClient({ ideas, projectId, orgSlug }: HallClientProps) {
           onClearAll={() =>
             updateParams({ search: null, status: null, sort: null })
           }
-          hasActiveFilters={
-            !!searchValue || !!statusFilter || sortBy !== 'newest'
-          }
+          hasActiveFilters={hasActiveFilters}
         />
       )}
 
-      {!hasAnyIdeas ? (
-        <HallEmptyState onNewIdeaClick={() => setShowNewIdeaModal(true)} />
-      ) : !hasFilteredIdeas ? (
-        <div className="text-center py-16">
-          <p className="text-text-secondary">No ideas match your filters.</p>
-          <button
-            onClick={() =>
+      <div className={cn(isRefetching && 'opacity-50 pointer-events-none transition-opacity')}>
+        {showEmptyProject ? (
+          <HallEmptyState onNewIdeaClick={() => setShowNewIdeaModal(true)} />
+        ) : showNoResults ? (
+          <NoResultsState
+            onClearFilters={() =>
               updateParams({ search: null, status: null, sort: null })
             }
-            className="text-accent-cyan hover:underline mt-2 text-sm"
-          >
-            Clear all filters
-          </button>
+          />
+        ) : viewMode === 'grid' ? (
+          <IdeaGrid
+            ideas={ideas}
+            orgSlug={orgSlug}
+            projectId={projectId}
+          />
+        ) : (
+          <IdeaList
+            ideas={ideas}
+            orgSlug={orgSlug}
+            projectId={projectId}
+            selectedIds={selectedIds}
+            onSelectionChange={setSelectedIds}
+          />
+        )}
+      </div>
+
+      {/* Refetching indicator */}
+      {isRefetching && (
+        <div className="flex justify-center py-4">
+          <Spinner size="sm" />
         </div>
-      ) : viewMode === 'grid' ? (
-        <IdeaGrid ideas={filteredIdeas} orgSlug={orgSlug} projectId={projectId} />
-      ) : (
-        <IdeaList
-          ideas={filteredIdeas}
-          orgSlug={orgSlug}
-          projectId={projectId}
-          selectedIds={selectedIds}
-          onSelectionChange={setSelectedIds}
-        />
+      )}
+
+      {/* Infinite scroll trigger */}
+      {hasMore && !isRefetching && !isLoadingMore && (
+        <LoadMoreTrigger onLoadMore={loadMore} isLoading={isLoadingMore} />
+      )}
+
+      {/* Loading more spinner */}
+      {isLoadingMore && (
+        <div className="flex justify-center py-6">
+          <Spinner size="md" />
+        </div>
+      )}
+
+      {/* End of list message */}
+      {!hasMore && ideas.length > 0 && !isRefetching && (
+        <p className="text-center text-text-tertiary text-sm py-6">
+          All {total} {total === 1 ? 'idea' : 'ideas'} loaded
+        </p>
       )}
 
       {/* Mobile FAB */}
@@ -164,7 +277,7 @@ export function HallClient({ ideas, projectId, orgSlug }: HallClientProps) {
         isOpen={showNewIdeaModal}
         onClose={() => setShowNewIdeaModal(false)}
         projectId={projectId}
-        onIdeaCreated={() => router.refresh()}
+        onIdeaCreated={handleIdeaCreated}
       />
     </div>
   )

@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { HallClient } from '@/components/hall/hall-client'
 import type { IdeaWithDetails } from '@/components/hall/types'
 
+const PAGE_SIZE = 12
+
 interface HallPageProps {
   params: Promise<{ orgSlug: string; projectId: string }>
 }
@@ -10,16 +12,25 @@ export default async function HallPage({ params }: HallPageProps) {
   const { orgSlug, projectId } = await params
   const supabase = await createClient()
 
-  // Fetch ideas for this project
+  // Fetch total count
+  const { count } = await supabase
+    .from('ideas')
+    .select('id', { count: 'exact', head: true })
+    .eq('project_id', projectId)
+
+  const total = count || 0
+
+  // Fetch first page of ideas (newest first, no filters — matches default UI state)
   const { data: rawIdeas } = await supabase
     .from('ideas')
     .select('*')
     .eq('project_id', projectId)
     .order('created_at', { ascending: false })
+    .range(0, PAGE_SIZE - 1)
 
   const ideas = rawIdeas || []
 
-  // Enrich with tags and creator profiles if there are ideas
+  // Enrich with tags and creator profiles
   let ideasWithDetails: IdeaWithDetails[] = []
 
   if (ideas.length > 0) {
@@ -72,7 +83,9 @@ export default async function HallPage({ params }: HallPageProps) {
 
   return (
     <HallClient
-      ideas={ideasWithDetails}
+      initialIdeas={ideasWithDetails}
+      initialTotal={total}
+      initialHasMore={total > PAGE_SIZE}
       projectId={projectId}
       orgSlug={orgSlug}
     />
