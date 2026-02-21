@@ -24,9 +24,12 @@ export default function Home() {
             <span className="text-text-tertiary text-sm">Loading...</span>
           ) : user ? (
             <>
-              <span className="text-text-secondary text-sm hidden sm:inline">
-                {user.email}
-              </span>
+              <Link
+                href="/org"
+                className="px-5 py-2 bg-accent-cyan hover:bg-accent-cyan/80 text-bg-primary rounded-lg font-semibold text-sm transition-colors"
+              >
+                Enter
+              </Link>
               <button
                 onClick={() => signOut()}
                 className="btn-secondary text-text-primary text-sm cursor-pointer"
