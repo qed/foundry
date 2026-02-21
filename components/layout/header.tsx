@@ -1,11 +1,11 @@
 'use client'
 
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useOrg } from '@/lib/context/org-context'
 import { useProject } from '@/lib/context/project-context'
 import { UserMenu } from './user-menu'
-import { ChevronRight, Menu } from 'lucide-react'
+import { Breadcrumb, type BreadcrumbItem } from './breadcrumb'
+import { Menu } from 'lucide-react'
 
 const MODULE_NAMES: Record<string, string> = {
   hall: 'The Hall',
@@ -29,7 +29,7 @@ export function Header({ onMenuClick }: HeaderProps) {
     pathname.includes(`/${m}`)
   )
 
-  const breadcrumbs = [
+  const breadcrumbs: BreadcrumbItem[] = [
     { label: org.name, href: `/org/${org.slug}` },
     { label: project.name, href: `/org/${org.slug}/project/${project.id}` },
   ]
@@ -53,25 +53,7 @@ export function Header({ onMenuClick }: HeaderProps) {
           <Menu className="w-5 h-5" />
         </button>
 
-        <nav className="flex items-center gap-1.5 overflow-x-auto">
-          {breadcrumbs.map((crumb, index) => (
-            <div key={crumb.href} className="flex items-center gap-1.5">
-              {index > 0 && (
-                <ChevronRight className="w-4 h-4 text-text-tertiary flex-shrink-0" />
-              )}
-              <Link
-                href={crumb.href}
-                className={`text-sm whitespace-nowrap transition-colors ${
-                  index === breadcrumbs.length - 1
-                    ? 'text-text-primary font-medium'
-                    : 'text-text-secondary hover:text-text-primary'
-                }`}
-              >
-                {crumb.label}
-              </Link>
-            </div>
-          ))}
-        </nav>
+        <Breadcrumb items={breadcrumbs} />
       </div>
 
       {/* Right side: user menu */}
