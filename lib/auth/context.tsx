@@ -76,3 +76,12 @@ export function useAuth() {
   }
   return context
 }
+
+/**
+ * Non-throwing variant of useAuth.
+ * Returns null when called outside AuthProvider (e.g. during HMR).
+ */
+export function useOptionalAuth(): AuthContextType | null {
+  const context = useContext(AuthContext)
+  return context ?? null
+}
