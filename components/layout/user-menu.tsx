@@ -2,14 +2,14 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { useAuth } from '@/lib/auth/context'
+import { useOptionalAuth } from '@/lib/auth/context'
 import { useOptionalOrg } from '@/lib/context/org-context'
 import { useOptionalProject } from '@/lib/context/project-context'
 import { Badge } from '@/components/ui/badge'
 import { LogOut, Home } from 'lucide-react'
 
 export function UserMenu() {
-  const { user, loading, signOut } = useAuth()
+  const auth = useOptionalAuth()
   const orgCtx = useOptionalOrg()
   const projectCtx = useOptionalProject()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -28,7 +28,10 @@ export function UserMenu() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [menuOpen])
 
-  if (loading || !user) return null
+  // Gracefully handle missing AuthProvider (e.g. during HMR)
+  if (!auth || auth.loading || !auth.user) return null
+
+  const { user, signOut } = auth
 
   const displayName =
     (user.user_metadata?.display_name as string) ||

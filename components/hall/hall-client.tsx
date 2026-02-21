@@ -2,20 +2,13 @@
 
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { useCallback, useMemo, useState } from 'react'
-import { Plus, Lightbulb } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { HallHeader } from './hall-header'
 import { FilterBar } from './filter-bar'
 import { IdeaGrid } from './idea-grid'
 import { IdeaList } from './idea-list'
 import { HallEmptyState } from './hall-empty-state'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogBody,
-  DialogClose,
-} from '@/components/ui/dialog'
+import { IdeaCreateModal } from './idea-create-modal'
 import type { IdeaWithDetails, SortOption } from './types'
 
 interface HallClientProps {
@@ -166,29 +159,13 @@ export function HallClient({ ideas, projectId, orgSlug }: HallClientProps) {
         <Plus className="w-6 h-6" />
       </button>
 
-      {/* New Idea Modal Placeholder */}
-      <Dialog
-        open={showNewIdeaModal}
-        onOpenChange={setShowNewIdeaModal}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>New Idea</DialogTitle>
-            <DialogClose onClick={() => setShowNewIdeaModal(false)} />
-          </DialogHeader>
-          <DialogBody>
-            <div className="text-center py-8">
-              <Lightbulb className="w-12 h-12 text-accent-cyan mx-auto mb-4" />
-              <p className="text-text-primary font-medium mb-2">
-                Idea creation coming soon
-              </p>
-              <p className="text-text-tertiary text-sm">
-                The idea capture form will be available in the next phase.
-              </p>
-            </div>
-          </DialogBody>
-        </DialogContent>
-      </Dialog>
+      {/* New Idea Modal */}
+      <IdeaCreateModal
+        isOpen={showNewIdeaModal}
+        onClose={() => setShowNewIdeaModal(false)}
+        projectId={projectId}
+        onIdeaCreated={() => router.refresh()}
+      />
     </div>
   )
 }
