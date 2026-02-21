@@ -3,6 +3,7 @@ import { requireAuthWithProfile } from '@/lib/auth/server'
 import { createClient } from '@/lib/supabase/server'
 import { ProjectProvider } from '@/lib/context/project-context'
 import { CurrentUserProvider } from '@/lib/context/current-user-context'
+import { AppLayout } from '@/components/layout/app-layout'
 
 interface ProjectLayoutProps {
   children: React.ReactNode
@@ -63,7 +64,7 @@ export default async function ProjectLayout({
         isOrgAdmin={orgMember?.role === 'admin'}
         isProjectLeader={projectMember.role === 'leader'}
       >
-        {children}
+        <AppLayout>{children}</AppLayout>
       </CurrentUserProvider>
     </ProjectProvider>
   )
