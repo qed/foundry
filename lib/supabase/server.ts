@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import type { Database } from "@/types/database";
 
@@ -27,25 +28,10 @@ export async function createClient() {
   });
 }
 
-export async function createServiceClient() {
-  const cookieStore = await cookies();
-
-  return createServerClient<Database>(supabaseUrl, supabaseServiceRoleKey, {
-    cookies: {
-      getAll() {
-        return cookieStore.getAll();
-      },
-      setAll(cookiesToSet) {
-        try {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options)
-          );
-        } catch {
-          // Called from Server Component — cookie setting is not possible
-        }
-      },
-    },
-  });
+export function createServiceClient() {
+  // Use the base Supabase client (not SSR) with the service role key.
+  // This ensures RLS is fully bypassed — no user JWT from cookies.
+  return createSupabaseClient<Database>(supabaseUrl, supabaseServiceRoleKey);
 }
 
 export async function getUser() {
