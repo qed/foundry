@@ -186,9 +186,9 @@ After this initial update, stay in this session. I will come back to you after e
 | Phase | Name | Status | Branch | Prerequisites | Track | File Areas |
 |-------|------|--------|--------|---------------|-------|------------|
 | 046 | Control Room Database Schema | `done` | — | 002, 026 | Room | `supabase/migrations/`, `types/database.ts` |
-| 047 | Control Room Page Layout | `ready` | — | 006, 010, 046 | Room | `components/room/`, `app/.../room/` |
+| 047 | Control Room Page Layout | `done` | — | 006, 010, 046 | Room | `components/room/`, `app/.../room/` |
 | 048 | Foundation Blueprints | `blocked` | — | 046, 047, 049 | Room | `components/room/` |
-| 049 | Blueprint Rich Text Editor | `blocked` | — | 047 | Room | `components/room/` |
+| 049 | Blueprint Rich Text Editor | `ready` | — | 047 | Room | `components/room/` |
 | 050 | System Diagram Blueprints | `blocked` | — | 046, 047, 049 | Room | `components/room/` |
 | 051 | Feature Blueprints | `blocked` | — | 026, 046, 047, 049 | Room ⚠️ | `components/room/` |
 | 052 | Feature-Blueprint Linking | `blocked` | — | 026, 029, 046, 051 | Room ⚠️ | `components/room/`, `components/shop/` |
@@ -534,12 +534,12 @@ These phases require work from **multiple module tracks** to be complete before 
 | Foundation (001–010) | 10 | 10 | 0 | 0 | 0 |
 | The Hall (011–025) | 15 | 12 | 0 | 3 | 0 |
 | Pattern Shop (026–045) | 20 | 6 | 0 | 3 | 11 |
-| Control Room (046–060) | 15 | 1 | 0 | 1 | 13 |
+| Control Room (046–060) | 15 | 2 | 0 | 1 | 12 |
 | Assembly Floor (061–080) | 20 | 2 | 0 | 3 | 15 |
 | Insights Lab (081–095) | 15 | 1 | 0 | 2 | 12 |
 | Cross-Cutting (096–120) | 25 | 6 | 0 | 3 | 16 |
 | Advanced (121–135) | 15 | 0 | 0 | 2 | 13 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **38** | **0** | **18** | **94** |
+| **TOTAL** | **150** | **39** | **0** | **18** | **93** |
 
-**Currently ready to start**: 021, 022, 023, 031, 034, 037, 047, 063, 073, 080, 082, 083, 097, 110, 120, 131, 132
+**Currently ready to start**: 021, 022, 023, 031, 034, 037, 049, 063, 073, 080, 082, 083, 097, 110, 120, 131, 132
