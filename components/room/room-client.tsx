@@ -189,7 +189,7 @@ export function RoomClient({ projectId, initialStats }: RoomClientProps) {
         />
 
         {/* Right panel: Agent chat */}
-        <RoomRightPanel open={rightPanelOpen} />
+        <RoomRightPanel open={rightPanelOpen} projectId={projectId} selectedBlueprintId={selectedBlueprintId} />
       </div>
     </div>
   )
