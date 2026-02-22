@@ -6,12 +6,18 @@ import { cn } from '@/lib/utils'
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning'
 
+export interface ToastAction {
+  label: string
+  onClick: () => void
+}
+
 interface ToastProps {
   id: string
   type: ToastType
   message: string
   onClose: (id: string) => void
   duration?: number
+  action?: ToastAction
 }
 
 const typeConfig = {
@@ -37,7 +43,7 @@ const typeConfig = {
   },
 }
 
-export function Toast({ id, type, message, onClose, duration = 5000 }: ToastProps) {
+export function Toast({ id, type, message, onClose, duration = 5000, action }: ToastProps) {
   useEffect(() => {
     if (duration === 0) return
 
@@ -57,6 +63,17 @@ export function Toast({ id, type, message, onClose, duration = 5000 }: ToastProp
     >
       <Icon className={cn('w-5 h-5 flex-shrink-0', config.text)} />
       <p className="flex-1 text-text-primary">{message}</p>
+      {action && (
+        <button
+          onClick={() => {
+            action.onClick()
+            onClose(id)
+          }}
+          className="px-3 py-1 text-sm font-medium text-accent-cyan hover:bg-accent-cyan/10 rounded transition-colors shrink-0"
+        >
+          {action.label}
+        </button>
+      )}
       <button
         onClick={() => onClose(id)}
         className="p-1 hover:bg-white/10 rounded transition-colors text-text-secondary"

@@ -1,17 +1,18 @@
 'use client'
 
 import React, { useState, useCallback } from 'react'
-import { Toast, type ToastType } from './toast'
+import { Toast, type ToastType, type ToastAction } from './toast'
 
 interface ToastMessage {
   id: string
   type: ToastType
   message: string
+  action?: ToastAction
 }
 
 export interface UseToastReturn {
   toasts: ToastMessage[]
-  addToast: (message: string, type: ToastType, duration?: number) => void
+  addToast: (message: string, type: ToastType, duration?: number, action?: ToastAction) => string
   removeToast: (id: string) => void
 }
 
@@ -23,15 +24,17 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<ToastMessage[]>([])
 
   const addToast = useCallback(
-    (message: string, type: ToastType, duration = 5000) => {
+    (message: string, type: ToastType, duration = 5000, action?: ToastAction) => {
       const id = `toast-${++toastCounter}-${Date.now()}`
-      setToasts((prev) => [...prev, { id, type, message }])
+      setToasts((prev) => [...prev, { id, type, message, action }])
 
       if (duration > 0) {
         setTimeout(() => {
           setToasts((prev) => prev.filter((t) => t.id !== id))
         }, duration)
       }
+
+      return id
     },
     []
   )
@@ -51,6 +54,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             type={toast.type}
             message={toast.message}
             onClose={removeToast}
+            action={toast.action}
           />
         ))}
       </div>

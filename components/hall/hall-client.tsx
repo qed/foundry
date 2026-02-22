@@ -14,6 +14,7 @@ import { LoadMoreTrigger } from './load-more-trigger'
 import { IdeaCreateModal } from './idea-create-modal'
 import { IdeaDetailSlideOver } from './idea-detail-slide-over'
 import { Spinner } from '@/components/ui/spinner'
+import { useToast } from '@/components/ui/toast-container'
 import type { IdeaWithDetails, SortOption } from './types'
 import type { Tag } from '@/types/database'
 
@@ -62,6 +63,8 @@ export function HallClient({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [showNewIdeaModal, setShowNewIdeaModal] = useState(false)
   const [selectedIdeaId, setSelectedIdeaId] = useState<string | null>(null)
+
+  const { addToast } = useToast()
 
   // Debounce search for API calls
   const [debouncedSearch, setDebouncedSearch] = useState(searchValue)
@@ -172,6 +175,63 @@ export function HallClient({
       .catch(() => {})
       .finally(() => setIsRefetching(false))
   }, [fetchFromApi])
+
+  // Handle idea updated from edit form
+  const handleIdeaUpdated = useCallback((updatedIdea: IdeaWithDetails) => {
+    setIdeas((prev) =>
+      prev.map((idea) => (idea.id === updatedIdea.id ? updatedIdea : idea))
+    )
+  }, [])
+
+  // Handle idea archived (soft delete)
+  const handleIdeaArchived = useCallback(async (ideaId: string) => {
+    const res = await fetch(`/api/hall/ideas/${ideaId}`, {
+      method: 'DELETE',
+    })
+
+    if (!res.ok) {
+      addToast('Failed to archive idea', 'error')
+      throw new Error('Failed to archive')
+    }
+
+    const { previousStatus } = await res.json()
+
+    // Remove from local list
+    setIdeas((prev) => prev.filter((idea) => idea.id !== ideaId))
+    setTotal((prev) => prev - 1)
+
+    // Show toast with undo action
+    addToast('Idea archived', 'info', 10000, {
+      label: 'Undo',
+      onClick: async () => {
+        try {
+          const undoRes = await fetch(`/api/hall/ideas/${ideaId}/undelete`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ previousStatus }),
+          })
+
+          if (!undoRes.ok) {
+            addToast('Failed to undo archive', 'error')
+            return
+          }
+
+          addToast('Idea restored', 'success')
+
+          // Refetch to restore the idea in the list
+          fetchFromApi(0)
+            .then((data) => {
+              setIdeas(data.ideas)
+              setTotal(data.total)
+              setHasMore(data.hasMore)
+            })
+            .catch(() => {})
+        } catch {
+          addToast('Failed to undo archive', 'error')
+        }
+      },
+    })
+  }, [addToast, fetchFromApi])
 
   // URL state updater
   const updateParams = useCallback(
@@ -314,6 +374,9 @@ export function HallClient({
             : [...selectedTagIds, tagId]
           updateParams({ tags: current.join(',') })
         }}
+        projectId={projectId}
+        onIdeaUpdated={handleIdeaUpdated}
+        onIdeaArchived={handleIdeaArchived}
       />
     </div>
   )

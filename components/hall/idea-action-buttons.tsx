@@ -8,27 +8,46 @@ import type { IdeaWithDetails } from './types'
 
 interface IdeaActionButtonsProps {
   idea: IdeaWithDetails
+  isEditing?: boolean
+  onEdit?: () => void
+  onArchive?: () => Promise<void>
 }
 
-export function IdeaActionButtons({ idea }: IdeaActionButtonsProps) {
+export function IdeaActionButtons({ idea, isEditing, onEdit, onArchive }: IdeaActionButtonsProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isArchiving, setIsArchiving] = useState(false)
+
+  const handleArchiveConfirm = async () => {
+    if (!onArchive) return
+    setIsArchiving(true)
+    try {
+      await onArchive()
+      setShowDeleteConfirm(false)
+    } catch {
+      // Error handling is done in the parent
+    } finally {
+      setIsArchiving(false)
+    }
+  }
+
+  // Don't show action buttons while in edit mode
+  if (isEditing) return null
 
   return (
     <>
       <div className="border-t border-border-default p-4 flex gap-3 flex-col sm:flex-row">
-        {/* Edit — placeholder for Phase 017 */}
+        {/* Edit */}
         <Button
           variant="outline"
           size="sm"
           className="flex items-center gap-2 flex-1 sm:flex-none"
-          disabled
-          title="Edit will be available in a future update"
+          onClick={onEdit}
         >
           <Pencil className="w-4 h-4" />
           Edit
         </Button>
 
-        {/* Delete — placeholder for Phase 017 */}
+        {/* Archive */}
         <Button
           variant="outline"
           size="sm"
@@ -54,7 +73,7 @@ export function IdeaActionButtons({ idea }: IdeaActionButtonsProps) {
         )}
       </div>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Archive Confirmation Dialog */}
       <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <DialogContent>
           <DialogHeader>
@@ -63,9 +82,11 @@ export function IdeaActionButtons({ idea }: IdeaActionButtonsProps) {
           </DialogHeader>
           <DialogBody>
             <p className="text-sm text-text-secondary">
-              Are you sure you want to archive{' '}
-              <span className="font-semibold text-text-primary">&ldquo;{idea.title}&rdquo;</span>?
-              This will move it to the archived state. You can restore it later.
+              <span className="font-semibold text-text-primary">&ldquo;{idea.title}&rdquo;</span>{' '}
+              will be moved to archived and hidden from The Hall.
+            </p>
+            <p className="text-xs text-text-tertiary mt-2">
+              This is reversible — you can undo within 10 seconds after archiving.
             </p>
           </DialogBody>
           <DialogFooter>
@@ -73,14 +94,15 @@ export function IdeaActionButtons({ idea }: IdeaActionButtonsProps) {
               variant="secondary"
               size="sm"
               onClick={() => setShowDeleteConfirm(false)}
+              disabled={isArchiving}
             >
               Cancel
             </Button>
             <Button
               variant="danger"
               size="sm"
-              disabled
-              title="Archive will be available in a future update"
+              onClick={handleArchiveConfirm}
+              isLoading={isArchiving}
             >
               Yes, archive
             </Button>

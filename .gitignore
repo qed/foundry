@@ -48,3 +48,9 @@ next-env.d.ts
 *.njsproj
 *.sln
 *.sw?
+
+# claude code
+.claude/
+
+# supabase temp
+supabase/.temp/
