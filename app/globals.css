@@ -125,6 +125,16 @@ body {
   animation: slide-in 0.3s ease-out;
 }
 
+/* Slide-over panel animation */
+@keyframes slide-in-right {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.2s ease-out;
+}
+
 /* Product Overview / Requirements Document prose styles */
 .prose-foundry {
   color: var(--color-text-primary);

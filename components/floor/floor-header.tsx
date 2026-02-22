@@ -17,6 +17,7 @@ interface FloorHeaderProps {
   onViewChange: (view: 'kanban' | 'table') => void
   rightPanelOpen: boolean
   onToggleRightPanel: () => void
+  onNewWorkOrder: () => void
 }
 
 export function FloorHeader({
@@ -26,6 +27,7 @@ export function FloorHeader({
   onViewChange,
   rightPanelOpen,
   onToggleRightPanel,
+  onNewWorkOrder,
 }: FloorHeaderProps) {
   const completionPercent =
     totalWorkOrders > 0
@@ -105,9 +107,9 @@ export function FloorHeader({
 
       {/* New Work Order button */}
       <button
-        disabled
-        className="flex items-center gap-1.5 px-3 py-1.5 bg-accent-cyan text-bg-primary rounded-lg text-xs font-medium opacity-50 cursor-not-allowed"
-        title="Create work order (Phase 063)"
+        onClick={onNewWorkOrder}
+        className="flex items-center gap-1.5 px-3 py-1.5 bg-accent-cyan text-bg-primary rounded-lg text-xs font-medium hover:bg-accent-cyan/80 transition-colors"
+        title="Create work order"
       >
         <Plus className="w-3.5 h-3.5" />
         <span className="hidden sm:inline">New Work Order</span>
