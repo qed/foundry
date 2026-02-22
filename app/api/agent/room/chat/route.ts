@@ -5,6 +5,7 @@ import { createServiceClient } from '@/lib/supabase/server'
 import { handleAuthError } from '@/lib/auth/errors'
 import { buildRoomContext, buildRoomSystemPrompt } from '@/lib/agent/room-context'
 import { buildGenerationPrompt } from '@/lib/agent/generation-prompt'
+import { buildReviewPrompt } from '@/lib/agent/review-prompt'
 
 // Detect if the user is asking to generate a blueprint
 const GENERATION_PATTERNS = [
@@ -15,8 +16,23 @@ const GENERATION_PATTERNS = [
   /generate\s*(a\s+)?(technical\s+)?spec/i,
 ]
 
+// Detect if the user is asking to review a blueprint
+const REVIEW_PATTERNS = [
+  /review\s*(this\s+)?blueprint/i,
+  /check\s*(this\s+)?blueprint/i,
+  /review\s*for\s*completeness/i,
+  /what('s|\s+is)\s+missing/i,
+  /analyze\s*(this\s+)?blueprint/i,
+  /is\s+this\s+blueprint\s+(ready|complete|good)/i,
+  /feedback\s+on\s+(this\s+)?blueprint/i,
+]
+
 function isGenerationRequest(message: string): boolean {
   return GENERATION_PATTERNS.some((p) => p.test(message))
+}
+
+function isReviewRequest(message: string): boolean {
+  return REVIEW_PATTERNS.some((p) => p.test(message))
 }
 
 function extractText(content: unknown): string {
@@ -33,7 +49,7 @@ function extractText(content: unknown): string {
 /**
  * POST /api/agent/room/chat
  * Streaming chat endpoint for the Control Room agent.
- * Enhanced with blueprint generation context injection.
+ * Enhanced with blueprint generation and review context injection.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -60,17 +76,19 @@ export async function POST(request: NextRequest) {
     )
     const systemPrompt = buildRoomSystemPrompt(context)
 
-    // Check if this is a generation request
+    // Detect request type
     const isGeneration = isGenerationRequest(message)
+    const isReview = !isGeneration && isReviewRequest(message)
     let enrichedMessage = message
     let maxTokens = 2000
 
-    if (isGeneration && currentBlueprintId) {
-      // Find the current blueprint to get its feature_node_id
-      const currentBp = (blueprints || []).find((bp) => bp.id === currentBlueprintId)
+    const currentBp = currentBlueprintId
+      ? (blueprints || []).find((bp) => bp.id === currentBlueprintId)
+      : null
 
+    // ─── Generation request ──────────────────────────────────────
+    if (isGeneration && currentBlueprintId) {
       if (currentBp?.blueprint_type === 'feature' && currentBp.feature_node_id) {
-        // Load feature node details
         const { data: featureNode } = await supabase
           .from('feature_nodes')
           .select('id, title, description, level, parent_id')
@@ -78,7 +96,6 @@ export async function POST(request: NextRequest) {
           .single()
 
         if (featureNode) {
-          // Load parent title if exists
           let parentTitle: string | null = null
           if (featureNode.parent_id) {
             const { data: parent } = await supabase
@@ -89,7 +106,6 @@ export async function POST(request: NextRequest) {
             parentTitle = parent?.title || null
           }
 
-          // Load feature requirements documents
           const { data: reqDocs } = await supabase
             .from('requirements_documents')
             .select('title, content, doc_type')
@@ -113,7 +129,6 @@ export async function POST(request: NextRequest) {
             }
           }
 
-          // Load foundation blueprints for architecture context
           const foundations = (blueprints || [])
             .filter((bp) => bp.blueprint_type === 'foundation')
             .map((bp) => ({
@@ -121,7 +136,6 @@ export async function POST(request: NextRequest) {
               contentPreview: extractText(bp.content).slice(0, 500),
             }))
 
-          // Build the enriched generation prompt
           enrichedMessage = buildGenerationPrompt(
             {
               title: featureNode.title,
@@ -133,13 +147,60 @@ export async function POST(request: NextRequest) {
             },
             foundations
           )
-
-          // Use more tokens for generation
           maxTokens = 4000
         }
       } else if (!currentBp || currentBp.blueprint_type !== 'feature') {
-        // Not viewing a feature blueprint - return helpful message
         enrichedMessage = message + '\n\n[Note: I am not currently viewing a feature blueprint. Please select a feature blueprint first to generate a draft, or I can help with general blueprint guidance.]'
+      }
+    }
+
+    // ─── Review request ──────────────────────────────────────────
+    if (isReview) {
+      if (!currentBp) {
+        enrichedMessage = message + '\n\n[Note: Please select a blueprint to review. I will analyze it for completeness, consistency, and alignment with project standards.]'
+      } else {
+        const blueprintContent = extractText(currentBp.content)
+
+        if (blueprintContent.length < 50) {
+          enrichedMessage = message + '\n\n[Note: This blueprint has very little content. Please add more content before requesting a review.]'
+        } else {
+          // Load feature requirements if this is a feature blueprint
+          let featureRequirements: string | null = null
+          if (currentBp.blueprint_type === 'feature' && currentBp.feature_node_id) {
+            const { data: reqDocs } = await supabase
+              .from('requirements_documents')
+              .select('content, doc_type')
+              .eq('project_id', projectId)
+              .eq('feature_node_id', currentBp.feature_node_id)
+
+            if (reqDocs && reqDocs.length > 0) {
+              featureRequirements = reqDocs
+                .map((d) => extractText(d.content))
+                .filter(Boolean)
+                .join('\n\n')
+                .slice(0, 3000)
+            }
+          }
+
+          // Foundation summaries for consistency checking
+          const foundationSummaries = (blueprints || [])
+            .filter((bp) => bp.blueprint_type === 'foundation')
+            .map((bp) => ({
+              title: bp.title,
+              preview: extractText(bp.content).slice(0, 500),
+            }))
+
+          enrichedMessage = buildReviewPrompt({
+            blueprintTitle: currentBp.title,
+            blueprintType: currentBp.blueprint_type,
+            blueprintStatus: currentBp.status,
+            blueprintContent: blueprintContent.slice(0, 8000),
+            featureRequirements,
+            foundationSummaries,
+          })
+
+          maxTokens = 4000
+        }
       }
     }
 
@@ -163,6 +224,9 @@ export async function POST(request: NextRequest) {
     }
 
     const client = new Anthropic({ apiKey })
+
+    // Determine response mode
+    const responseMode = isGeneration ? 'generation' : isReview ? 'review' : 'chat'
 
     const encoder = new TextEncoder()
     const stream = new ReadableStream({
@@ -199,7 +263,7 @@ export async function POST(request: NextRequest) {
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
         'Transfer-Encoding': 'chunked',
-        'X-Generation-Mode': isGeneration ? 'true' : 'false',
+        'X-Response-Mode': responseMode,
       },
     })
   } catch (error) {

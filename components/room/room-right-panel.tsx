@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Bot, User, Send, Sparkles, FileDown, RefreshCw } from 'lucide-react'
+import { Bot, User, Send, Sparkles, FileDown, RefreshCw, CheckCircle } from 'lucide-react'
 import { cn, timeAgo } from '@/lib/utils'
+
+type ResponseMode = 'generation' | 'review' | 'chat'
 
 interface Message {
   id: string
@@ -10,6 +12,7 @@ interface Message {
   content: string
   timestamp: string
   isGeneration?: boolean
+  responseMode?: ResponseMode
 }
 
 interface RoomRightPanelProps {
@@ -17,6 +20,7 @@ interface RoomRightPanelProps {
   projectId: string
   selectedBlueprintId: string | null
   onApplyDraft?: (markdownContent: string) => void
+  onStatusChange?: (blueprintId: string, status: 'in_review') => void
 }
 
 const EXAMPLE_PROMPTS = [
@@ -35,11 +39,25 @@ const GENERATION_PATTERNS = [
   /generate\s*(a\s+)?(technical\s+)?spec/i,
 ]
 
+const REVIEW_PATTERNS = [
+  /review\s*(this\s+)?blueprint/i,
+  /check\s*(this\s+)?blueprint/i,
+  /review\s*for\s*completeness/i,
+  /what('s|\s+is)\s+missing/i,
+  /analyze\s*(this\s+)?blueprint/i,
+  /is\s+this\s+blueprint\s+(ready|complete|good)/i,
+  /feedback\s+on\s+(this\s+)?blueprint/i,
+]
+
 function isGenerationRequest(text: string): boolean {
   return GENERATION_PATTERNS.some((p) => p.test(text))
 }
 
-export function RoomRightPanel({ open, projectId, selectedBlueprintId, onApplyDraft }: RoomRightPanelProps) {
+function isReviewRequest(text: string): boolean {
+  return REVIEW_PATTERNS.some((p) => p.test(text))
+}
+
+export function RoomRightPanel({ open, projectId, selectedBlueprintId, onApplyDraft, onStatusChange }: RoomRightPanelProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [isStreaming, setIsStreaming] = useState(false)
   const [historyLoaded, setHistoryLoaded] = useState(false)
@@ -108,6 +126,7 @@ export function RoomRightPanel({ open, projectId, selectedBlueprintId, onApplyDr
     setInput('')
 
     const wasGeneration = isGenerationRequest(text)
+    const wasReview = !wasGeneration && isReviewRequest(text)
 
     const userMessage: Message = {
       id: crypto.randomUUID(),
@@ -140,8 +159,10 @@ export function RoomRightPanel({ open, projectId, selectedBlueprintId, onApplyDr
         throw new Error(data.error || 'Failed to get response')
       }
 
-      // Check if server flagged this as a generation response
-      const isGenResponse = res.headers.get('X-Generation-Mode') === 'true' || wasGeneration
+      // Check response mode from server header
+      const serverMode = res.headers.get('X-Response-Mode') as ResponseMode | null
+      const responseMode: ResponseMode = serverMode || (wasGeneration ? 'generation' : wasReview ? 'review' : 'chat')
+      const isGenResponse = responseMode === 'generation'
 
       const reader = res.body?.getReader()
       const decoder = new TextDecoder()
@@ -150,7 +171,7 @@ export function RoomRightPanel({ open, projectId, selectedBlueprintId, onApplyDr
 
       setMessages((prev) => [
         ...prev,
-        { id: assistantId, role: 'assistant', content: '', timestamp: new Date().toISOString(), isGeneration: isGenResponse },
+        { id: assistantId, role: 'assistant', content: '', timestamp: new Date().toISOString(), isGeneration: isGenResponse, responseMode },
       ])
 
       while (true) {
@@ -172,7 +193,7 @@ export function RoomRightPanel({ open, projectId, selectedBlueprintId, onApplyDr
 
       const finalMessages = [
         ...updatedMessages,
-        { id: assistantId, role: 'assistant' as const, content: assistantContent, timestamp: new Date().toISOString(), isGeneration: isGenResponse },
+        { id: assistantId, role: 'assistant' as const, content: assistantContent, timestamp: new Date().toISOString(), isGeneration: isGenResponse, responseMode },
       ]
       setMessages(finalMessages)
       saveMessages(finalMessages)
@@ -339,6 +360,29 @@ export function RoomRightPanel({ open, projectId, selectedBlueprintId, onApplyDr
                     >
                       <RefreshCw className="w-3.5 h-3.5" />
                       Regenerate
+                    </button>
+                  </div>
+                )}
+
+                {/* Review action buttons */}
+                {!isUser && msg.responseMode === 'review' && msg.content && !isStreaming && selectedBlueprintId && (
+                  <div className="flex gap-2 mt-2 ml-9">
+                    {onStatusChange && (
+                      <button
+                        onClick={() => onStatusChange(selectedBlueprintId, 'in_review')}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-accent-warning/10 text-accent-warning rounded-lg text-xs font-medium hover:bg-accent-warning/20 transition-colors"
+                      >
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        Mark as In Review
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleSend('Review this blueprint again and check if the previous issues have been addressed.')}
+                      disabled={isStreaming}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-bg-tertiary text-text-secondary rounded-lg text-xs font-medium hover:bg-bg-tertiary/80 hover:text-text-primary transition-colors disabled:opacity-50"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      Re-review
                     </button>
                   </div>
                 )}

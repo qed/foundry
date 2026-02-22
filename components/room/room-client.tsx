@@ -205,7 +205,7 @@ export function RoomClient({ projectId, initialStats }: RoomClientProps) {
         />
 
         {/* Right panel: Agent chat */}
-        <RoomRightPanel open={rightPanelOpen} projectId={projectId} selectedBlueprintId={selectedBlueprintId} onApplyDraft={handleApplyDraft} />
+        <RoomRightPanel open={rightPanelOpen} projectId={projectId} selectedBlueprintId={selectedBlueprintId} onApplyDraft={handleApplyDraft} onStatusChange={handleStatusChange} />
       </div>
 
       {/* Create Blueprint Modal */}
