@@ -8,7 +8,7 @@ import { FloorRightPanel } from './floor-right-panel'
 import { CreateWorkOrderModal } from './create-work-order-modal'
 import { WorkOrderDetail } from './work-order-detail'
 import { Spinner } from '@/components/ui/spinner'
-import type { Phase, WorkOrder, WorkOrderStatus } from '@/types/database'
+import type { Phase, WorkOrder, WorkOrderStatus, PhaseStatus } from '@/types/database'
 import type { MemberInfo, FeatureInfo } from './work-order-table'
 
 interface FloorStats {
@@ -35,7 +35,7 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [fetchKey, setFetchKey] = useState(0)
 
-  // Restore view from localStorage
+  // Restore view and phase from localStorage/URL
   useEffect(() => {
     const saved = localStorage.getItem('floor-view')
     if (saved === 'kanban' || saved === 'table') {
@@ -48,6 +48,12 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
     if (urlView === 'kanban' || urlView === 'table') {
       setView(urlView)
     }
+
+    // Restore phase from URL
+    const urlPhase = url.searchParams.get('phase')
+    if (urlPhase) {
+      setSelectedPhaseId(urlPhase)
+    }
   }, [])
 
   // Persist view to localStorage + URL
@@ -56,6 +62,18 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
     localStorage.setItem('floor-view', newView)
     const url = new URL(window.location.href)
     url.searchParams.set('view', newView)
+    window.history.replaceState({}, '', url.toString())
+  }, [])
+
+  // Persist phase selection to URL
+  const handleSelectPhase = useCallback((phaseId: string | null) => {
+    setSelectedPhaseId(phaseId)
+    const url = new URL(window.location.href)
+    if (phaseId) {
+      url.searchParams.set('phase', phaseId)
+    } else {
+      url.searchParams.delete('phase')
+    }
     window.history.replaceState({}, '', url.toString())
   }, [])
 
@@ -140,6 +158,47 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
 
   const doneCount = workOrders.filter((wo) => wo.status === 'done').length
 
+  // Phase CRUD operations
+  const handleCreatePhase = useCallback(async (name: string, description: string | null) => {
+    const res = await fetch(`/api/projects/${projectId}/phases`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, description }),
+    })
+    if (!res.ok) throw new Error('Failed to create phase')
+    setFetchKey((k) => k + 1)
+  }, [projectId])
+
+  const handleRenamePhase = useCallback(async (phaseId: string, name: string) => {
+    // Optimistic update
+    setPhases((prev) => prev.map((p) => (p.id === phaseId ? { ...p, name } : p)))
+    const res = await fetch(`/api/projects/${projectId}/phases/${phaseId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    })
+    if (!res.ok) setFetchKey((k) => k + 1)
+  }, [projectId])
+
+  const handleDeletePhase = useCallback(async (phaseId: string) => {
+    const res = await fetch(`/api/projects/${projectId}/phases/${phaseId}`, {
+      method: 'DELETE',
+    })
+    if (!res.ok) throw new Error('Failed to delete phase')
+    setFetchKey((k) => k + 1)
+  }, [projectId])
+
+  const handleChangePhaseStatus = useCallback(async (phaseId: string, status: PhaseStatus) => {
+    // Optimistic update
+    setPhases((prev) => prev.map((p) => (p.id === phaseId ? { ...p, status } : p)))
+    const res = await fetch(`/api/projects/${projectId}/phases/${phaseId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    })
+    if (!res.ok) setFetchKey((k) => k + 1)
+  }, [projectId])
+
   // Handle drag-and-drop status change from kanban
   const handleStatusChange = useCallback(async (workOrderId: string, newStatus: WorkOrderStatus) => {
     // Optimistic update in local state
@@ -182,7 +241,11 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
         phases={phases}
         workOrders={workOrders}
         selectedPhaseId={selectedPhaseId}
-        onSelectPhase={setSelectedPhaseId}
+        onSelectPhase={handleSelectPhase}
+        onCreatePhase={handleCreatePhase}
+        onRenamePhase={handleRenamePhase}
+        onDeletePhase={handleDeletePhase}
+        onChangePhaseStatus={handleChangePhaseStatus}
       />
 
       {/* Main content + agent panel */}
