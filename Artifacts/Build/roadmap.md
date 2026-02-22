@@ -383,7 +383,7 @@ After this initial update, stay in this session. I will come back to you after e
 | 068 | Work Order Assignment | `done` | — | 010, 061, 064, 065, 067 | Floor | `components/floor/` |
 | 069 | Work Order Phases | `done` | — | 061, 062, 065 | Floor | `components/floor/` |
 | 070 | Priority & Sequencing | `done` | — | 061, 065, 067, 069 | Floor | `components/floor/` |
-| 071 | Progress Tracking & Rollup | `ready` | — | 026, 061, 069 | Floor ⚠️ | `components/floor/` |
+| 071 | Progress Tracking & Rollup | `done` | — | 026, 061, 069 | Floor | `components/floor/` |
 | 072 | Work Order Search & Filter | `ready` | — | 061, 062, 067, 069 | Floor | `components/floor/` |
 | 073 | Assembly Floor Agent Infra | `done` | — | 002, 061, 062 | Floor | `components/floor/`, `app/api/floor/agent/` |
 | 074 | Agent: WO Extraction | `ready` | — | 046, 061, 073 | Floor ⚠️ | `components/floor/` |
@@ -391,7 +391,7 @@ After this initial update, stay in this session. I will come back to you after e
 | 076 | Implementation Plans | `ready` | — | 061, 064, 073 | Floor | `components/floor/` |
 | 077 | Bulk Operations | `ready` | — | 061, 065, 067 | Floor | `components/floor/` |
 | 078 | Floor Comments | `ready` | — | 010, 061, 064 | Floor | `components/floor/` |
-| 079 | Leader Progress Dashboard | `blocked` | — | 009, 061, 069, 071 | Floor | `components/floor/` |
+| 079 | Leader Progress Dashboard | `ready` | — | 009, 061, 069, 071 | Floor | `components/floor/` |
 | 080 | MCP Connection Schema | `ready` | — | 010, 061 | Floor | `supabase/migrations/`, `app/api/floor/mcp/` |
 
 ### Section 6: The Insights Lab MVP (081–095)
@@ -455,7 +455,7 @@ After this initial update, stay in this session. I will come back to you after e
 | 125 | Cross-Document Suggestions | `blocked` | — | 037, 046, 057, 124 | Room ⚠️ | `components/room/` |
 | 126 | Org-Level Blueprint Templates | `blocked` | — | 053, 113 | Room ⚠️ | `components/room/`, `components/admin/` |
 | 127 | Extraction Strategy Config | `ready` | — | 073, 113 | Floor ⚠️ | `components/floor/`, `components/admin/` |
-| 128 | Sprint/Phase Burndown | `blocked` | — | 061, 071 | Floor | `components/floor/` |
+| 128 | Sprint/Phase Burndown | `ready` | — | 061, 071 | Floor | `components/floor/` |
 | 129 | MCP Implementation | `blocked` | — | 080 | Floor | `lib/mcp/`, `app/api/floor/mcp/` |
 | 130 | Work Order Sync Alerts | `blocked` | — | 046, 061, 124 | Floor ⚠️ | `components/floor/` |
 | 131 | Slack Integration | `ready` | — | 081 | Lab | `lib/integrations/`, `app/api/lab/` |
@@ -703,11 +703,11 @@ These phases require work from **multiple module tracks** to be complete before 
 | The Hall (011–025) | 15 | 15 | 0 | 0 | 0 |
 | Pattern Shop (026–045) | 20 | 12 | 0 | 6 | 2 |
 | Control Room (046–060) | 15 | 5 | 0 | 6 | 4 |
-| Assembly Floor (061–080) | 20 | 10 | 0 | 8 | 2 |
+| Assembly Floor (061–080) | 20 | 11 | 0 | 8 | 1 |
 | Insights Lab (081–095) | 15 | 4 | 0 | 5 | 6 |
 | Cross-Cutting (096–120) | 25 | 10 | 0 | 6 | 9 |
-| Advanced (121–135) | 15 | 0 | 0 | 6 | 9 |
+| Advanced (121–135) | 15 | 0 | 0 | 7 | 8 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **86** | **0** | **29** | **35** |
+| **TOTAL** | **150** | **87** | **0** | **30** | **33** |
 
-**Currently ready to start**: 060, 071, 072, 074, 076, 077, 078, 080, 082, 086, 088, 089, 090, 102, 106, 110, 118, 120, 121, 122, 123, 124, 127, 131, 132
+**Currently ready to start**: 060, 072, 074, 076, 077, 078, 079, 080, 082, 086, 088, 089, 090, 102, 106, 110, 118, 120, 121, 122, 123, 124, 127, 128, 131, 132
