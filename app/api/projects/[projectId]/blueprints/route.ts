@@ -80,7 +80,7 @@ export async function POST(
     const user = await requireAuth()
     const { projectId } = await params
     const body = await request.json()
-    const { blueprint_type, feature_node_id, title, diagram_type } = body
+    const { blueprint_type, feature_node_id, title, diagram_type, template_content } = body
 
     if (!blueprint_type || !VALID_TYPES.includes(blueprint_type)) {
       return Response.json(
@@ -114,7 +114,7 @@ export async function POST(
         return Response.json({ error: 'Title is required for foundation blueprints' }, { status: 400 })
       }
       blueprintTitle = title.trim()
-      content = buildFoundationBlueprintTemplate()
+      content = template_content || buildFoundationBlueprintTemplate()
     } else if (blueprint_type === 'system_diagram') {
       if (!title?.trim()) {
         return Response.json({ error: 'Title is required for system diagram blueprints' }, { status: 400 })
@@ -169,7 +169,7 @@ export async function POST(
 
       // Auto-populate title from feature name
       blueprintTitle = title?.trim() || featureNode.title
-      content = buildFeatureBlueprintTemplate()
+      content = template_content || buildFeatureBlueprintTemplate()
     }
 
     const { data: blueprint, error: insertErr } = await supabase
