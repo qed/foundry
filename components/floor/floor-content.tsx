@@ -16,6 +16,7 @@ interface FloorContentProps {
   onSelectionChange: (ids: Set<string>) => void
   onWorkOrderClick?: (workOrderId: string) => void
   onStatusChange?: (workOrderId: string, newStatus: WorkOrderStatus) => void
+  onAssignmentChange?: (workOrderId: string, assigneeId: string | null) => void
 }
 
 export function FloorContent({
@@ -29,6 +30,7 @@ export function FloorContent({
   onSelectionChange,
   onWorkOrderClick,
   onStatusChange,
+  onAssignmentChange,
 }: FloorContentProps) {
   const filtered = selectedPhaseId
     ? workOrders.filter((wo) => wo.phase_id === selectedPhaseId)
@@ -42,6 +44,7 @@ export function FloorContent({
         features={features}
         onWorkOrderClick={onWorkOrderClick}
         onStatusChange={onStatusChange}
+        onAssignmentChange={onAssignmentChange}
       />
     )
   }
@@ -55,6 +58,7 @@ export function FloorContent({
       selectedIds={selectedIds}
       onSelectionChange={onSelectionChange}
       onWorkOrderClick={onWorkOrderClick}
+      onAssignmentChange={onAssignmentChange}
     />
   )
 }

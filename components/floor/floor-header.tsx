@@ -7,6 +7,7 @@ import {
   Plus,
   PanelRightClose,
   PanelRightOpen,
+  UserCheck,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -18,6 +19,9 @@ interface FloorHeaderProps {
   rightPanelOpen: boolean
   onToggleRightPanel: () => void
   onNewWorkOrder: () => void
+  myWorkOrdersActive?: boolean
+  onToggleMyWorkOrders?: () => void
+  myWorkOrdersCount?: number
 }
 
 export function FloorHeader({
@@ -28,6 +32,9 @@ export function FloorHeader({
   rightPanelOpen,
   onToggleRightPanel,
   onNewWorkOrder,
+  myWorkOrdersActive,
+  onToggleMyWorkOrders,
+  myWorkOrdersCount,
 }: FloorHeaderProps) {
   const completionPercent =
     totalWorkOrders > 0
@@ -74,6 +81,28 @@ export function FloorHeader({
 
       {/* Spacer */}
       <div className="flex-1" />
+
+      {/* My Work Orders filter */}
+      {onToggleMyWorkOrders && (
+        <button
+          onClick={onToggleMyWorkOrders}
+          className={cn(
+            'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border',
+            myWorkOrdersActive
+              ? 'bg-accent-cyan/10 text-accent-cyan border-accent-cyan/30'
+              : 'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary border-border-default'
+          )}
+          title="Filter to my work orders"
+        >
+          <UserCheck className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">My Work</span>
+          {myWorkOrdersActive && myWorkOrdersCount !== undefined && (
+            <span className="text-[10px] bg-accent-cyan/20 text-accent-cyan rounded-full px-1.5 py-0.5 ml-0.5">
+              {myWorkOrdersCount}
+            </span>
+          )}
+        </button>
+      )}
 
       {/* View toggle */}
       <div className="flex items-center rounded-lg border border-border-default overflow-hidden">

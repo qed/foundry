@@ -15,6 +15,7 @@ export async function GET(
     const { projectId } = await params
     const { searchParams } = new URL(request.url)
     const phaseId = searchParams.get('phaseId')
+    const assignedTo = searchParams.get('assigned_to')
     const supabase = createServiceClient()
 
     // Verify project membership
@@ -39,6 +40,14 @@ export async function GET(
 
     if (phaseId) {
       query = query.eq('phase_id', phaseId)
+    }
+
+    if (assignedTo) {
+      if (assignedTo === 'unassigned') {
+        query = query.is('assignee_id', null)
+      } else {
+        query = query.eq('assignee_id', assignedTo)
+      }
     }
 
     const { data: workOrders, error } = await query.order('position', { ascending: true })

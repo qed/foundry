@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { FloorHeader } from './floor-header'
 import { PhaseNavigation } from './phase-navigation'
 import { FloorContent } from './floor-content'
@@ -8,6 +8,7 @@ import { FloorRightPanel } from './floor-right-panel'
 import { CreateWorkOrderModal } from './create-work-order-modal'
 import { WorkOrderDetail } from './work-order-detail'
 import { Spinner } from '@/components/ui/spinner'
+import { useAuth } from '@/lib/auth/context'
 import type { Phase, WorkOrder, WorkOrderStatus, PhaseStatus } from '@/types/database'
 import type { MemberInfo, FeatureInfo } from './work-order-table'
 
@@ -22,11 +23,13 @@ interface FloorClientProps {
 }
 
 export function FloorClient({ projectId, initialStats }: FloorClientProps) {
+  const { user } = useAuth()
   const [rightPanelOpen, setRightPanelOpen] = useState(false)
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [selectedWorkOrderId, setSelectedWorkOrderId] = useState<string | null>(null)
   const [view, setView] = useState<'kanban' | 'table'>('kanban')
   const [selectedPhaseId, setSelectedPhaseId] = useState<string | null>(null)
+  const [myWorkOrdersFilter, setMyWorkOrdersFilter] = useState(false)
   const [phases, setPhases] = useState<Phase[]>([])
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
   const [members, setMembers] = useState<MemberInfo[]>([])
@@ -53,6 +56,11 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
     const urlPhase = url.searchParams.get('phase')
     if (urlPhase) {
       setSelectedPhaseId(urlPhase)
+    }
+
+    // Restore "My Work Orders" filter from URL
+    if (url.searchParams.get('filter') === 'my-work-orders') {
+      setMyWorkOrdersFilter(true)
     }
   }, [])
 
@@ -158,6 +166,54 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
 
   const doneCount = workOrders.filter((wo) => wo.status === 'done').length
 
+  // "My Work Orders" filter
+  const handleToggleMyWorkOrders = useCallback(() => {
+    setMyWorkOrdersFilter((prev) => {
+      const next = !prev
+      const url = new URL(window.location.href)
+      if (next) {
+        url.searchParams.set('filter', 'my-work-orders')
+      } else {
+        url.searchParams.delete('filter')
+      }
+      window.history.replaceState({}, '', url.toString())
+      return next
+    })
+  }, [])
+
+  // Apply "My Work Orders" filter to work orders
+  const filteredWorkOrders = useMemo(() => {
+    if (!myWorkOrdersFilter || !user) return workOrders
+    return workOrders.filter((wo) => wo.assignee_id === user.id)
+  }, [workOrders, myWorkOrdersFilter, user])
+
+  const myWorkOrdersCount = useMemo(() => {
+    if (!user) return 0
+    return workOrders.filter((wo) => wo.assignee_id === user.id).length
+  }, [workOrders, user])
+
+  // Handle assignment change from inline selectors
+  const handleAssignmentChange = useCallback(async (workOrderId: string, assigneeId: string | null) => {
+    // Optimistic update
+    setWorkOrders((prev) =>
+      prev.map((wo) => (wo.id === workOrderId ? { ...wo, assignee_id: assigneeId } : wo))
+    )
+
+    try {
+      const res = await fetch(`/api/projects/${projectId}/work-orders/${workOrderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assignee_id: assigneeId }),
+      })
+
+      if (!res.ok) {
+        setFetchKey((k) => k + 1)
+      }
+    } catch {
+      setFetchKey((k) => k + 1)
+    }
+  }, [projectId])
+
   // Phase CRUD operations
   const handleCreatePhase = useCallback(async (name: string, description: string | null) => {
     const res = await fetch(`/api/projects/${projectId}/phases`, {
@@ -234,6 +290,9 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
         rightPanelOpen={rightPanelOpen}
         onToggleRightPanel={() => setRightPanelOpen((prev) => !prev)}
         onNewWorkOrder={() => setCreateModalOpen(true)}
+        myWorkOrdersActive={myWorkOrdersFilter}
+        onToggleMyWorkOrders={handleToggleMyWorkOrders}
+        myWorkOrdersCount={myWorkOrdersCount}
       />
 
       {/* Phase navigation */}
@@ -257,7 +316,7 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
         ) : (
           <FloorContent
             view={view}
-            workOrders={workOrders}
+            workOrders={filteredWorkOrders}
             phases={phases}
             members={members}
             features={features}
@@ -266,6 +325,7 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
             onSelectionChange={setTableSelectedIds}
             onWorkOrderClick={(id) => setSelectedWorkOrderId(id)}
             onStatusChange={handleStatusChange}
+            onAssignmentChange={handleAssignmentChange}
           />
         )}
 

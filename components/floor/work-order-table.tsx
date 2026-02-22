@@ -12,6 +12,7 @@ import {
 import { cn } from '@/lib/utils'
 import { timeAgo } from '@/lib/utils'
 import { Avatar } from '@/components/ui/avatar'
+import { AssigneeSelector } from './assignee-selector'
 import type { WorkOrder, Phase } from '@/types/database'
 
 export interface MemberInfo {
@@ -37,6 +38,7 @@ interface WorkOrderTableProps {
   selectedIds: Set<string>
   onSelectionChange: (ids: Set<string>) => void
   onWorkOrderClick?: (workOrderId: string) => void
+  onAssignmentChange?: (workOrderId: string, assigneeId: string | null) => void
 }
 
 const STATUS_ORDER = ['backlog', 'ready', 'in_progress', 'in_review', 'done']
@@ -85,11 +87,13 @@ export function WorkOrderTable({
   selectedIds,
   onSelectionChange,
   onWorkOrderClick,
+  onAssignmentChange,
 }: WorkOrderTableProps) {
   const [sortField, setSortField] = useState<SortField | null>(null)
   const [sortDir, setSortDir] = useState<SortDir>(null)
   const [groupBy, setGroupBy] = useState<GroupBy>('none')
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
+  const [assigneeOpenFor, setAssigneeOpenFor] = useState<string | null>(null)
 
   // Lookup maps
   const phaseMap = useMemo(() => {
@@ -302,6 +306,10 @@ export function WorkOrderTable({
                   phaseMap={phaseMap}
                   memberMap={memberMap}
                   featureMap={featureMap}
+                  members={members}
+                  assigneeOpenFor={assigneeOpenFor}
+                  onAssigneeOpen={setAssigneeOpenFor}
+                  onAssignmentChange={onAssignmentChange}
                 />
               )
             })}
@@ -359,6 +367,10 @@ function GroupRows({
   phaseMap,
   memberMap,
   featureMap,
+  members,
+  assigneeOpenFor,
+  onAssigneeOpen,
+  onAssignmentChange,
 }: {
   groupKey: string
   label: string
@@ -372,6 +384,10 @@ function GroupRows({
   phaseMap: Map<string, string>
   memberMap: Map<string, MemberInfo>
   featureMap: Map<string, string>
+  members: MemberInfo[]
+  assigneeOpenFor: string | null
+  onAssigneeOpen: (id: string | null) => void
+  onAssignmentChange?: (workOrderId: string, assigneeId: string | null) => void
 }) {
   return (
     <>
@@ -432,19 +448,32 @@ function GroupRows({
                   <span className="text-xs text-text-secondary capitalize">{wo.priority}</span>
                 </span>
               </td>
-              <td className="px-3 py-2.5">
-                {member ? (
-                  <span className="inline-flex items-center gap-1.5">
-                    <Avatar
-                      src={member.avatar_url || undefined}
-                      alt={member.display_name}
-                      initials={getInitials(member.display_name)}
-                      size="sm"
-                    />
-                    <span className="text-xs text-text-secondary truncate">{member.display_name}</span>
-                  </span>
-                ) : (
-                  <span className="text-xs text-text-tertiary">Unassigned</span>
+              <td className="px-3 py-2.5 relative" onClick={(e) => e.stopPropagation()}>
+                <button
+                  onClick={() => onAssigneeOpen(assigneeOpenFor === wo.id ? null : wo.id)}
+                  className="inline-flex items-center gap-1.5 rounded-md px-1 -mx-1 py-0.5 hover:bg-bg-tertiary transition-colors"
+                >
+                  {member ? (
+                    <>
+                      <Avatar
+                        src={member.avatar_url || undefined}
+                        alt={member.display_name}
+                        initials={getInitials(member.display_name)}
+                        size="sm"
+                      />
+                      <span className="text-xs text-text-secondary truncate">{member.display_name}</span>
+                    </>
+                  ) : (
+                    <span className="text-xs text-text-tertiary hover:text-accent-cyan">+ Assign</span>
+                  )}
+                </button>
+                {assigneeOpenFor === wo.id && onAssignmentChange && (
+                  <AssigneeSelector
+                    members={members}
+                    currentAssigneeId={wo.assignee_id}
+                    onSelect={(assigneeId) => onAssignmentChange(wo.id, assigneeId)}
+                    onClose={() => onAssigneeOpen(null)}
+                  />
                 )}
               </td>
               <td className="px-3 py-2.5 hidden lg:table-cell">

@@ -16,6 +16,7 @@ import { useDraggable } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
 import { cn } from '@/lib/utils'
 import { Avatar } from '@/components/ui/avatar'
+import { AssigneeSelector } from './assignee-selector'
 import type { WorkOrder, WorkOrderStatus } from '@/types/database'
 import type { MemberInfo, FeatureInfo } from './work-order-table'
 
@@ -25,6 +26,7 @@ interface KanbanBoardProps {
   features?: FeatureInfo[]
   onWorkOrderClick?: (id: string) => void
   onStatusChange?: (workOrderId: string, newStatus: WorkOrderStatus) => void
+  onAssignmentChange?: (workOrderId: string, assigneeId: string | null) => void
 }
 
 const COLUMNS: { key: WorkOrderStatus; label: string; headerColor: string; dotBg: string }[] = [
@@ -61,9 +63,11 @@ export function KanbanBoard({
   features = [],
   onWorkOrderClick,
   onStatusChange,
+  onAssignmentChange,
 }: KanbanBoardProps) {
   const [activeId, setActiveId] = useState<string | null>(null)
   const [optimisticMoves, setOptimisticMoves] = useState<Record<string, WorkOrderStatus>>({})
+  const [assigneeOpenFor, setAssigneeOpenFor] = useState<string | null>(null)
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -146,7 +150,12 @@ export function KanbanBoard({
             isDragging={activeId !== null}
             memberMap={memberMap}
             featureMap={featureMap}
+            members={members}
             onCardClick={onWorkOrderClick}
+            assigneeOpenFor={assigneeOpenFor}
+            onAssigneeToggle={(id) => setAssigneeOpenFor((prev) => prev === id ? null : id)}
+            onAssigneeClose={() => setAssigneeOpenFor(null)}
+            onAssignmentChange={onAssignmentChange}
           />
         ))}
       </div>
@@ -173,14 +182,24 @@ function KanbanColumn({
   isDragging,
   memberMap,
   featureMap,
+  members,
   onCardClick,
+  assigneeOpenFor,
+  onAssigneeToggle,
+  onAssigneeClose,
+  onAssignmentChange,
 }: {
   column: (typeof COLUMNS)[number]
   workOrders: WorkOrder[]
   isDragging: boolean
   memberMap: Map<string, MemberInfo>
   featureMap: Map<string, FeatureInfo>
+  members: MemberInfo[]
   onCardClick?: (id: string) => void
+  assigneeOpenFor: string | null
+  onAssigneeToggle: (id: string) => void
+  onAssigneeClose: () => void
+  onAssignmentChange?: (workOrderId: string, assigneeId: string | null) => void
 }) {
   const { isOver, setNodeRef } = useDroppable({ id: column.key })
 
@@ -227,7 +246,12 @@ function KanbanColumn({
                 workOrder={wo}
                 memberMap={memberMap}
                 featureMap={featureMap}
+                members={members}
                 onClick={() => onCardClick?.(wo.id)}
+                assigneeOpen={assigneeOpenFor === wo.id}
+                onAssigneeToggle={() => onAssigneeToggle(wo.id)}
+                onAssigneeClose={onAssigneeClose}
+                onAssignmentChange={onAssignmentChange}
               />
             ))}
           </div>
@@ -243,12 +267,22 @@ function DraggableCard({
   workOrder,
   memberMap,
   featureMap,
+  members,
   onClick,
+  assigneeOpen,
+  onAssigneeToggle,
+  onAssigneeClose,
+  onAssignmentChange,
 }: {
   workOrder: WorkOrder
   memberMap: Map<string, MemberInfo>
   featureMap: Map<string, FeatureInfo>
+  members: MemberInfo[]
   onClick: () => void
+  assigneeOpen: boolean
+  onAssigneeToggle: () => void
+  onAssigneeClose: () => void
+  onAssignmentChange?: (workOrderId: string, assigneeId: string | null) => void
 }) {
   const {
     attributes,
@@ -284,6 +318,11 @@ function DraggableCard({
         workOrder={workOrder}
         memberMap={memberMap}
         featureMap={featureMap}
+        members={members}
+        assigneeOpen={assigneeOpen}
+        onAssigneeToggle={onAssigneeToggle}
+        onAssigneeClose={onAssigneeClose}
+        onAssignmentChange={onAssignmentChange}
       />
     </div>
   )
@@ -296,11 +335,21 @@ function CardContent({
   isDragOverlay,
   memberMap,
   featureMap,
+  members,
+  assigneeOpen,
+  onAssigneeToggle,
+  onAssigneeClose,
+  onAssignmentChange,
 }: {
   workOrder: WorkOrder
   isDragOverlay?: boolean
   memberMap: Map<string, MemberInfo>
   featureMap: Map<string, FeatureInfo>
+  members?: MemberInfo[]
+  assigneeOpen?: boolean
+  onAssigneeToggle?: () => void
+  onAssigneeClose?: () => void
+  onAssignmentChange?: (workOrderId: string, assigneeId: string | null) => void
 }) {
   const acLines = workOrder.acceptance_criteria
     ? workOrder.acceptance_criteria
@@ -375,24 +424,38 @@ function CardContent({
               {acLines} AC
             </span>
           )}
-          {assignee ? (
-            <div title={assignee.display_name}>
-              <Avatar
-                src={assignee.avatar_url || undefined}
-                alt={assignee.display_name}
-                initials={initials}
-                size="sm"
-                className="!w-5 !h-5 !text-[8px]"
+          <div className="relative">
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onAssigneeToggle?.()
+              }}
+              className="rounded-full hover:ring-2 hover:ring-accent-cyan/40 transition-all"
+              title={assignee ? assignee.display_name : 'Assign member'}
+            >
+              {assignee ? (
+                <Avatar
+                  src={assignee.avatar_url || undefined}
+                  alt={assignee.display_name}
+                  initials={initials}
+                  size="sm"
+                  className="!w-5 !h-5 !text-[8px]"
+                />
+              ) : (
+                <span className="flex items-center justify-center w-5 h-5 rounded-full border border-dashed border-text-tertiary text-[10px] text-text-tertiary hover:border-accent-cyan hover:text-accent-cyan transition-colors">
+                  +
+                </span>
+              )}
+            </button>
+            {assigneeOpen && members && onAssignmentChange && (
+              <AssigneeSelector
+                members={members}
+                currentAssigneeId={workOrder.assignee_id}
+                onSelect={(assigneeId) => onAssignmentChange(workOrder.id, assigneeId)}
+                onClose={() => onAssigneeClose?.()}
               />
-            </div>
-          ) : workOrder.assignee_id ? (
-            <Avatar
-              alt="Assignee"
-              initials="?"
-              size="sm"
-              className="!w-5 !h-5 !text-[8px]"
-            />
-          ) : null}
+            )}
+          </div>
         </div>
       </div>
     </div>
