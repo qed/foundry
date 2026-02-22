@@ -3,6 +3,7 @@ import { requireAuth } from '@/lib/auth/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { handleAuthError } from '@/lib/auth/errors'
 import { buildFeatureBlueprintTemplate } from '@/lib/blueprints/feature-template'
+import { buildFoundationBlueprintTemplate } from '@/lib/blueprints/foundation-template'
 import type { BlueprintType } from '@/types/database'
 
 const VALID_TYPES: BlueprintType[] = ['foundation', 'system_diagram', 'feature']
@@ -104,7 +105,13 @@ export async function POST(
     let blueprintTitle = title?.trim() || 'Untitled Blueprint'
     let content = {}
 
-    if (blueprint_type === 'feature') {
+    if (blueprint_type === 'foundation') {
+      if (!title?.trim()) {
+        return Response.json({ error: 'Title is required for foundation blueprints' }, { status: 400 })
+      }
+      blueprintTitle = title.trim()
+      content = buildFoundationBlueprintTemplate()
+    } else if (blueprint_type === 'feature') {
       if (!feature_node_id) {
         return Response.json(
           { error: 'feature_node_id is required for feature blueprints' },

@@ -29,6 +29,7 @@ interface RoomLeftPanelProps {
   selectedBlueprintId: string | null
   onSelectBlueprint: (id: string | null) => void
   onCreateFeatureBlueprint: (featureNodeId: string) => void
+  onNewBlueprint: () => void
 }
 
 const TYPE_TABS: { key: BlueprintType | 'all'; label: string }[] = [
@@ -59,6 +60,7 @@ export function RoomLeftPanel({
   selectedBlueprintId,
   onSelectBlueprint,
   onCreateFeatureBlueprint,
+  onNewBlueprint,
 }: RoomLeftPanelProps) {
   const [search, setSearch] = useState('')
   const [activeTab, setActiveTab] = useState<BlueprintType | 'all'>('all')
@@ -254,9 +256,8 @@ export function RoomLeftPanel({
         {/* Footer: New Blueprint */}
         <div className="p-3 border-t border-border-default">
           <button
-            disabled
-            className="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-accent-cyan/10 text-accent-cyan rounded-lg text-xs font-medium opacity-50 cursor-not-allowed"
-            title="Create blueprint (Phase 048/050)"
+            onClick={onNewBlueprint}
+            className="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-accent-cyan/10 text-accent-cyan rounded-lg text-xs font-medium hover:bg-accent-cyan/20 transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />
             New Blueprint
