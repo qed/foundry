@@ -30,6 +30,7 @@ interface TreeNodeRowProps {
   ) => void
   onTitleSave: (nodeId: string, title: string) => void
   onTitleCancel: (nodeId: string, hasTitle: boolean) => void
+  onDoubleClick?: (nodeId: string) => void
 }
 
 const LEVEL_ICONS = {
@@ -67,6 +68,7 @@ export const TreeNodeRow = memo(function TreeNodeRow({
   onContextMenu,
   onTitleSave,
   onTitleCancel,
+  onDoubleClick,
 }: TreeNodeRowProps) {
   const isExpanded = expandedIds.has(node.id)
   const isSelected = selectedNodeId === node.id
@@ -175,6 +177,10 @@ export const TreeNodeRow = memo(function TreeNodeRow({
                 ? 'text-text-primary font-semibold'
                 : 'text-text-secondary group-hover:text-text-primary'
             )}
+            onDoubleClick={(e) => {
+              e.stopPropagation()
+              onDoubleClick?.(node.id)
+            }}
           >
             {node.title}
           </span>
@@ -212,6 +218,7 @@ export const TreeNodeRow = memo(function TreeNodeRow({
             onContextMenu={onContextMenu}
             onTitleSave={onTitleSave}
             onTitleCancel={onTitleCancel}
+            onDoubleClick={onDoubleClick}
           />
         ))}
     </>

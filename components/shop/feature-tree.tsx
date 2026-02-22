@@ -7,6 +7,9 @@ import { Spinner } from '@/components/ui/spinner'
 import { useToast } from '@/components/ui/toast-container'
 import { TreeNodeRow } from './tree-node-row'
 import { NodeContextMenu } from './node-context-menu'
+import { DeleteNodeDialog } from './delete-node-dialog'
+import { ChangeLevelDialog } from './change-level-dialog'
+import type { FeatureLevel } from '@/types/database'
 
 export interface TreeNode {
   id: string
@@ -37,11 +40,42 @@ interface ContextMenuState {
   position: { x: number; y: number }
 }
 
+interface DeleteDialogState {
+  nodeId: string
+  nodeTitle: string
+  childCount: number
+}
+
+interface ChangeLevelState {
+  nodeId: string
+  nodeTitle: string
+  currentLevel: FeatureLevel
+  hasChildren: boolean
+}
+
 const CHILD_LEVELS: Record<string, TreeNode['level'] | null> = {
   epic: 'feature',
   feature: 'sub_feature',
   sub_feature: 'task',
   task: null,
+}
+
+function countAllChildren(node: TreeNode): number {
+  let count = node.children.length
+  for (const child of node.children) {
+    count += countAllChildren(child)
+  }
+  return count
+}
+
+// Find node in tree
+function findNode(nodes: TreeNode[], nodeId: string): TreeNode | null {
+  for (const node of nodes) {
+    if (node.id === nodeId) return node
+    const found = findNode(node.children, nodeId)
+    if (found) return found
+  }
+  return null
 }
 
 export function FeatureTree({
@@ -56,6 +90,10 @@ export function FeatureTree({
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
   const [editingNodeId, setEditingNodeId] = useState<string | null>(null)
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
+  const [deleteDialog, setDeleteDialog] = useState<DeleteDialogState | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [changeLevelDialog, setChangeLevelDialog] = useState<ChangeLevelState | null>(null)
+  const [isChangingLevel, setIsChangingLevel] = useState(false)
   const { addToast } = useToast()
 
   const fetchTree = useCallback(async () => {
@@ -155,6 +193,11 @@ export function FeatureTree({
     })
   }, [])
 
+  // Enter edit mode (from context menu or double-click)
+  const handleStartEdit = useCallback((nodeId: string) => {
+    setEditingNodeId(nodeId)
+  }, [])
+
   // Save inline title edit
   const handleTitleSave = useCallback(async (nodeId: string, title: string) => {
     setEditingNodeId(null)
@@ -164,6 +207,8 @@ export function FeatureTree({
       try {
         await fetch(`/api/projects/${projectId}/feature-nodes/${nodeId}`, {
           method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ deleteOption: 'delete_only' }),
         })
       } catch {
         // Ignore delete errors for empty nodes
@@ -196,6 +241,8 @@ export function FeatureTree({
       try {
         await fetch(`/api/projects/${projectId}/feature-nodes/${nodeId}`, {
           method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ deleteOption: 'delete_only' }),
         })
       } catch {
         // Ignore
@@ -203,6 +250,102 @@ export function FeatureTree({
       await fetchTree()
     }
   }, [projectId, fetchTree])
+
+  // Open delete dialog
+  const handleOpenDeleteDialog = useCallback((nodeId: string) => {
+    const node = findNode(tree, nodeId)
+    if (!node) return
+    const descendants = countAllChildren(node)
+    setDeleteDialog({
+      nodeId,
+      nodeTitle: node.title,
+      childCount: descendants,
+    })
+  }, [tree])
+
+  // Confirm delete
+  const handleConfirmDelete = useCallback(async (option: 'delete_only' | 'delete_subtree' | 'reparent_children') => {
+    if (!deleteDialog) return
+    setIsDeleting(true)
+
+    try {
+      const res = await fetch(`/api/projects/${projectId}/feature-nodes/${deleteDialog.nodeId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deleteOption: option }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        addToast(data.error || 'Failed to delete node', 'error')
+        return
+      }
+
+      setDeleteDialog(null)
+      await fetchTree()
+
+      // Undo toast with 10-second window
+      const deletedId = deleteDialog.nodeId
+      addToast('Node deleted', 'info', 10000, {
+        label: 'Undo',
+        onClick: async () => {
+          try {
+            await fetch(`/api/projects/${projectId}/feature-nodes/${deletedId}/restore`, {
+              method: 'POST',
+            })
+            await fetchTree()
+            addToast('Node restored', 'success')
+          } catch {
+            addToast('Failed to restore node', 'error')
+          }
+        },
+      })
+    } catch {
+      addToast('Failed to delete node', 'error')
+    } finally {
+      setIsDeleting(false)
+    }
+  }, [deleteDialog, projectId, fetchTree, addToast])
+
+  // Open change level dialog
+  const handleOpenChangeLevelDialog = useCallback((nodeId: string) => {
+    const node = findNode(tree, nodeId)
+    if (!node) return
+    setChangeLevelDialog({
+      nodeId,
+      nodeTitle: node.title,
+      currentLevel: node.level,
+      hasChildren: node.children.length > 0,
+    })
+  }, [tree])
+
+  // Confirm level change
+  const handleConfirmLevelChange = useCallback(async (newLevel: FeatureLevel) => {
+    if (!changeLevelDialog) return
+    setIsChangingLevel(true)
+
+    try {
+      const res = await fetch(`/api/projects/${projectId}/feature-nodes/${changeLevelDialog.nodeId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ level: newLevel }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        addToast(data.error || 'Failed to change level', 'error')
+        return
+      }
+
+      setChangeLevelDialog(null)
+      await fetchTree()
+      addToast('Node level changed', 'success')
+    } catch {
+      addToast('Failed to change level', 'error')
+    } finally {
+      setIsChangingLevel(false)
+    }
+  }, [changeLevelDialog, projectId, fetchTree, addToast])
 
   if (isLoading) {
     return (
@@ -260,6 +403,7 @@ export function FeatureTree({
           onContextMenu={handleContextMenu}
           onTitleSave={handleTitleSave}
           onTitleCancel={handleTitleCancel}
+          onDoubleClick={handleStartEdit}
         />
       ))}
 
@@ -279,9 +423,33 @@ export function FeatureTree({
           canAddChild={!!CHILD_LEVELS[contextMenu.nodeLevel]}
           onAddChild={() => handleAddChild(contextMenu.nodeId, contextMenu.nodeLevel)}
           onAddSibling={() => handleAddSibling(contextMenu.parentId)}
+          onEdit={() => handleStartEdit(contextMenu.nodeId)}
+          onDelete={() => handleOpenDeleteDialog(contextMenu.nodeId)}
+          onChangeLevel={() => handleOpenChangeLevelDialog(contextMenu.nodeId)}
           onClose={() => setContextMenu(null)}
         />
       )}
+
+      {/* Delete dialog */}
+      <DeleteNodeDialog
+        open={deleteDialog !== null}
+        nodeTitle={deleteDialog?.nodeTitle || ''}
+        childCount={deleteDialog?.childCount || 0}
+        onClose={() => setDeleteDialog(null)}
+        onConfirm={handleConfirmDelete}
+        isDeleting={isDeleting}
+      />
+
+      {/* Change level dialog */}
+      <ChangeLevelDialog
+        open={changeLevelDialog !== null}
+        nodeTitle={changeLevelDialog?.nodeTitle || ''}
+        currentLevel={changeLevelDialog?.currentLevel || 'feature'}
+        hasChildren={changeLevelDialog?.hasChildren || false}
+        onClose={() => setChangeLevelDialog(null)}
+        onConfirm={handleConfirmLevelChange}
+        isChanging={isChangingLevel}
+      />
     </div>
   )
 }
