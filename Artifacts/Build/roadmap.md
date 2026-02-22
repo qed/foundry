@@ -147,8 +147,8 @@ After this initial update, stay in this session. I will come back to you after e
 | 015 | Hall Search & Filter | `done` | — | 014 | Hall | `components/hall/`, `app/api/hall/` |
 | 016 | Idea Detail View | `done` | — | 014 | Hall | `components/hall/`, `app/api/hall/ideas/[ideaId]/` |
 | 017 | Edit & Delete Ideas | `done` | — | 011, 016 | Hall | `components/hall/`, `app/api/hall/ideas/[ideaId]/` |
-| 018 | Tagging & Tag Management | `ready` | — | 011, 013, 014 | Hall | `components/hall/`, `app/api/hall/tags/` |
-| 019 | Bulk Operations | `blocked` | — | 014, 017, 018 | Hall | `components/hall/` |
+| 018 | Tagging & Tag Management | `done` | — | 011, 013, 014 | Hall | `components/hall/`, `app/api/hall/tags/` |
+| 019 | Bulk Operations | `ready` | — | 014, 017, 018 | Hall | `components/hall/` |
 | 020 | Hall Agent Infrastructure | `ready` | — | 002, 011, 012 | Hall | `components/hall/`, `app/api/hall/agent/` |
 | 021 | Agent: Auto-Tag Suggestions | `blocked` | — | 013, 018, 020 | Hall | `components/hall/` |
 | 022 | Agent: Duplicate Detection | `blocked` | — | 011, 013, 020 | Hall | `components/hall/` |
@@ -532,7 +532,7 @@ These phases require work from **multiple module tracks** to be complete before 
 | Section | Total | Done | In Progress | Ready | Blocked |
 |---------|-------|------|-------------|-------|---------|
 | Foundation (001–010) | 10 | 10 | 0 | 0 | 0 |
-| The Hall (011–025) | 15 | 7 | 0 | 4 | 4 |
+| The Hall (011–025) | 15 | 8 | 0 | 4 | 3 |
 | Pattern Shop (026–045) | 20 | 1 | 0 | 1 | 18 |
 | Control Room (046–060) | 15 | 0 | 0 | 1 | 14 |
 | Assembly Floor (061–080) | 20 | 0 | 0 | 1 | 19 |
@@ -540,6 +540,6 @@ These phases require work from **multiple module tracks** to be complete before 
 | Cross-Cutting (096–120) | 25 | 0 | 0 | 6 | 19 |
 | Advanced (121–135) | 15 | 0 | 0 | 0 | 15 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **18** | **0** | **14** | **118** |
+| **TOTAL** | **150** | **19** | **0** | **14** | **117** |
 
-**Currently ready to start**: 018, 020, 024, 025, 027, 046, 061, 081, 096, 105, 109, 113, 117, 119
+**Currently ready to start**: 019, 020, 024, 025, 027, 046, 061, 081, 096, 105, 109, 113, 117, 119
