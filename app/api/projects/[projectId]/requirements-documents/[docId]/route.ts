@@ -88,8 +88,18 @@ export async function PUT(
     }
 
     const updates: Record<string, string> = {}
-    if (body.title !== undefined) updates.title = body.title
-    if (body.content !== undefined) updates.content = body.content
+    if (body.title !== undefined) {
+      if (typeof body.title === 'string' && body.title.length > 255) {
+        return Response.json({ error: 'Title must not exceed 255 characters' }, { status: 400 })
+      }
+      updates.title = body.title
+    }
+    if (body.content !== undefined) {
+      if (typeof body.content === 'string' && body.content.length > 50000) {
+        return Response.json({ error: 'Content must not exceed 50,000 characters' }, { status: 400 })
+      }
+      updates.content = body.content
+    }
 
     if (Object.keys(updates).length === 0) {
       return Response.json({ error: 'No fields to update' }, { status: 400 })

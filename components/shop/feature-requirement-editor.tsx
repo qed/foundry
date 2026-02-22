@@ -1,9 +1,8 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef } from 'react'
-import { Save, CheckCircle2 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { useEffect, useState, useCallback } from 'react'
 import { Spinner } from '@/components/ui/spinner'
+import { RequirementsEditor } from './requirements-editor'
 
 interface RequirementsDocument {
   id: string
@@ -29,12 +28,7 @@ export function FeatureRequirementEditor({
   const [doc, setDoc] = useState<RequirementsDocument | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
-  const editorRef = useRef<HTMLDivElement>(null)
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const latestContentRef = useRef('')
 
-  // Fetch or auto-create FRD
   useEffect(() => {
     let cancelled = false
 
@@ -52,11 +46,7 @@ export function FeatureRequirementEditor({
         const listData = await listRes.json()
 
         if (listData.documents && listData.documents.length > 0) {
-          if (!cancelled) {
-            const found = listData.documents[0]
-            setDoc(found)
-            latestContentRef.current = found.content || ''
-          }
+          if (!cancelled) setDoc(listData.documents[0])
           return
         }
 
@@ -78,9 +68,7 @@ export function FeatureRequirementEditor({
           if (retryRes.ok) {
             const retryData = await retryRes.json()
             if (!cancelled && retryData.documents?.length > 0) {
-              const found = retryData.documents[0]
-              setDoc(found)
-              latestContentRef.current = found.content || ''
+              setDoc(retryData.documents[0])
             }
           }
           return
@@ -89,10 +77,7 @@ export function FeatureRequirementEditor({
         if (!createRes.ok) throw new Error('Failed to create FRD')
 
         const created = await createRes.json()
-        if (!cancelled) {
-          setDoc(created)
-          latestContentRef.current = created.content || ''
-        }
+        if (!cancelled) setDoc(created)
       } catch (err) {
         console.error('Error loading FRD:', err)
         if (!cancelled) setError('Failed to load requirements document')
@@ -105,55 +90,18 @@ export function FeatureRequirementEditor({
     return () => { cancelled = true }
   }, [projectId, featureNodeId])
 
-  // Save function
-  const save = useCallback(async (html: string) => {
+  const handleSave = useCallback(async (html: string) => {
     if (!doc) return
-    setSaveStatus('saving')
-    try {
-      const res = await fetch(
-        `/api/projects/${projectId}/requirements-documents/${doc.id}`,
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content: html }),
-        }
-      )
-      if (!res.ok) throw new Error('Save failed')
-      setSaveStatus('saved')
-      setTimeout(() => setSaveStatus('idle'), 2000)
-    } catch (err) {
-      console.error('Error saving FRD:', err)
-      setSaveStatus('idle')
-    }
+    const res = await fetch(
+      `/api/projects/${projectId}/requirements-documents/${doc.id}`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: html }),
+      }
+    )
+    if (!res.ok) throw new Error('Save failed')
   }, [projectId, doc])
-
-  // Handle input with debounced auto-save
-  const handleInput = useCallback(() => {
-    if (!editorRef.current) return
-    const html = editorRef.current.innerHTML
-    latestContentRef.current = html
-
-    if (saveTimerRef.current) {
-      clearTimeout(saveTimerRef.current)
-    }
-
-    saveTimerRef.current = setTimeout(() => {
-      save(latestContentRef.current)
-    }, 2000)
-  }, [save])
-
-  // Cleanup timer on unmount
-  useEffect(() => {
-    const timer = saveTimerRef.current
-    return () => {
-      if (timer) clearTimeout(timer)
-    }
-  }, [])
-
-  // Word count
-  const wordCount = doc?.content
-    ? doc.content.replace(/<[^>]*>/g, ' ').split(/\s+/).filter(Boolean).length
-    : 0
 
   if (isLoading) {
     return (
@@ -182,47 +130,10 @@ export function FeatureRequirementEditor({
   }
 
   return (
-    <div className="flex-1 flex flex-col min-w-0">
-      {/* Toolbar */}
-      <div className="h-12 flex items-center gap-3 px-4 border-b border-border-default bg-bg-secondary flex-shrink-0">
-        <span className="text-sm font-medium text-text-primary truncate">
-          {doc.title}
-        </span>
-        <div className="flex-1" />
-
-        {/* Save status */}
-        <div className="flex items-center gap-1.5">
-          {saveStatus === 'saving' && (
-            <>
-              <Save className="w-3.5 h-3.5 text-text-tertiary animate-pulse" />
-              <span className="text-xs text-text-tertiary">Saving...</span>
-            </>
-          )}
-          {saveStatus === 'saved' && (
-            <>
-              <CheckCircle2 className="w-3.5 h-3.5 text-accent-success" />
-              <span className="text-xs text-accent-success">Saved</span>
-            </>
-          )}
-        </div>
-
-        <span className="text-xs text-text-tertiary">{wordCount} words</span>
-      </div>
-
-      {/* Editor area */}
-      <div className="flex-1 overflow-y-auto p-6">
-        <div
-          ref={editorRef}
-          className={cn(
-            'max-w-3xl mx-auto prose-foundry',
-            'outline-none min-h-[400px]'
-          )}
-          contentEditable
-          suppressContentEditableWarning
-          onInput={handleInput}
-          dangerouslySetInnerHTML={{ __html: doc.content }}
-        />
-      </div>
-    </div>
+    <RequirementsEditor
+      key={doc.id}
+      content={doc.content || ''}
+      onSave={handleSave}
+    />
   )
 }
