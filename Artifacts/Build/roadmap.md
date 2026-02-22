@@ -346,7 +346,7 @@ After this initial update, stay in this session. I will come back to you after e
 | 041 | Feature Tree Statistics | `done` | — | 027, 029, 035 | Shop | `components/shop/` |
 | 042 | Requirements Import/Export | `done` | — | 029, 033, 034 | Shop | `components/shop/` |
 | 043 | Document Versioning | `done` | — | 026, 028, 033, 034 | Shop | `components/shop/` |
-| 044 | Pattern Shop Comments | `ready` | — | 033, 034, 039, 043 | Shop | `components/shop/` |
+| 044 | Pattern Shop Comments | `done` | — | 033, 034, 039, 043 | Shop | `components/shop/` |
 | 045 | Technical Requirements | `done` | — | 026, 027, 029, 034 | Shop | `components/shop/` |
 
 ### Section 4: The Control Room MVP (046–060)
@@ -701,13 +701,13 @@ These phases require work from **multiple module tracks** to be complete before 
 |---------|-------|------|-------------|-------|---------|
 | Foundation (001–010) | 10 | 10 | 0 | 0 | 0 |
 | The Hall (011–025) | 15 | 15 | 0 | 0 | 0 |
-| Pattern Shop (026–045) | 20 | 11 | 0 | 7 | 2 |
+| Pattern Shop (026–045) | 20 | 12 | 0 | 6 | 2 |
 | Control Room (046–060) | 15 | 5 | 0 | 6 | 4 |
 | Assembly Floor (061–080) | 20 | 8 | 0 | 10 | 2 |
 | Insights Lab (081–095) | 15 | 4 | 0 | 5 | 6 |
 | Cross-Cutting (096–120) | 25 | 10 | 0 | 6 | 9 |
 | Advanced (121–135) | 15 | 0 | 0 | 6 | 9 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **76** | **0** | **38** | **36** |
+| **TOTAL** | **150** | **77** | **0** | **37** | **36** |
 
-**Currently ready to start**: 044, 052, 053, 055, 057, 058, 059, 066, 068, 070, 071, 072, 074, 076, 077, 078, 080, 082, 086, 088, 089, 090, 102, 106, 110, 118, 120, 121, 122, 123, 124, 127, 131, 132
+**Currently ready to start**: 052, 053, 055, 057, 058, 059, 066, 068, 070, 071, 072, 074, 076, 077, 078, 080, 082, 086, 088, 089, 090, 102, 106, 110, 118, 120, 121, 122, 123, 124, 127, 131, 132
