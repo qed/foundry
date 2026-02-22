@@ -18,6 +18,7 @@ import { useToast } from '@/components/ui/toast-container'
 import { FileTypeIcon } from './file-type-icon'
 import { BreadcrumbNav, type BreadcrumbItem } from './breadcrumb-nav'
 import { ArtifactContextMenu } from './artifact-context-menu'
+import { FolderContextMenu } from './folder-context-menu'
 import { ArtifactPreview } from './artifact-preview'
 import { UploadZone } from './upload-zone'
 import { formatFileSize } from '@/lib/artifacts/file-types'
@@ -70,6 +71,15 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
     x: number
     y: number
     artifactId: string
+  } | null>(null)
+
+  // Folder context menu
+  const [folderContextMenu, setFolderContextMenu] = useState<{
+    x: number
+    y: number
+    folderId: string
+    folderName: string
+    depth: number
   } | null>(null)
 
   const { addToast } = useToast()
@@ -243,6 +253,24 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
         if (selectedArtifact?.id === renamingId) {
           setSelectedArtifact((prev) => prev ? { ...prev, name: renameValue.trim() } : prev)
         }
+      } else {
+        const res = await fetch(`/api/projects/${projectId}/artifacts/folders/${renamingId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: renameValue.trim() }),
+        })
+        if (!res.ok) {
+          const data = await res.json()
+          addToast(data.error || 'Failed to rename folder', 'error')
+          return
+        }
+        setFolders((prev) =>
+          prev.map((f) => (f.id === renamingId ? { ...f, name: renameValue.trim() } : f))
+        )
+        // Update breadcrumb if this folder is in the path
+        setBreadcrumb((prev) =>
+          prev.map((b) => (b.id === renamingId ? { ...b, name: renameValue.trim() } : b))
+        )
       }
       addToast('Renamed', 'success')
     } catch {
@@ -266,6 +294,15 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
         }
         setArtifacts((prev) => prev.filter((a) => a.id !== deletingId))
         if (selectedArtifact?.id === deletingId) setSelectedArtifact(null)
+      } else {
+        const res = await fetch(`/api/projects/${projectId}/artifacts/folders/${deletingId}`, {
+          method: 'DELETE',
+        })
+        if (!res.ok) {
+          addToast('Failed to delete folder', 'error')
+          return
+        }
+        setFolders((prev) => prev.filter((f) => f.id !== deletingId))
       }
       addToast('Deleted', 'success')
     } catch {
@@ -280,7 +317,7 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
       setMovingArtifact(artifactId)
       // Fetch all folders for the move dialog
       try {
-        const res = await fetch(`/api/projects/${projectId}/artifacts/folders`)
+        const res = await fetch(`/api/projects/${projectId}/artifacts/folders?all=true`)
         if (res.ok) {
           const data = await res.json()
           setAllFolders(data.folders || [])
@@ -348,8 +385,34 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
 
   const handleContextMenu = useCallback((e: React.MouseEvent, artifactId: string) => {
     e.preventDefault()
+    setFolderContextMenu(null)
     setContextMenu({ x: e.clientX, y: e.clientY, artifactId })
   }, [])
+
+  const handleFolderContextMenu = useCallback(
+    (e: React.MouseEvent, folderId: string, folderName: string) => {
+      e.preventDefault()
+      e.stopPropagation()
+      setContextMenu(null)
+      // Calculate depth from breadcrumb (breadcrumb length - 1 gives current depth, +1 for this folder)
+      const currentDepth = breadcrumb.length - 1
+      setFolderContextMenu({ x: e.clientX, y: e.clientY, folderId, folderName, depth: currentDepth + 1 })
+    },
+    [breadcrumb]
+  )
+
+  const handleCreateSubfolder = useCallback(
+    (parentFolderId: string) => {
+      // Navigate into the folder first, then show new folder input
+      const folder = folders.find((f) => f.id === parentFolderId)
+      if (folder) {
+        navigateToFolder(folder.id, folder.name)
+        // Use a short delay to let navigation complete before showing input
+        setTimeout(() => setShowNewFolder(true), 100)
+      }
+    },
+    [folders, navigateToFolder]
+  )
 
   const contextArtifact = contextMenu
     ? (searchResults || artifacts).find((a) => a.id === contextMenu.artifactId)
@@ -547,11 +610,14 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
                     )}
                   >
                     {folders.map((folder) => (
-                      <button
+                      <div
                         key={folder.id}
-                        onClick={() => navigateToFolder(folder.id, folder.name)}
+                        onClick={() => {
+                          if (renamingId !== folder.id) navigateToFolder(folder.id, folder.name)
+                        }}
+                        onContextMenu={(e) => handleFolderContextMenu(e, folder.id, folder.name)}
                         className={cn(
-                          'text-left transition-colors group',
+                          'text-left transition-colors group relative cursor-pointer',
                           viewMode === 'grid'
                             ? 'p-3 rounded-lg border border-border-default hover:border-accent-warning/30 hover:bg-bg-tertiary/50'
                             : 'flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-bg-tertiary/50'
@@ -563,10 +629,40 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
                             viewMode === 'grid' ? 'w-8 h-8 mb-2' : 'w-4 h-4 shrink-0'
                           )}
                         />
-                        <span className="text-xs text-text-primary font-medium truncate block">
-                          {folder.name}
-                        </span>
-                      </button>
+                        {renamingId === folder.id && renameType === 'folder' ? (
+                          <input
+                            autoFocus
+                            value={renameValue}
+                            onChange={(e) => setRenameValue(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleRenameConfirm()
+                              if (e.key === 'Escape') setRenamingId(null)
+                            }}
+                            onBlur={handleRenameConfirm}
+                            onClick={(e) => e.stopPropagation()}
+                            className="w-full px-1 py-0.5 text-xs bg-bg-primary border border-accent-cyan rounded text-text-primary focus:outline-none"
+                            maxLength={255}
+                          />
+                        ) : (
+                          <span className="text-xs text-text-primary font-medium truncate block">
+                            {folder.name}
+                          </span>
+                        )}
+                        {/* Hover actions */}
+                        {renamingId !== folder.id && (
+                          <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleFolderContextMenu(e, folder.id, folder.name)
+                              }}
+                              className="p-1 bg-bg-secondary/80 backdrop-blur rounded text-text-tertiary hover:text-text-primary"
+                            >
+                              <MoreHorizontal className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -746,6 +842,19 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
           onDelete={() => { setDeletingId(contextArtifact.id); setDeletingType('artifact') }}
           onDownload={() => handleDownload(contextArtifact.id)}
           onClose={() => setContextMenu(null)}
+        />
+      )}
+
+      {/* Folder context menu */}
+      {folderContextMenu && (
+        <FolderContextMenu
+          x={folderContextMenu.x}
+          y={folderContextMenu.y}
+          depth={folderContextMenu.depth}
+          onRename={() => handleRenameStart(folderContextMenu.folderId, folderContextMenu.folderName, 'folder')}
+          onDelete={() => { setDeletingId(folderContextMenu.folderId); setDeletingType('folder') }}
+          onCreateSubfolder={() => handleCreateSubfolder(folderContextMenu.folderId)}
+          onClose={() => setFolderContextMenu(null)}
         />
       )}
 
