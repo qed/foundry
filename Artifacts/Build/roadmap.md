@@ -211,8 +211,8 @@ After this initial update, stay in this session. I will come back to you after e
 | 064 | Work Order Detail View | `done` | — | 061, 062, 063 | Floor | `components/floor/` |
 | 065 | Kanban Board View | `done` | — | 061, 062, 063, 064 | Floor | `components/floor/` |
 | 066 | Kanban Card Display | `ready` | — | 062, 065 | Floor | `components/floor/` |
-| 067 | Work Order List/Table View | `ready` | — | 061, 062, 064 | Floor | `components/floor/` |
-| 068 | Work Order Assignment | `blocked` | — | 010, 061, 064, 065, 067 | Floor | `components/floor/` |
+| 067 | Work Order List/Table View | `done` | — | 061, 062, 064 | Floor | `components/floor/` |
+| 068 | Work Order Assignment | `ready` | — | 010, 061, 064, 065, 067 | Floor | `components/floor/` |
 | 069 | Work Order Phases | `ready` | — | 061, 062, 065 | Floor | `components/floor/` |
 | 070 | Priority & Sequencing | `blocked` | — | 061, 065, 067, 069 | Floor | `components/floor/` |
 | 071 | Progress Tracking & Rollup | `blocked` | — | 026, 061, 069 | Floor ⚠️ | `components/floor/` |
@@ -221,7 +221,7 @@ After this initial update, stay in this session. I will come back to you after e
 | 074 | Agent: WO Extraction | `blocked` | — | 046, 061, 073 | Floor ⚠️ | `components/floor/` |
 | 075 | Agent: Phase Planning | `blocked` | — | 061, 069, 073, 074 | Floor | `components/floor/` |
 | 076 | Implementation Plans | `blocked` | — | 061, 064, 073 | Floor | `components/floor/` |
-| 077 | Bulk Operations | `blocked` | — | 061, 065, 067 | Floor | `components/floor/` |
+| 077 | Bulk Operations | `ready` | — | 061, 065, 067 | Floor | `components/floor/` |
 | 078 | Floor Comments | `ready` | — | 010, 061, 064 | Floor | `components/floor/` |
 | 079 | Leader Progress Dashboard | `blocked` | — | 009, 061, 069, 071 | Floor | `components/floor/` |
 | 080 | MCP Connection Schema | `ready` | — | 010, 061 | Floor | `supabase/migrations/`, `app/api/floor/mcp/` |
@@ -535,11 +535,11 @@ These phases require work from **multiple module tracks** to be complete before 
 | The Hall (011–025) | 15 | 12 | 0 | 3 | 0 |
 | Pattern Shop (026–045) | 20 | 8 | 0 | 6 | 6 |
 | Control Room (046–060) | 15 | 3 | 0 | 3 | 9 |
-| Assembly Floor (061–080) | 20 | 5 | 0 | 6 | 9 |
+| Assembly Floor (061–080) | 20 | 6 | 0 | 7 | 7 |
 | Insights Lab (081–095) | 15 | 2 | 0 | 3 | 10 |
 | Cross-Cutting (096–120) | 25 | 6 | 0 | 5 | 14 |
 | Advanced (121–135) | 15 | 0 | 0 | 2 | 13 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **46** | **0** | **30** | **74** |
+| **TOTAL** | **150** | **47** | **0** | **31** | **72** |
 
-**Currently ready to start**: 021, 022, 023, 032, 035, 037, 042, 043, 045, 048, 050, 051, 066, 067, 069, 073, 078, 080, 082, 084, 090, 097, 102, 110, 118, 120, 131, 132
+**Currently ready to start**: 021, 022, 023, 032, 035, 037, 042, 043, 045, 048, 050, 051, 066, 068, 069, 073, 077, 078, 080, 082, 084, 090, 097, 102, 110, 118, 120, 131, 132
