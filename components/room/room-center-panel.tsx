@@ -1,11 +1,15 @@
 'use client'
 
+import { useCallback } from 'react'
 import { FileText } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { EmptyState } from '@/components/ui/empty-state'
+import { BlueprintEditor } from './blueprint-editor'
 import type { Blueprint } from '@/types/database'
+import type { JSONContent } from '@tiptap/react'
 
 interface RoomCenterPanelProps {
+  projectId: string
   blueprint: Blueprint | null
 }
 
@@ -29,7 +33,17 @@ const TYPE_LABELS: Record<string, string> = {
   feature: 'Feature',
 }
 
-export function RoomCenterPanel({ blueprint }: RoomCenterPanelProps) {
+export function RoomCenterPanel({ projectId, blueprint }: RoomCenterPanelProps) {
+  const handleSave = useCallback(async (content: JSONContent) => {
+    if (!blueprint) return
+    const res = await fetch(`/api/projects/${projectId}/blueprints/${blueprint.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content }),
+    })
+    if (!res.ok) throw new Error('Save failed')
+  }, [projectId, blueprint])
+
   if (!blueprint) {
     return (
       <div className="flex-1 flex items-center justify-center min-w-0">
@@ -44,8 +58,8 @@ export function RoomCenterPanel({ blueprint }: RoomCenterPanelProps) {
 
   return (
     <div className="flex-1 flex flex-col min-w-0">
-      {/* Toolbar */}
-      <div className="h-12 flex items-center gap-3 px-4 border-b border-border-default bg-bg-secondary flex-shrink-0">
+      {/* Type / Title / Status header */}
+      <div className="h-10 flex items-center gap-3 px-4 border-b border-border-default bg-bg-secondary flex-shrink-0">
         <span className="text-[10px] text-text-tertiary uppercase tracking-wide">
           {TYPE_LABELS[blueprint.blueprint_type] || blueprint.blueprint_type}
         </span>
@@ -64,34 +78,12 @@ export function RoomCenterPanel({ blueprint }: RoomCenterPanelProps) {
         </span>
       </div>
 
-      {/* Editor placeholder */}
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-xl font-semibold text-text-primary mb-4">
-            {blueprint.title}
-          </h1>
-
-          <div className="glass-panel rounded-lg p-8 text-center">
-            <FileText className="w-8 h-8 text-text-tertiary/40 mx-auto mb-3" />
-            <p className="text-sm text-text-tertiary mb-1">
-              Blueprint editor coming in Phase 049
-            </p>
-            <p className="text-xs text-text-tertiary">
-              The rich text editor with Mermaid diagram support will be built as a separate phase.
-            </p>
-          </div>
-
-          {/* Metadata */}
-          <div className="mt-6 flex items-center gap-4 text-xs text-text-tertiary">
-            <span>
-              Created {new Date(blueprint.created_at).toLocaleDateString()}
-            </span>
-            <span>
-              Updated {new Date(blueprint.updated_at).toLocaleDateString()}
-            </span>
-          </div>
-        </div>
-      </div>
+      {/* Editor */}
+      <BlueprintEditor
+        key={blueprint.id}
+        content={blueprint.content as JSONContent | null}
+        onSave={handleSave}
+      />
     </div>
   )
 }

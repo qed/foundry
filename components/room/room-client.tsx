@@ -110,7 +110,7 @@ export function RoomClient({ projectId, initialStats }: RoomClientProps) {
         )}
 
         {/* Center panel: Blueprint editor */}
-        <RoomCenterPanel blueprint={selectedBlueprint} />
+        <RoomCenterPanel projectId={projectId} blueprint={selectedBlueprint} />
 
         {/* Right panel: Agent chat */}
         <RoomRightPanel open={rightPanelOpen} />
