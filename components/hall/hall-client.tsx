@@ -14,10 +14,12 @@ import { LoadMoreTrigger } from './load-more-trigger'
 import { IdeaCreateModal } from './idea-create-modal'
 import { IdeaDetailSlideOver } from './idea-detail-slide-over'
 import { AgentPanel } from './agent-panel'
+import { ConnectionStatus } from './connection-status'
 import { Spinner } from '@/components/ui/spinner'
 import { useToast } from '@/components/ui/toast-container'
+import { useRealtimeIdeas } from '@/lib/realtime/use-realtime-ideas'
 import type { IdeaWithDetails, SortOption } from './types'
-import type { Tag } from '@/types/database'
+import type { Tag, Idea } from '@/types/database'
 
 const PAGE_SIZE = 12
 
@@ -67,6 +69,88 @@ export function HallClient({
   const [agentOpen, setAgentOpen] = useState(false)
 
   const { addToast } = useToast()
+
+  // Real-time update tracking
+  const [highlightedIds, setHighlightedIds] = useState<Set<string>>(new Set())
+  const [newIds, setNewIds] = useState<Set<string>>(new Set())
+  const highlightTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
+
+  const addHighlight = useCallback((id: string, type: 'new' | 'update') => {
+    const setter = type === 'new' ? setNewIds : setHighlightedIds
+    setter((prev) => new Set(prev).add(id))
+
+    // Clear existing timer for this id
+    const existing = highlightTimers.current.get(id)
+    if (existing) clearTimeout(existing)
+
+    // Auto-clear after animation completes
+    const timer = setTimeout(() => {
+      setter((prev) => {
+        const next = new Set(prev)
+        next.delete(id)
+        return next
+      })
+      highlightTimers.current.delete(id)
+    }, 1000)
+    highlightTimers.current.set(id, timer)
+  }, [])
+
+  // Real-time subscription
+  const handleRealtimeChange = useCallback(
+    (payload: { eventType: 'INSERT' | 'UPDATE' | 'DELETE'; new: Idea | null; old: Partial<Idea> | null }) => {
+      switch (payload.eventType) {
+        case 'INSERT': {
+          if (!payload.new) return
+          // Add to the top of the list with minimal data
+          // Real-time payloads don't include joined relations (tags, creator),
+          // so we add a stub and let the next refetch fill in details.
+          const stub: IdeaWithDetails = {
+            ...payload.new,
+            tags: [],
+            creator: null,
+          }
+          setIdeas((prev) => {
+            if (prev.some((i) => i.id === stub.id)) return prev
+            return [stub, ...prev]
+          })
+          setTotal((prev) => prev + 1)
+          addHighlight(stub.id, 'new')
+          break
+        }
+        case 'UPDATE': {
+          if (!payload.new) return
+          const updated = payload.new
+          setIdeas((prev) =>
+            prev.map((idea) =>
+              idea.id === updated.id
+                ? { ...idea, ...updated, tags: idea.tags, creator: idea.creator }
+                : idea
+            )
+          )
+          addHighlight(updated.id, 'update')
+          break
+        }
+        case 'DELETE': {
+          const deletedId = payload.old?.id
+          if (!deletedId) return
+          setIdeas((prev) => prev.filter((idea) => idea.id !== deletedId))
+          setTotal((prev) => Math.max(0, prev - 1))
+          break
+        }
+      }
+    },
+    [addHighlight]
+  )
+
+  const { isConnected } = useRealtimeIdeas(projectId, handleRealtimeChange)
+
+  // Cleanup highlight timers on unmount
+  useEffect(() => {
+    const timers = highlightTimers.current
+    return () => {
+      timers.forEach((timer) => clearTimeout(timer))
+    }
+  }, [])
 
   // Debounce search for API calls
   const [debouncedSearch, setDebouncedSearch] = useState(searchValue)
@@ -261,16 +345,21 @@ export function HallClient({
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
-      <HallHeader
-        searchValue={searchValue}
-        onSearchChange={(value) => updateParams({ search: value || null })}
-        viewMode={viewMode}
-        onViewModeChange={(mode) =>
-          updateParams({ view: mode === 'grid' ? null : mode })
-        }
-        onNewIdeaClick={() => setShowNewIdeaModal(true)}
-        tagsHref={`/org/${orgSlug}/project/${projectId}/hall/tags`}
-      />
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          <HallHeader
+            searchValue={searchValue}
+            onSearchChange={(value) => updateParams({ search: value || null })}
+            viewMode={viewMode}
+            onViewModeChange={(mode) =>
+              updateParams({ view: mode === 'grid' ? null : mode })
+            }
+            onNewIdeaClick={() => setShowNewIdeaModal(true)}
+            tagsHref={`/org/${orgSlug}/project/${projectId}/hall/tags`}
+          />
+        </div>
+        <ConnectionStatus isConnected={isConnected} className="mt-2 shrink-0" />
+      </div>
 
       {(ideas.length > 0 || hasActiveFilters) && (
         <FilterBar
@@ -310,6 +399,8 @@ export function HallClient({
             orgSlug={orgSlug}
             projectId={projectId}
             onIdeaClick={setSelectedIdeaId}
+            highlightedIds={highlightedIds}
+            newIds={newIds}
           />
         ) : (
           <IdeaList
@@ -319,6 +410,8 @@ export function HallClient({
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}
             onIdeaClick={setSelectedIdeaId}
+            highlightedIds={highlightedIds}
+            newIds={newIds}
           />
         )}
       </div>
