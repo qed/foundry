@@ -45,6 +45,10 @@ interface TreeNodeRowProps {
   onTitleCancel: (nodeId: string, hasTitle: boolean) => void
   onDoubleClick?: (nodeId: string) => void
   onStatusChange?: (nodeId: string, status: FeatureStatus) => void
+  isSearchActive?: boolean
+  matchingNodeIds?: Set<string>
+  displayNodeIds?: Set<string>
+  searchQuery?: string
 }
 
 const STATUS_OPTIONS: { value: FeatureStatus; label: string; dotClass: string }[] = [
@@ -77,6 +81,22 @@ const STATUS_ICON_COLORS = {
 
 const CAN_HAVE_CHILDREN = new Set(['epic', 'feature', 'sub_feature'])
 
+function highlightMatch(text: string, query: string): React.ReactNode {
+  if (!query) return text
+  const idx = text.toLowerCase().indexOf(query.toLowerCase())
+  if (idx === -1) return text
+  const before = text.slice(0, idx)
+  const match = text.slice(idx, idx + query.length)
+  const after = text.slice(idx + query.length)
+  return (
+    <>
+      {before}
+      <mark className="bg-accent-warning/30 text-inherit rounded-sm px-0.5">{match}</mark>
+      {after}
+    </>
+  )
+}
+
 export const TreeNodeRow = memo(function TreeNodeRow({
   node,
   depth,
@@ -93,11 +113,17 @@ export const TreeNodeRow = memo(function TreeNodeRow({
   onTitleCancel,
   onDoubleClick,
   onStatusChange,
+  isSearchActive,
+  matchingNodeIds,
+  displayNodeIds,
+  searchQuery,
 }: TreeNodeRowProps) {
   const isExpanded = expandedIds.has(node.id)
   const isSelected = selectedNodeId === node.id
   const isEditing = editingNodeId === node.id
   const isDragged = draggedNodeId === node.id
+  const isMatch = isSearchActive && matchingNodeIds?.has(node.id)
+  const isAncestorOnly = isSearchActive && !matchingNodeIds?.has(node.id)
   const hasChildren = node.children.length > 0
   const LevelIcon = LEVEL_ICONS[node.level]
   const paddingLeft = depth * 16 + 8
@@ -190,7 +216,9 @@ export const TreeNodeRow = memo(function TreeNodeRow({
             : 'border-l-2 border-transparent hover:bg-bg-tertiary',
           isDragging && 'opacity-30',
           isDropOn && isDropValid && 'ring-1 ring-accent-success bg-accent-success/5',
-          isDropOn && !isDropValid && 'ring-1 ring-accent-error bg-accent-error/5'
+          isDropOn && !isDropValid && 'ring-1 ring-accent-error bg-accent-error/5',
+          isMatch && 'bg-accent-warning/10',
+          isAncestorOnly && 'opacity-60'
         )}
         style={{ paddingLeft }}
         onClick={() => !isEditing && !isDragging && onSelectNode(node.id)}
@@ -314,7 +342,7 @@ export const TreeNodeRow = memo(function TreeNodeRow({
               onDoubleClick?.(node.id)
             }}
           >
-            {node.title}
+            {isMatch && searchQuery ? highlightMatch(node.title, searchQuery) : node.title}
           </span>
         )}
 
@@ -377,7 +405,9 @@ export const TreeNodeRow = memo(function TreeNodeRow({
       {/* Children (if expanded) */}
       {isExpanded &&
         hasChildren &&
-        node.children.map((child, _idx) => (
+        node.children
+          .filter((child) => !isSearchActive || !displayNodeIds || displayNodeIds.has(child.id))
+          .map((child) => (
           <TreeNodeRow
             key={child.id}
             node={child}
@@ -395,6 +425,10 @@ export const TreeNodeRow = memo(function TreeNodeRow({
             onTitleCancel={onTitleCancel}
             onDoubleClick={onDoubleClick}
             onStatusChange={onStatusChange}
+            isSearchActive={isSearchActive}
+            matchingNodeIds={matchingNodeIds}
+            displayNodeIds={displayNodeIds}
+            searchQuery={searchQuery}
           />
         ))}
 

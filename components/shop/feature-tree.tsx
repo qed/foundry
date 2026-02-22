@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import { Trees, Plus } from 'lucide-react'
 import {
   DndContext,
@@ -19,7 +19,8 @@ import { TreeNodeRow } from './tree-node-row'
 import { NodeContextMenu } from './node-context-menu'
 import { DeleteNodeDialog } from './delete-node-dialog'
 import { ChangeLevelDialog } from './change-level-dialog'
-import type { FeatureLevel } from '@/types/database'
+import type { FeatureLevel, FeatureStatus } from '@/types/database'
+import type { FilterInfo } from './tree-search-filter'
 
 export interface TreeNode {
   id: string
@@ -41,6 +42,10 @@ interface FeatureTreeProps {
   selectedNodeId: string | null
   onSelectNode: (nodeId: string) => void
   className?: string
+  searchQuery?: string
+  selectedStatuses?: FeatureStatus[]
+  selectedLevels?: FeatureLevel[]
+  onFilterInfo?: (info: FilterInfo) => void
 }
 
 interface ContextMenuState {
@@ -103,11 +108,18 @@ function findNode(nodes: TreeNode[], nodeId: string): TreeNode | null {
   return null
 }
 
+const ALL_STATUSES: FeatureStatus[] = ['not_started', 'in_progress', 'complete', 'blocked']
+const ALL_LEVELS: FeatureLevel[] = ['epic', 'feature', 'sub_feature', 'task']
+
 export function FeatureTree({
   projectId,
   selectedNodeId,
   onSelectNode,
   className,
+  searchQuery = '',
+  selectedStatuses = ALL_STATUSES,
+  selectedLevels = ALL_LEVELS,
+  onFilterInfo,
 }: FeatureTreeProps) {
   const [tree, setTree] = useState<TreeNode[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -134,6 +146,97 @@ export function FeatureTree({
   )
 
   const { addToast } = useToast()
+
+  // ── Search & Filter Logic ─────────────────────────────────
+  const isFiltering =
+    searchQuery.length > 0 ||
+    selectedStatuses.length < 4 ||
+    selectedLevels.length < 4
+
+  const { matchingNodeIds, displayNodeIds } = useMemo(() => {
+    if (!isFiltering || tree.length === 0) {
+      return { matchingNodeIds: new Set<string>(), displayNodeIds: new Set<string>() }
+    }
+
+    const matching = new Set<string>()
+    const lowerQ = searchQuery.toLowerCase()
+    const statusSet = new Set(selectedStatuses)
+    const levelSet = new Set(selectedLevels)
+
+    // Walk tree and find matching nodes
+    const walk = (nodes: TreeNode[]) => {
+      for (const node of nodes) {
+        const searchMatch =
+          !searchQuery ||
+          node.title.toLowerCase().includes(lowerQ) ||
+          (node.description?.toLowerCase().includes(lowerQ) ?? false)
+
+        const statusMatch = statusSet.has(node.status)
+        const levelMatch = levelSet.has(node.level)
+
+        if (searchMatch && statusMatch && levelMatch) {
+          matching.add(node.id)
+        }
+        walk(node.children)
+      }
+    }
+    walk(tree)
+
+    // Compute display set: matching nodes + all ancestors
+    const display = new Set(matching)
+    const addAncestors = (nodes: TreeNode[], parentChain: string[]) => {
+      for (const node of nodes) {
+        if (matching.has(node.id)) {
+          for (const ancestorId of parentChain) {
+            display.add(ancestorId)
+          }
+        }
+        addAncestors(node.children, [...parentChain, node.id])
+      }
+    }
+    addAncestors(tree, [])
+
+    return { matchingNodeIds: matching, displayNodeIds: display }
+  }, [tree, searchQuery, selectedStatuses, selectedLevels, isFiltering])
+
+  // Compute filter counts from full tree and report to parent
+  useEffect(() => {
+    if (!onFilterInfo || tree.length === 0) return
+
+    const statusCounts: Record<FeatureStatus, number> = { not_started: 0, in_progress: 0, complete: 0, blocked: 0 }
+    const levelCounts: Record<FeatureLevel, number> = { epic: 0, feature: 0, sub_feature: 0, task: 0 }
+
+    const countAll = (nodes: TreeNode[]) => {
+      for (const node of nodes) {
+        statusCounts[node.status]++
+        levelCounts[node.level]++
+        countAll(node.children)
+      }
+    }
+    countAll(tree)
+
+    onFilterInfo({
+      matchCount: isFiltering ? matchingNodeIds.size : 0,
+      statusCounts,
+      levelCounts,
+    })
+  }, [tree, matchingNodeIds, isFiltering, onFilterInfo])
+
+  // Auto-expand ancestors of matching nodes during search
+  useEffect(() => {
+    if (!isFiltering || displayNodeIds.size === 0) return
+
+    setExpandedIds((prev) => {
+      const next = new Set(prev)
+      for (const id of displayNodeIds) {
+        if (!matchingNodeIds.has(id)) {
+          // This is an ancestor — expand it
+          next.add(id)
+        }
+      }
+      return next
+    })
+  }, [displayNodeIds, matchingNodeIds, isFiltering])
 
   const fetchTree = useCallback(async () => {
     try {
@@ -725,7 +828,16 @@ export function FeatureTree({
       onDragCancel={handleDragCancel}
     >
       <div className={cn('py-1', className)}>
-        {tree.map((node) => (
+        {/* No results message */}
+        {isFiltering && matchingNodeIds.size === 0 && tree.length > 0 && (
+          <div className="py-4 text-center">
+            <p className="text-xs text-text-tertiary">No nodes match current filters</p>
+          </div>
+        )}
+
+        {tree
+          .filter((node) => !isFiltering || displayNodeIds.has(node.id))
+          .map((node) => (
           <TreeNodeRow
             key={node.id}
             node={node}
@@ -743,6 +855,10 @@ export function FeatureTree({
             onTitleCancel={handleTitleCancel}
             onDoubleClick={handleStartEdit}
             onStatusChange={handleStatusChange}
+            isSearchActive={isFiltering}
+            matchingNodeIds={matchingNodeIds}
+            displayNodeIds={displayNodeIds}
+            searchQuery={searchQuery}
           />
         ))}
 
