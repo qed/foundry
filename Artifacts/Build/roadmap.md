@@ -9,7 +9,7 @@
 
 **Mode**: Sequential execution directly on `main` branch. No feature branches or worktrees.
 
-**Next phase to build**: **028 — Product Overview Document** (Shop)
+**Next phase to build**: **030 — Add Nodes to Feature Tree** (Shop)
 
 | # | Phase | Name | Track | Why This Order |
 |---|-------|------|-------|----------------|
@@ -29,7 +29,7 @@
 | ~~14~~ | ~~019~~ | ~~Bulk Operations~~ | ~~Hall~~ | done |
 | ~~15~~ | ~~025~~ | ~~Hall -> Shop Promotion~~ | ~~Hall/Shop~~ | done |
 | ~~16~~ | ~~029~~ | ~~Feature Tree Component~~ | ~~Shop~~ | done |
-| 17 | **028** | Product Overview Document | Shop | Shop document system |
+| ~~17~~ | ~~028~~ | ~~Product Overview Document~~ | ~~Shop~~ | done |
 | 18 | **030** | Add Nodes to Feature Tree | Shop | Core tree interaction |
 | 19 | **033** | Feature Requirements Doc | Shop | Links features to requirements |
 | 20 | **062** | Assembly Floor Page Layout | Floor | Opens Floor UI work |
@@ -162,7 +162,7 @@ After this initial update, stay in this session. I will come back to you after e
 |-------|------|--------|--------|---------------|-------|------------|
 | 026 | Pattern Shop Database Schema | `done` | — | 001, 002 | Shop | `supabase/migrations/`, `types/database.ts` |
 | 027 | Pattern Shop Page Layout | `done` | — | 006, 010, 026 | Shop | `components/shop/`, `app/.../shop/` |
-| 028 | Product Overview Document | `ready` | — | 026, 027 | Shop | `components/shop/` |
+| 028 | Product Overview Document | `done` | — | 026, 027 | Shop | `components/shop/` |
 | 029 | Feature Tree Component | `done` | — | 026, 027 | Shop | `components/shop/` |
 | 030 | Add Nodes to Feature Tree | `ready` | — | 026, 029 | Shop | `components/shop/` |
 | 031 | Edit & Delete Tree Nodes | `blocked` | — | 026, 029, 030 | Shop | `components/shop/` |
@@ -533,13 +533,13 @@ These phases require work from **multiple module tracks** to be complete before 
 |---------|-------|------|-------------|-------|---------|
 | Foundation (001–010) | 10 | 10 | 0 | 0 | 0 |
 | The Hall (011–025) | 15 | 12 | 0 | 3 | 0 |
-| Pattern Shop (026–045) | 20 | 3 | 0 | 3 | 14 |
+| Pattern Shop (026–045) | 20 | 4 | 0 | 2 | 14 |
 | Control Room (046–060) | 15 | 1 | 0 | 1 | 13 |
 | Assembly Floor (061–080) | 20 | 1 | 0 | 2 | 17 |
 | Insights Lab (081–095) | 15 | 1 | 0 | 2 | 12 |
 | Cross-Cutting (096–120) | 25 | 6 | 0 | 3 | 16 |
 | Advanced (121–135) | 15 | 0 | 0 | 2 | 13 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **34** | **0** | **16** | **100** |
+| **TOTAL** | **150** | **35** | **0** | **15** | **100** |
 
-**Currently ready to start**: 021, 022, 023, 028, 030, 033, 047, 062, 080, 082, 083, 097, 110, 120, 131, 132
+**Currently ready to start**: 021, 022, 023, 030, 033, 047, 062, 080, 082, 083, 097, 110, 120, 131, 132
