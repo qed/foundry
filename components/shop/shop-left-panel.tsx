@@ -1,10 +1,13 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { FileText, ChevronRight } from 'lucide-react'
+import { FileText, ChevronRight, Download, Upload } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { FeatureTree } from './feature-tree'
 import { TreeSearchFilter, type FilterInfo } from './tree-search-filter'
+import { ExportTreeDialog } from './export-tree-dialog'
+import { ImportTreeDialog } from './import-tree-dialog'
+import { ExportAllDialog } from './export-all-dialog'
 import type { FeatureStatus, FeatureLevel } from '@/types/database'
 
 const ALL_STATUSES: FeatureStatus[] = ['not_started', 'in_progress', 'complete', 'blocked']
@@ -16,6 +19,7 @@ interface ShopLeftPanelProps {
   selectedNodeId: string | null
   onSelectNode: (nodeId: string) => void
   onTreeChange?: () => void
+  onTreeImported?: () => void
   refreshTrigger?: number
 }
 
@@ -25,9 +29,19 @@ export function ShopLeftPanel({
   selectedNodeId,
   onSelectNode,
   onTreeChange,
+  onTreeImported,
   refreshTrigger,
 }: ShopLeftPanelProps) {
   const isOverviewSelected = selectedNodeId === 'product-overview'
+
+  // Dialog states
+  const [showExportTree, setShowExportTree] = useState(false)
+  const [showImportTree, setShowImportTree] = useState(false)
+  const [showExportAll, setShowExportAll] = useState(false)
+
+  const handleImportTreeSuccess = useCallback(() => {
+    onTreeImported?.()
+  }, [onTreeImported])
 
   // Search & filter state
   const [searchQuery, setSearchQuery] = useState('')
@@ -93,6 +107,22 @@ export function ShopLeftPanel({
               <span className="text-xs font-medium text-text-tertiary uppercase tracking-wider">
                 Feature Tree
               </span>
+              <div className="flex items-center gap-0.5">
+                <button
+                  onClick={() => setShowImportTree(true)}
+                  title="Import Tree"
+                  className="p-1 rounded text-text-tertiary hover:text-text-primary hover:bg-bg-tertiary transition-colors"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => setShowExportTree(true)}
+                  title="Export Tree"
+                  className="p-1 rounded text-text-tertiary hover:text-text-primary hover:bg-bg-tertiary transition-colors"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
 
             <FeatureTree
@@ -108,14 +138,40 @@ export function ShopLeftPanel({
             />
           </div>
 
-          {/* Technical Requirements section - collapsed */}
-          <div className="border-t border-border-default p-3">
+          {/* Export All + Technical Requirements */}
+          <div className="border-t border-border-default p-3 space-y-2">
+            <button
+              onClick={() => setShowExportAll(true)}
+              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm text-text-secondary hover:bg-bg-tertiary hover:text-text-primary transition-colors"
+            >
+              <Download className="w-4 h-4 flex-shrink-0" />
+              <span className="truncate">Export All Requirements</span>
+            </button>
+
             <button className="w-full flex items-center gap-2 text-xs font-medium text-text-tertiary uppercase tracking-wider hover:text-text-secondary transition-colors">
               <ChevronRight className="w-3.5 h-3.5" />
               Technical Requirements
             </button>
           </div>
         </div>
+
+        {/* Dialogs */}
+        <ExportTreeDialog
+          open={showExportTree}
+          onOpenChange={setShowExportTree}
+          projectId={projectId}
+        />
+        <ImportTreeDialog
+          open={showImportTree}
+          onOpenChange={setShowImportTree}
+          projectId={projectId}
+          onImportSuccess={handleImportTreeSuccess}
+        />
+        <ExportAllDialog
+          open={showExportAll}
+          onOpenChange={setShowExportAll}
+          projectId={projectId}
+        />
       </div>
     </div>
   )

@@ -1,8 +1,11 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { Download, Upload } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
 import { RequirementsEditor } from './requirements-editor'
+import { ExportDocumentDialog } from './export-document-dialog'
+import { ImportDocumentDialog } from './import-document-dialog'
 
 interface RequirementsDocument {
   id: string
@@ -28,6 +31,8 @@ export function FeatureRequirementEditor({
   const [doc, setDoc] = useState<RequirementsDocument | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showExport, setShowExport] = useState(false)
+  const [showImport, setShowImport] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -103,6 +108,10 @@ export function FeatureRequirementEditor({
     if (!res.ok) throw new Error('Save failed')
   }, [projectId, doc])
 
+  const handleImportSuccess = useCallback(() => {
+    window.location.reload()
+  }, [])
+
   if (isLoading) {
     return (
       <div className="flex-1 flex items-center justify-center min-w-0">
@@ -129,11 +138,45 @@ export function FeatureRequirementEditor({
     )
   }
 
+  const toolbarExtra = (
+    <>
+      <button
+        onClick={() => setShowImport(true)}
+        title="Import Document"
+        className="p-1.5 rounded transition-colors text-text-secondary hover:text-text-primary hover:bg-bg-tertiary"
+      >
+        <Upload className="w-4 h-4" />
+      </button>
+      <button
+        onClick={() => setShowExport(true)}
+        title="Export Document"
+        className="p-1.5 rounded transition-colors text-text-secondary hover:text-text-primary hover:bg-bg-tertiary"
+      >
+        <Download className="w-4 h-4" />
+      </button>
+      <ExportDocumentDialog
+        open={showExport}
+        onOpenChange={setShowExport}
+        projectId={projectId}
+        documentId={doc.id}
+        documentTitle={doc.title}
+      />
+      <ImportDocumentDialog
+        open={showImport}
+        onOpenChange={setShowImport}
+        projectId={projectId}
+        featureNodeId={featureNodeId}
+        onImportSuccess={handleImportSuccess}
+      />
+    </>
+  )
+
   return (
     <RequirementsEditor
       key={doc.id}
       content={doc.content || ''}
       onSave={handleSave}
+      toolbarExtra={toolbarExtra}
     />
   )
 }

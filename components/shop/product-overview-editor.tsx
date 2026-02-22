@@ -1,8 +1,10 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { Download } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
 import { RequirementsEditor } from './requirements-editor'
+import { ExportDocumentDialog } from './export-document-dialog'
 
 interface ProductOverviewEditorProps {
   projectId: string
@@ -13,6 +15,7 @@ export function ProductOverviewEditor({ projectId }: ProductOverviewEditorProps)
   const [docId, setDocId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showExport, setShowExport] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -75,11 +78,31 @@ export function ProductOverviewEditor({ projectId }: ProductOverviewEditorProps)
     )
   }
 
+  const toolbarExtra = (
+    <>
+      <button
+        onClick={() => setShowExport(true)}
+        title="Export Document"
+        className="p-1.5 rounded transition-colors text-text-secondary hover:text-text-primary hover:bg-bg-tertiary"
+      >
+        <Download className="w-4 h-4" />
+      </button>
+      <ExportDocumentDialog
+        open={showExport}
+        onOpenChange={setShowExport}
+        projectId={projectId}
+        documentId={docId}
+        documentTitle="Product Overview"
+      />
+    </>
+  )
+
   return (
     <RequirementsEditor
       key={docId}
       content={content}
       onSave={handleSave}
+      toolbarExtra={toolbarExtra}
     />
   )
 }
