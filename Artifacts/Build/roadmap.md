@@ -15,9 +15,9 @@
 
 ---
 
-### Completed Phases (66/150)
+### Completed Phases (67/150)
 
-001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–034 (Shop docs), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 061–065 (Floor schema/layout/WO/kanban), 067 (WO list), 069 (WO phases), 073 (Floor agent), 081 (Lab schema), 083–085 (Lab layout/inbox/detail), 096–101 (Artifacts full stack), 105 (Comments schema), 109 (Knowledge schema), 113 (Org console), 117 (Realtime presence), 119 (Audit trail)
+001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 061–065 (Floor schema/layout/WO/kanban), 067 (WO list), 069 (WO phases), 073 (Floor agent), 081 (Lab schema), 083–085 (Lab layout/inbox/detail), 096–101 (Artifacts full stack), 105 (Comments schema), 109 (Knowledge schema), 113 (Org console), 117 (Realtime presence), 119 (Audit trail)
 
 ---
 
@@ -337,13 +337,13 @@ After this initial update, stay in this session. I will come back to you after e
 | 032 | Feature Tree Drag-and-Drop | `ready` | — | 026, 029, 030, 031 | Shop | `components/shop/` |
 | 033 | Feature Requirements Document | `done` | — | 026, 027, 029 | Shop | `components/shop/` |
 | 034 | Requirements Document Editor | `done` | — | 027, 028, 033 | Shop | `components/shop/` |
-| 035 | Feature Tree Status Tracking | `ready` | — | 026, 029, 030, 031 | Shop | `components/shop/` |
-| 036 | Feature Tree Search & Filter | `blocked` | — | 027, 029, 035 | Shop | `components/shop/` |
+| 035 | Feature Tree Status Tracking | `done` | — | 026, 029, 030, 031 | Shop | `components/shop/` |
+| 036 | Feature Tree Search & Filter | `ready` | — | 027, 029, 035 | Shop | `components/shop/` |
 | 037 | Pattern Shop Agent Infra | `done` | — | 002, 026, 027, 029 | Shop | `components/shop/`, `app/api/shop/agent/` |
 | 038 | Agent: Feature Tree Generation | `ready` | — | 026, 029, 030, 037 | Shop | `components/shop/` |
 | 039 | Agent: Requirements Review | `ready` | — | 033, 034, 037 | Shop | `components/shop/` |
 | 040 | Agent: Gap Detection | `ready` | — | 028, 029, 037 | Shop | `components/shop/` |
-| 041 | Feature Tree Statistics | `blocked` | — | 027, 029, 035 | Shop | `components/shop/` |
+| 041 | Feature Tree Statistics | `ready` | — | 027, 029, 035 | Shop | `components/shop/` |
 | 042 | Requirements Import/Export | `ready` | — | 029, 033, 034 | Shop | `components/shop/` |
 | 043 | Document Versioning | `ready` | — | 026, 028, 033, 034 | Shop | `components/shop/` |
 | 044 | Pattern Shop Comments | `blocked` | — | 033, 034, 039, 043 | Shop | `components/shop/` |
@@ -708,6 +708,6 @@ These phases require work from **multiple module tracks** to be complete before 
 | Cross-Cutting (096–120) | 25 | 10 | 0 | 6 | 9 |
 | Advanced (121–135) | 15 | 0 | 0 | 6 | 9 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **64** | **0** | **43** | **43** |
+| **TOTAL** | **150** | **67** | **0** | **44** | **39** |
 
-**Currently ready to start**: 032, 035, 038, 039, 040, 042, 043, 045, 052, 053, 055, 057, 058, 059, 066, 068, 070, 071, 072, 074, 076, 077, 078, 080, 082, 086, 088, 089, 090, 100, 101, 102, 106, 110, 118, 120, 121, 122, 124, 127, 131, 132
+**Currently ready to start**: 036, 038, 039, 040, 041, 042, 043, 045, 052, 053, 055, 057, 058, 059, 066, 068, 070, 071, 072, 074, 076, 077, 078, 080, 082, 086, 088, 089, 090, 102, 106, 110, 118, 120, 121, 122, 124, 127, 131, 132
