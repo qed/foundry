@@ -94,9 +94,12 @@ export async function POST(request: NextRequest) {
     const stream = new ReadableStream({
       async start(controller) {
         try {
+          // Use higher token limit for tree generation requests
+          const isTreeGen = /generat|create.*tree|decompos|break.*down.*feature/i.test(message)
+
           const response = client.messages.stream({
             model: 'claude-haiku-4-5-20251001',
-            max_tokens: 1500,
+            max_tokens: isTreeGen ? 4000 : 1500,
             system: systemPrompt,
             messages: apiMessages,
           })
