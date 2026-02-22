@@ -1,7 +1,17 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { Trees, Plus } from 'lucide-react'
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragStartEvent,
+  type DragEndEvent,
+  type DragOverEvent,
+} from '@dnd-kit/core'
 import { cn } from '@/lib/utils'
 import { Spinner } from '@/components/ui/spinner'
 import { useToast } from '@/components/ui/toast-container'
@@ -60,6 +70,21 @@ const CHILD_LEVELS: Record<string, TreeNode['level'] | null> = {
   task: null,
 }
 
+const STATUS_COLORS = {
+  not_started: 'bg-text-tertiary',
+  in_progress: 'bg-accent-cyan',
+  complete: 'bg-accent-success',
+  blocked: 'bg-accent-error',
+} as const
+
+// Valid parent levels for each node level (used in DnD validation)
+const VALID_PARENT_LEVELS: Record<string, (string | null)[]> = {
+  epic: [null],
+  feature: ['epic'],
+  sub_feature: ['epic', 'feature'],
+  task: ['feature', 'sub_feature'],
+}
+
 function countAllChildren(node: TreeNode): number {
   let count = node.children.length
   for (const child of node.children) {
@@ -94,6 +119,20 @@ export function FeatureTree({
   const [isDeleting, setIsDeleting] = useState(false)
   const [changeLevelDialog, setChangeLevelDialog] = useState<ChangeLevelState | null>(null)
   const [isChangingLevel, setIsChangingLevel] = useState(false)
+
+  // Drag-and-drop state
+  const [draggedNodeId, setDraggedNodeId] = useState<string | null>(null)
+  const [dropTarget, setDropTarget] = useState<{
+    nodeId: string
+    zone: 'before' | 'on' | 'after'
+    valid: boolean
+  } | null>(null)
+  const previousTreeRef = useRef<TreeNode[]>([])
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+  )
+
   const { addToast } = useToast()
 
   const fetchTree = useCallback(async () => {
@@ -347,6 +386,261 @@ export function FeatureTree({
     }
   }, [changeLevelDialog, projectId, fetchTree, addToast])
 
+  // ── Drag-and-Drop ────────────────────────────────────────
+
+  // Flatten tree into a lookup map for validation
+  const flattenTree = useCallback((nodes: TreeNode[]): Map<string, TreeNode> => {
+    const map = new Map<string, TreeNode>()
+    const walk = (ns: TreeNode[]) => {
+      for (const n of ns) {
+        map.set(n.id, n)
+        walk(n.children)
+      }
+    }
+    walk(nodes)
+    return map
+  }, [])
+
+  // Check if nodeId is an ancestor of targetId
+  const isAncestor = useCallback((nodeId: string, targetId: string, nodeMap: Map<string, TreeNode>): boolean => {
+    let current = nodeMap.get(targetId)
+    while (current?.parent_id) {
+      if (current.parent_id === nodeId) return true
+      current = nodeMap.get(current.parent_id)
+    }
+    return false
+  }, [])
+
+  // Check if a drop is valid
+  const isValidDrop = useCallback((
+    draggedId: string,
+    targetId: string,
+    zone: 'before' | 'on' | 'after',
+    nodeMap: Map<string, TreeNode>
+  ): boolean => {
+    const dragged = nodeMap.get(draggedId)
+    const target = nodeMap.get(targetId)
+    if (!dragged || !target) return false
+    if (draggedId === targetId) return false
+    if (isAncestor(draggedId, targetId, nodeMap)) return false
+
+    if (zone === 'on') {
+      // Reparent: dragged becomes child of target
+      if (target.level === 'task') return false // tasks can't have children
+      const validParents = VALID_PARENT_LEVELS[dragged.level]
+      return validParents?.includes(target.level) ?? false
+    } else {
+      // Before/after: dragged becomes sibling of target (same parent)
+      const targetParentLevel = target.parent_id ? nodeMap.get(target.parent_id)?.level ?? null : null
+      const validParents = VALID_PARENT_LEVELS[dragged.level]
+      return validParents?.includes(targetParentLevel) ?? false
+    }
+  }, [isAncestor])
+
+  // Apply a move optimistically to the tree
+  const applyMoveToTree = useCallback((
+    nodes: TreeNode[],
+    draggedId: string,
+    targetId: string,
+    zone: 'before' | 'on' | 'after'
+  ): TreeNode[] => {
+    // Extract the dragged node from the tree
+    let draggedNode: TreeNode | null = null
+    const removeNode = (ns: TreeNode[]): TreeNode[] =>
+      ns.reduce<TreeNode[]>((acc, n) => {
+        if (n.id === draggedId) {
+          draggedNode = n
+          return acc
+        }
+        acc.push({ ...n, children: removeNode(n.children) })
+        return acc
+      }, [])
+
+    const withoutDragged = removeNode(nodes)
+    if (!draggedNode) return nodes
+
+    if (zone === 'on') {
+      // Insert as first child of target
+      const insertChild = (ns: TreeNode[]): TreeNode[] =>
+        ns.map((n) => {
+          if (n.id === targetId) {
+            return { ...n, children: [{ ...draggedNode!, children: draggedNode!.children }, ...n.children] }
+          }
+          return { ...n, children: insertChild(n.children) }
+        })
+      return insertChild(withoutDragged)
+    } else {
+      // Insert before or after target as sibling
+      const insertSibling = (ns: TreeNode[]): TreeNode[] => {
+        const result: TreeNode[] = []
+        for (const n of ns) {
+          if (n.id === targetId) {
+            if (zone === 'before') {
+              result.push({ ...draggedNode!, children: draggedNode!.children })
+              result.push({ ...n, children: insertSibling(n.children) })
+            } else {
+              result.push({ ...n, children: insertSibling(n.children) })
+              result.push({ ...draggedNode!, children: draggedNode!.children })
+            }
+          } else {
+            result.push({ ...n, children: insertSibling(n.children) })
+          }
+        }
+        return result
+      }
+      return insertSibling(withoutDragged)
+    }
+  }, [])
+
+  // Compute new parentId and position from the move
+  const computeMoveParams = useCallback((
+    targetId: string,
+    zone: 'before' | 'on' | 'after',
+    nodeMap: Map<string, TreeNode>,
+    updatedTree: TreeNode[]
+  ): { parentId: string | null; position: number } => {
+    const target = nodeMap.get(targetId)
+    if (!target) return { parentId: null, position: 0 }
+
+    if (zone === 'on') {
+      return { parentId: targetId, position: 0 }
+    } else {
+      const parentId = target.parent_id
+
+      // For root-level nodes
+      if (!parentId) {
+        const idx = updatedTree.findIndex((n) => n.id === target.id)
+        const pos = zone === 'before' ? idx : idx + 1
+        return { parentId: null, position: Math.max(0, pos) }
+      }
+
+      // For non-root, find siblings in the updated tree
+      const findParent = (ns: TreeNode[]): TreeNode | null => {
+        for (const n of ns) {
+          if (n.id === parentId) return n
+          const found = findParent(n.children)
+          if (found) return found
+        }
+        return null
+      }
+      const parentNode = findParent(updatedTree)
+      if (!parentNode) return { parentId, position: 0 }
+
+      const targetIdx = parentNode.children.findIndex((c) => c.id === target.id)
+      const pos = zone === 'before' ? targetIdx : targetIdx + 1
+      return { parentId, position: Math.max(0, pos) }
+    }
+  }, [])
+
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    setDraggedNodeId(event.active.id as string)
+    setDropTarget(null)
+    previousTreeRef.current = tree
+  }, [tree])
+
+  const handleDragOver = useCallback((event: DragOverEvent) => {
+    const { active, over } = event
+    if (!over) {
+      setDropTarget(null)
+      return
+    }
+
+    const overId = over.id as string
+    // Parse zone from droppable ID: "node-{id}-before", "node-{id}-on", "node-{id}-after"
+    const parts = overId.split('-zone-')
+    if (parts.length !== 2) {
+      setDropTarget(null)
+      return
+    }
+    const targetNodeId = parts[0]
+    const zone = parts[1] as 'before' | 'on' | 'after'
+    const draggedId = active.id as string
+
+    const nodeMap = flattenTree(tree)
+    const valid = isValidDrop(draggedId, targetNodeId, zone, nodeMap)
+    setDropTarget({ nodeId: targetNodeId, zone, valid })
+  }, [tree, flattenTree, isValidDrop])
+
+  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
+    const { active, over } = event
+    setDraggedNodeId(null)
+    setDropTarget(null)
+
+    if (!over) return
+
+    const overId = over.id as string
+    const parts = overId.split('-zone-')
+    if (parts.length !== 2) return
+
+    const targetNodeId = parts[0]
+    const zone = parts[1] as 'before' | 'on' | 'after'
+    const draggedId = active.id as string
+
+    const nodeMap = flattenTree(tree)
+    if (!isValidDrop(draggedId, targetNodeId, zone, nodeMap)) return
+
+    // Optimistic update
+    const prevTree = previousTreeRef.current
+    const updatedTree = applyMoveToTree(tree, draggedId, targetNodeId, zone)
+    setTree(updatedTree)
+
+    // Compute API params
+    const { parentId, position } = computeMoveParams(targetNodeId, zone, nodeMap, updatedTree)
+
+    try {
+      const res = await fetch(`/api/projects/${projectId}/feature-nodes/${draggedId}/move`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ parentId, position }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        addToast(data.error || 'Failed to move node', 'error')
+        setTree(prevTree)
+        return
+      }
+
+      // Expand parent so moved node is visible
+      if (parentId) {
+        setExpandedIds((prev) => new Set(prev).add(parentId))
+      }
+
+      // Refetch to sync positions
+      await fetchTree()
+
+      addToast('Node moved', 'info', 5000, {
+        label: 'Undo',
+        onClick: async () => {
+          // Undo: move back to original parent/position
+          const origNode = flattenTree(prevTree).get(draggedId)
+          if (!origNode) return
+          try {
+            await fetch(`/api/projects/${projectId}/feature-nodes/${draggedId}/move`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ parentId: origNode.parent_id, position: origNode.position }),
+            })
+            await fetchTree()
+            addToast('Move undone', 'success')
+          } catch {
+            addToast('Failed to undo', 'error')
+          }
+        },
+      })
+    } catch {
+      setTree(prevTree)
+      addToast('Failed to move node', 'error')
+    }
+  }, [tree, projectId, flattenTree, isValidDrop, applyMoveToTree, computeMoveParams, fetchTree, addToast])
+
+  const handleDragCancel = useCallback(() => {
+    setDraggedNodeId(null)
+    setDropTarget(null)
+  }, [])
+
+  const draggedNode = draggedNodeId ? findNode(tree, draggedNodeId) : null
+
   if (isLoading) {
     return (
       <div className={cn('flex items-center justify-center py-8', className)}>
@@ -388,68 +682,88 @@ export function FeatureTree({
   }
 
   return (
-    <div className={cn('py-1', className)}>
-      {tree.map((node) => (
-        <TreeNodeRow
-          key={node.id}
-          node={node}
-          depth={0}
-          expandedIds={expandedIds}
-          selectedNodeId={selectedNodeId}
-          editingNodeId={editingNodeId}
-          onToggleExpand={handleToggleExpand}
-          onSelectNode={onSelectNode}
-          onAddChild={handleAddChild}
-          onContextMenu={handleContextMenu}
-          onTitleSave={handleTitleSave}
-          onTitleCancel={handleTitleCancel}
-          onDoubleClick={handleStartEdit}
+    <DndContext
+      sensors={sensors}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
+    >
+      <div className={cn('py-1', className)}>
+        {tree.map((node) => (
+          <TreeNodeRow
+            key={node.id}
+            node={node}
+            depth={0}
+            expandedIds={expandedIds}
+            selectedNodeId={selectedNodeId}
+            editingNodeId={editingNodeId}
+            draggedNodeId={draggedNodeId}
+            dropTarget={dropTarget}
+            onToggleExpand={handleToggleExpand}
+            onSelectNode={onSelectNode}
+            onAddChild={handleAddChild}
+            onContextMenu={handleContextMenu}
+            onTitleSave={handleTitleSave}
+            onTitleCancel={handleTitleCancel}
+            onDoubleClick={handleStartEdit}
+          />
+        ))}
+
+        {/* Add Epic button */}
+        <button
+          onClick={handleAddEpic}
+          className="w-full flex items-center gap-1.5 px-2 py-1.5 mt-1 text-xs text-text-tertiary hover:text-accent-cyan hover:bg-bg-tertiary rounded transition-colors"
+        >
+          <Plus className="w-3 h-3" />
+          Add Epic
+        </button>
+
+        {/* Context menu */}
+        {contextMenu && (
+          <NodeContextMenu
+            position={contextMenu.position}
+            canAddChild={!!CHILD_LEVELS[contextMenu.nodeLevel]}
+            onAddChild={() => handleAddChild(contextMenu.nodeId, contextMenu.nodeLevel)}
+            onAddSibling={() => handleAddSibling(contextMenu.parentId)}
+            onEdit={() => handleStartEdit(contextMenu.nodeId)}
+            onDelete={() => handleOpenDeleteDialog(contextMenu.nodeId)}
+            onChangeLevel={() => handleOpenChangeLevelDialog(contextMenu.nodeId)}
+            onClose={() => setContextMenu(null)}
+          />
+        )}
+
+        {/* Delete dialog */}
+        <DeleteNodeDialog
+          open={deleteDialog !== null}
+          nodeTitle={deleteDialog?.nodeTitle || ''}
+          childCount={deleteDialog?.childCount || 0}
+          onClose={() => setDeleteDialog(null)}
+          onConfirm={handleConfirmDelete}
+          isDeleting={isDeleting}
         />
-      ))}
 
-      {/* Add Epic button */}
-      <button
-        onClick={handleAddEpic}
-        className="w-full flex items-center gap-1.5 px-2 py-1.5 mt-1 text-xs text-text-tertiary hover:text-accent-cyan hover:bg-bg-tertiary rounded transition-colors"
-      >
-        <Plus className="w-3 h-3" />
-        Add Epic
-      </button>
-
-      {/* Context menu */}
-      {contextMenu && (
-        <NodeContextMenu
-          position={contextMenu.position}
-          canAddChild={!!CHILD_LEVELS[contextMenu.nodeLevel]}
-          onAddChild={() => handleAddChild(contextMenu.nodeId, contextMenu.nodeLevel)}
-          onAddSibling={() => handleAddSibling(contextMenu.parentId)}
-          onEdit={() => handleStartEdit(contextMenu.nodeId)}
-          onDelete={() => handleOpenDeleteDialog(contextMenu.nodeId)}
-          onChangeLevel={() => handleOpenChangeLevelDialog(contextMenu.nodeId)}
-          onClose={() => setContextMenu(null)}
+        {/* Change level dialog */}
+        <ChangeLevelDialog
+          open={changeLevelDialog !== null}
+          nodeTitle={changeLevelDialog?.nodeTitle || ''}
+          currentLevel={changeLevelDialog?.currentLevel || 'feature'}
+          hasChildren={changeLevelDialog?.hasChildren || false}
+          onClose={() => setChangeLevelDialog(null)}
+          onConfirm={handleConfirmLevelChange}
+          isChanging={isChangingLevel}
         />
-      )}
+      </div>
 
-      {/* Delete dialog */}
-      <DeleteNodeDialog
-        open={deleteDialog !== null}
-        nodeTitle={deleteDialog?.nodeTitle || ''}
-        childCount={deleteDialog?.childCount || 0}
-        onClose={() => setDeleteDialog(null)}
-        onConfirm={handleConfirmDelete}
-        isDeleting={isDeleting}
-      />
-
-      {/* Change level dialog */}
-      <ChangeLevelDialog
-        open={changeLevelDialog !== null}
-        nodeTitle={changeLevelDialog?.nodeTitle || ''}
-        currentLevel={changeLevelDialog?.currentLevel || 'feature'}
-        hasChildren={changeLevelDialog?.hasChildren || false}
-        onClose={() => setChangeLevelDialog(null)}
-        onConfirm={handleConfirmLevelChange}
-        isChanging={isChangingLevel}
-      />
-    </div>
+      {/* Drag overlay - ghost card following cursor */}
+      <DragOverlay dropAnimation={null}>
+        {draggedNode && (
+          <div className="flex items-center gap-1.5 px-2 py-1.5 bg-bg-secondary border border-accent-cyan/50 rounded shadow-lg text-xs text-text-primary max-w-[200px]">
+            <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', STATUS_COLORS[draggedNode.status])} />
+            <span className="truncate">{draggedNode.title}</span>
+          </div>
+        )}
+      </DragOverlay>
+    </DndContext>
   )
 }
