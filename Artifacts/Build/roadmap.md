@@ -1,0 +1,540 @@
+# Helix Foundry — Parallel Build Roadmap
+
+> **Single source of truth** for multi-session parallel builds.
+> Last updated: 2026-02-21
+
+---
+
+## ⮕ START HERE: Recommended Next Actions
+
+**Wave 1 — 4 parallel sessions (conflict-free file areas):**
+
+| Priority | Phase | Name | Track | File Areas |
+|----------|-------|------|-------|------------|
+| 1 | **017** | Edit & Delete Ideas | Hall | `components/hall/`, `app/api/hall/ideas/[ideaId]/` |
+| 2 | **026** | Pattern Shop Database Schema | Shop | `supabase/migrations/`, `types/database.ts` |
+| 3 | **113** | Organization Console | Admin | `components/admin/`, `app/.../admin/` |
+| 4 | **117** | Real-Time Presence | Realtime | `lib/realtime/`, `components/layout/` |
+
+**Setup**: Each session runs in its own **git worktree** (isolated directory + branch). Prompts are in `Input Artifacts/Build/Wave-1-Phase-XXX-Prompt.md`.
+
+**Merge order when done**: 017 first (no schema conflicts), then 026 (schema), then 113 and 117 in any order.
+
+**Wave 2 (after Wave 1 merges):**
+
+| Priority | Phase | Name | Track | File Areas |
+|----------|-------|------|-------|------------|
+| 1 | **061** | Assembly Floor Database Schema | Floor | `supabase/migrations/`, `types/database.ts` |
+| 2 | **018** | Tagging & Tag Management | Hall | `components/hall/`, `app/api/hall/tags/` |
+| 3 | **027** | Pattern Shop Page Layout | Shop | `components/shop/`, `app/.../shop/` |
+| 4 | **120** | Project Archive & Cleanup | Admin | `components/admin/` |
+
+**After each wave, return to the Conductor session** and say "update the roadmap".
+
+---
+
+## 🚀 Kick-Off Prompt for a New Session
+
+Copy-paste this **exact prompt** into a brand new Claude Code session to start building a phase:
+
+```
+Read the file Input Artifacts/Build/roadmap.md — specifically the "⮕ START HERE" section and the Phase Status Table. Pick a phase marked "ready" that is listed in the recommended next actions (or the lowest-numbered "ready" phase if recommendations are exhausted). Then:
+
+1. Read the phase spec at Input Artifacts/Build/Phases/Phase-XXX-*.md (where XXX is the phase number you picked)
+2. Read the "Phase Session Instructions" section in roadmap.md and follow those instructions exactly
+3. Set this session's title to "Build Foundry Phase XXX"
+4. Build the phase
+```
+
+That's it. The session will self-discover the correct phase and build it.
+
+---
+
+## 🎛️ Conductor Session — Persistent Roadmap Manager
+
+Start a **single long-lived conductor session** and return to it between waves. Copy-paste this to kick it off:
+
+```
+You are the build conductor for Helix Foundry. Your job is to manage the parallel build roadmap — NOT to write any application code. Set this session's title to "Conductor for Helix Foundry Build".
+
+Read the full file: Input Artifacts/Build/roadmap.md
+
+Then do the following:
+
+1. Run "git log --oneline -30" to see recent commits and merged branches
+2. For each phase that has been completed and merged to main:
+   a. Update its status from "ready" or "in-progress" to "done" in the Status Table
+   b. Remove its branch name if present
+3. After updating done phases, recalculate which phases are now "ready":
+   - A phase is "ready" if ALL of its prerequisites show "done" in the Status Table
+   - Update those phases from "blocked" to "ready"
+4. Update the "⮕ START HERE: Recommended Next Actions" section:
+   - Pick the next wave of phases to recommend (up to 4 primary + bonus sessions)
+   - Prioritize: one phase per track, favor phases that unblock the most downstream work
+   - Include merge order guidance (schema phases that touch types/database.ts need sequential merging)
+   - Update the wave number (Wave 2, Wave 3, etc.)
+5. Update the "Progress Summary" table at the bottom with new counts
+6. Update the "Last updated" date at the top
+7. Show me a summary of what changed:
+   - Which phases were marked done
+   - Which phases became ready
+   - What the new recommended wave is
+
+After this initial update, stay in this session. I will come back to you after each wave of merges and say "update the roadmap" — repeat steps 1-7 each time. If I ask "what's the status?", give me a quick summary of: phases done, phases in progress, phases ready, and the current recommended wave.
+```
+
+**When to run it**: Once to start, then return to the same session after each wave of merges. Say "update the roadmap" and it handles everything.
+
+---
+
+## How This System Works
+
+1. **Before starting a session**: Check the Status Table below. Find a phase marked `ready` (all prerequisites complete, not in progress). Update it to `in-progress` and note your branch name.
+2. **Create a branch**: `git checkout -b phase-XXX` from latest `main`.
+3. **Start the session**: Copy the phase prompt from the [Prompt Generator](#prompt-generator) section.
+4. **When done**: Merge branch to `main`, update the phase status to `done` here.
+5. **Merge order matters**: When multiple schema phases finish, merge one at a time and resolve any `types/database.ts` conflicts.
+
+### Rules for Parallel Safety
+- **Never run two phases from the same module simultaneously** unless explicitly marked safe.
+- **Schema phases** (026, 046, 061, 081, 096, 105, 109) all touch `types/database.ts` — merge them one at a time.
+- **Hall phases** (017-025) all touch `components/hall/` — run sequentially within the Hall track.
+- **Cross-module phases** (marked with ⚠️) depend on multiple module tracks being done first.
+
+---
+
+## Status Legend
+
+| Status | Meaning |
+|--------|---------|
+| `done` | Completed and merged to main |
+| `in-progress` | Actively being built in a session (note branch name) |
+| `ready` | All prerequisites are `done` — can be pulled into a new session |
+| `blocked` | Has unfinished prerequisites — cannot start yet |
+
+---
+
+## Phase Status Table
+
+### Section 1: Foundation (001–010) ✅ ALL COMPLETE
+
+| Phase | Name | Status | Branch | Prerequisites |
+|-------|------|--------|--------|---------------|
+| 001 | Next.js Project Setup | `done` | — | — |
+| 002 | Supabase Database Schema | `done` | — | 001 |
+| 003 | Supabase Auth | `done` | — | 001, 002 |
+| 004 | Auth Middleware | `done` | — | 003 |
+| 005 | Multi-Tenancy | `done` | — | 003, 004 |
+| 006 | Core UI Shell | `done` | — | 005 |
+| 007 | UI Components Library | `done` | — | 006 |
+| 008 | Registration & Onboarding | `done` | — | 005, 007 |
+| 009 | Roles & Permissions | `done` | — | 005 |
+| 010 | Navigation & Module Switching | `done` | — | 006, 009 |
+
+### Section 2: The Hall MVP (011–025)
+
+| Phase | Name | Status | Branch | Prerequisites | Track | File Areas |
+|-------|------|--------|--------|---------------|-------|------------|
+| 011 | Hall Database Schema | `done` | — | 002 | Hall | `supabase/migrations/`, `types/database.ts` |
+| 012 | Hall Page Layout & UI | `done` | — | 011 | Hall | `components/hall/`, `app/.../hall/` |
+| 013 | Create Idea / Note Capture | `done` | — | 011, 012 | Hall | `components/hall/`, `app/api/hall/` |
+| 014 | Idea List View | `done` | — | 012, 013 | Hall | `components/hall/`, `app/api/hall/` |
+| 015 | Hall Search & Filter | `done` | — | 014 | Hall | `components/hall/`, `app/api/hall/` |
+| 016 | Idea Detail View | `done` | — | 014 | Hall | `components/hall/`, `app/api/hall/ideas/[ideaId]/` |
+| 017 | Edit & Delete Ideas | `ready` | — | 011, 016 | Hall | `components/hall/`, `app/api/hall/ideas/[ideaId]/` |
+| 018 | Tagging & Tag Management | `ready` | — | 011, 013, 014 | Hall | `components/hall/`, `app/api/hall/tags/` |
+| 019 | Bulk Operations | `blocked` | — | 014, 017, 018 | Hall | `components/hall/` |
+| 020 | Hall Agent Infrastructure | `ready` | — | 002, 011, 012 | Hall | `components/hall/`, `app/api/hall/agent/` |
+| 021 | Agent: Auto-Tag Suggestions | `blocked` | — | 013, 018, 020 | Hall | `components/hall/` |
+| 022 | Agent: Duplicate Detection | `blocked` | — | 011, 013, 020 | Hall | `components/hall/` |
+| 023 | Agent: Connection Discovery | `blocked` | — | 011, 016, 020 | Hall | `components/hall/` |
+| 024 | Hall Real-Time Updates | `ready` | — | 002, 011, 012, 014 | Hall | `components/hall/`, `lib/realtime/` |
+| 025 | Hall → Shop Promotion | `blocked` | — | 011, 016, 026 | Hall ⚠️ | `components/hall/`, `app/api/hall/` |
+
+### Section 3: The Pattern Shop MVP (026–045)
+
+| Phase | Name | Status | Branch | Prerequisites | Track | File Areas |
+|-------|------|--------|--------|---------------|-------|------------|
+| 026 | Pattern Shop Database Schema | `ready` | — | 001, 002 | Shop | `supabase/migrations/`, `types/database.ts` |
+| 027 | Pattern Shop Page Layout | `blocked` | — | 006, 010, 026 | Shop | `components/shop/`, `app/.../shop/` |
+| 028 | Product Overview Document | `blocked` | — | 026, 027 | Shop | `components/shop/` |
+| 029 | Feature Tree Component | `blocked` | — | 026, 027 | Shop | `components/shop/` |
+| 030 | Add Nodes to Feature Tree | `blocked` | — | 026, 029 | Shop | `components/shop/` |
+| 031 | Edit & Delete Tree Nodes | `blocked` | — | 026, 029, 030 | Shop | `components/shop/` |
+| 032 | Feature Tree Drag-and-Drop | `blocked` | — | 026, 029, 030, 031 | Shop | `components/shop/` |
+| 033 | Feature Requirements Document | `blocked` | — | 026, 027, 029 | Shop | `components/shop/` |
+| 034 | Requirements Document Editor | `blocked` | — | 027, 028, 033 | Shop | `components/shop/` |
+| 035 | Feature Tree Status Tracking | `blocked` | — | 026, 029, 030, 031 | Shop | `components/shop/` |
+| 036 | Feature Tree Search & Filter | `blocked` | — | 027, 029, 035 | Shop | `components/shop/` |
+| 037 | Pattern Shop Agent Infra | `blocked` | — | 002, 026, 027, 029 | Shop | `components/shop/`, `app/api/shop/agent/` |
+| 038 | Agent: Feature Tree Generation | `blocked` | — | 026, 029, 030, 037 | Shop | `components/shop/` |
+| 039 | Agent: Requirements Review | `blocked` | — | 033, 034, 037 | Shop | `components/shop/` |
+| 040 | Agent: Gap Detection | `blocked` | — | 028, 029, 037 | Shop | `components/shop/` |
+| 041 | Feature Tree Statistics | `blocked` | — | 027, 029, 035 | Shop | `components/shop/` |
+| 042 | Requirements Import/Export | `blocked` | — | 029, 033, 034 | Shop | `components/shop/` |
+| 043 | Document Versioning | `blocked` | — | 026, 028, 033, 034 | Shop | `components/shop/` |
+| 044 | Pattern Shop Comments | `blocked` | — | 033, 034, 039, 043 | Shop | `components/shop/` |
+| 045 | Technical Requirements | `blocked` | — | 026, 027, 029, 034 | Shop | `components/shop/` |
+
+### Section 4: The Control Room MVP (046–060)
+
+| Phase | Name | Status | Branch | Prerequisites | Track | File Areas |
+|-------|------|--------|--------|---------------|-------|------------|
+| 046 | Control Room Database Schema | `blocked` | — | 002, 026 | Room | `supabase/migrations/`, `types/database.ts` |
+| 047 | Control Room Page Layout | `blocked` | — | 006, 010, 046 | Room | `components/room/`, `app/.../room/` |
+| 048 | Foundation Blueprints | `blocked` | — | 046, 047, 049 | Room | `components/room/` |
+| 049 | Blueprint Rich Text Editor | `blocked` | — | 047 | Room | `components/room/` |
+| 050 | System Diagram Blueprints | `blocked` | — | 046, 047, 049 | Room | `components/room/` |
+| 051 | Feature Blueprints | `blocked` | — | 026, 046, 047, 049 | Room ⚠️ | `components/room/` |
+| 052 | Feature-Blueprint Linking | `blocked` | — | 026, 029, 046, 051 | Room ⚠️ | `components/room/`, `components/shop/` |
+| 053 | Blueprint Templates | `blocked` | — | 046, 048, 050, 051 | Room | `components/room/` |
+| 054 | Blueprint Status Tracking | `blocked` | — | 046, 047, 048, 050, 051 | Room | `components/room/` |
+| 055 | Blueprint Search & Filter | `blocked` | — | 046, 047, 054 | Room | `components/room/` |
+| 056 | Control Room Agent Infra | `blocked` | — | 002, 046, 047, 051 | Room | `components/room/`, `app/api/room/agent/` |
+| 057 | Agent: Blueprint Generation | `blocked` | — | 048, 051, 056 | Room | `components/room/` |
+| 058 | Agent: Blueprint Review | `blocked` | — | 048, 051, 054, 056 | Room | `components/room/` |
+| 059 | Blueprint Version History | `blocked` | — | 046, 049, 054 | Room | `components/room/` |
+| 060 | Blueprint Comments | `blocked` | — | 046, 049, 054, 059 | Room | `components/room/` |
+
+### Section 5: The Assembly Floor MVP (061–080)
+
+| Phase | Name | Status | Branch | Prerequisites | Track | File Areas |
+|-------|------|--------|--------|---------------|-------|------------|
+| 061 | Assembly Floor Database Schema | `ready` | — | 002 | Floor | `supabase/migrations/`, `types/database.ts` |
+| 062 | Assembly Floor Page Layout | `blocked` | — | 006, 010, 061 | Floor | `components/floor/`, `app/.../floor/` |
+| 063 | Create Work Order (Manual) | `blocked` | — | 010, 061, 062 | Floor | `components/floor/`, `app/api/floor/` |
+| 064 | Work Order Detail View | `blocked` | — | 061, 062, 063 | Floor | `components/floor/` |
+| 065 | Kanban Board View | `blocked` | — | 061, 062, 063, 064 | Floor | `components/floor/` |
+| 066 | Kanban Card Display | `blocked` | — | 062, 065 | Floor | `components/floor/` |
+| 067 | Work Order List/Table View | `blocked` | — | 061, 062, 064 | Floor | `components/floor/` |
+| 068 | Work Order Assignment | `blocked` | — | 010, 061, 064, 065, 067 | Floor | `components/floor/` |
+| 069 | Work Order Phases | `blocked` | — | 061, 062, 065 | Floor | `components/floor/` |
+| 070 | Priority & Sequencing | `blocked` | — | 061, 065, 067, 069 | Floor | `components/floor/` |
+| 071 | Progress Tracking & Rollup | `blocked` | — | 026, 061, 069 | Floor ⚠️ | `components/floor/` |
+| 072 | Work Order Search & Filter | `blocked` | — | 061, 062, 067, 069 | Floor | `components/floor/` |
+| 073 | Assembly Floor Agent Infra | `blocked` | — | 002, 061, 062 | Floor | `components/floor/`, `app/api/floor/agent/` |
+| 074 | Agent: WO Extraction | `blocked` | — | 046, 061, 073 | Floor ⚠️ | `components/floor/` |
+| 075 | Agent: Phase Planning | `blocked` | — | 061, 069, 073, 074 | Floor | `components/floor/` |
+| 076 | Implementation Plans | `blocked` | — | 061, 064, 073 | Floor | `components/floor/` |
+| 077 | Bulk Operations | `blocked` | — | 061, 065, 067 | Floor | `components/floor/` |
+| 078 | Floor Comments | `blocked` | — | 010, 061, 064 | Floor | `components/floor/` |
+| 079 | Leader Progress Dashboard | `blocked` | — | 009, 061, 069, 071 | Floor | `components/floor/` |
+| 080 | MCP Connection Schema | `blocked` | — | 010, 061 | Floor | `supabase/migrations/`, `app/api/floor/mcp/` |
+
+### Section 6: The Insights Lab MVP (081–095)
+
+| Phase | Name | Status | Branch | Prerequisites | Track | File Areas |
+|-------|------|--------|--------|---------------|-------|------------|
+| 081 | Insights Lab Database Schema | `ready` | — | 002 | Lab | `supabase/migrations/`, `types/database.ts` |
+| 082 | Feedback Collection API | `blocked` | — | 001, 081 | Lab | `app/api/lab/` |
+| 083 | Insights Lab Page Layout | `blocked` | — | 006, 010, 081 | Lab | `components/lab/`, `app/.../lab/` |
+| 084 | Feedback Inbox Display | `blocked` | — | 081, 083 | Lab | `components/lab/` |
+| 085 | Feedback Detail View | `blocked` | — | 081, 083, 084 | Lab | `components/lab/` |
+| 086 | Feedback Categorization | `blocked` | — | 081, 084, 085 | Lab | `components/lab/` |
+| 087 | Feedback Search & Filter | `blocked` | — | 083, 084, 086 | Lab | `components/lab/` |
+| 088 | Convert Feedback → Work Order | `blocked` | — | 061, 081, 085 | Lab ⚠️ | `components/lab/`, `app/api/lab/` |
+| 089 | Convert Feedback → Feature | `blocked` | — | 026, 081, 085 | Lab ⚠️ | `components/lab/`, `app/api/lab/` |
+| 090 | Insights Lab Agent Infra | `blocked` | — | 081, 083 | Lab | `components/lab/`, `app/api/lab/agent/` |
+| 091 | Agent: Auto-Categorization | `blocked` | — | 081, 086, 090 | Lab | `components/lab/` |
+| 092 | Agent: Feedback Enrichment | `blocked` | — | 026, 085, 090, 091 | Lab ⚠️ | `components/lab/` |
+| 093 | Agent: Conversion Suggestions | `blocked` | — | 088, 089, 090, 091 | Lab ⚠️ | `components/lab/` |
+| 094 | App Key Management | `blocked` | — | 006, 081, 082 | Lab | `components/lab/`, `app/api/lab/` |
+| 095 | Feedback Bulk Operations | `blocked` | — | 084, 086, 088 | Lab | `components/lab/` |
+
+### Section 7: Cross-Cutting Enhancements (096–120)
+
+| Phase | Name | Status | Branch | Prerequisites | Track | File Areas |
+|-------|------|--------|--------|---------------|-------|------------|
+| 096 | Artifacts Database & Storage | `ready` | — | 002 | Artifacts | `supabase/migrations/`, `types/database.ts` |
+| 097 | Artifact Upload UI | `blocked` | — | 096 | Artifacts | `components/artifacts/` |
+| 098 | Artifact Browser & Management | `blocked` | — | 096, 097 | Artifacts | `components/artifacts/` |
+| 099 | Artifact Linking to Entities | `blocked` | — | 096, 097 | Artifacts | `components/artifacts/` |
+| 100 | Artifact Search & Indexing | `blocked` | — | 096, 097 | Artifacts | `components/artifacts/` |
+| 101 | Artifact Folders & Organization | `blocked` | — | 096, 098 | Artifacts | `components/artifacts/` |
+| 102 | Document Version History | `blocked` | — | 002, 034, 049 | Versioning ⚠️ | `components/versioning/`, `lib/` |
+| 103 | Version Diff & Comparison | `blocked` | — | 102 | Versioning | `components/versioning/` |
+| 104 | Version Restore | `blocked` | — | 102, 103 | Versioning | `components/versioning/` |
+| 105 | Comments System Foundation | `ready` | — | 002 | Comments | `supabase/migrations/`, `components/comments/` |
+| 106 | @Mentions System | `blocked` | — | 099, 105 | Comments ⚠️ | `components/comments/` |
+| 107 | Notification System | `blocked` | — | 105, 106 | Notifications | `components/notifications/`, `app/api/notifications/` |
+| 108 | Email Notifications | `blocked` | — | 107 | Notifications | `lib/email/`, `app/api/notifications/` |
+| 109 | Knowledge Graph Schema | `ready` | — | 002 | Knowledge | `supabase/migrations/`, `types/database.ts` |
+| 110 | Knowledge Graph Explorer | `blocked` | — | 002, 109 | Knowledge | `components/knowledge/` |
+| 111 | Auto-Connection Detection | `blocked` | — | 106, 109, 110 | Knowledge ⚠️ | `components/knowledge/` |
+| 112 | Manual Entity Linking | `blocked` | — | 109, 110 | Knowledge | `components/knowledge/` |
+| 113 | Organization Console | `ready` | — | 005, 009 | Admin | `components/admin/`, `app/.../admin/` |
+| 114 | Team Invitation System | `blocked` | — | 108, 113 | Admin ⚠️ | `components/admin/` |
+| 115 | Seat Management & Billing | `blocked` | — | 005, 113, 114 | Admin | `components/admin/` |
+| 116 | User Profile & Settings | `blocked` | — | 004, 107 | Admin | `components/settings/`, `app/.../settings/` |
+| 117 | Real-Time Presence | `ready` | — | 002 | Realtime | `lib/realtime/`, `components/layout/` |
+| 118 | Collaborative Editing | `blocked` | — | 034, 049, 117 | Realtime ⚠️ | `components/editor/` |
+| 119 | Audit Trail & Activity Log | `ready` | — | 002 | Admin | `supabase/migrations/`, `components/admin/` |
+| 120 | Project Archive & Cleanup | `blocked` | — | 002, 005, 113 | Admin | `components/admin/` |
+
+### Section 8: Advanced Features (121–135)
+
+| Phase | Name | Status | Branch | Prerequisites | Track | File Areas |
+|-------|------|--------|--------|---------------|-------|------------|
+| 121 | Idea Maturity Scoring | `blocked` | — | 011, 023 | Hall ⚠️ | `components/hall/` |
+| 122 | Agent Writing Instructions | `blocked` | — | 037, 113 | Shop ⚠️ | `components/shop/`, `components/admin/` |
+| 123 | Aggregate Export | `blocked` | — | 037, 042 | Shop | `components/shop/` |
+| 124 | Drift Detection | `blocked` | — | 026, 037, 046 | Room ⚠️ | `components/room/` |
+| 125 | Cross-Document Suggestions | `blocked` | — | 037, 046, 057, 124 | Room ⚠️ | `components/room/` |
+| 126 | Org-Level Blueprint Templates | `blocked` | — | 053, 113 | Room ⚠️ | `components/room/`, `components/admin/` |
+| 127 | Extraction Strategy Config | `blocked` | — | 073, 113 | Floor ⚠️ | `components/floor/`, `components/admin/` |
+| 128 | Sprint/Phase Burndown | `blocked` | — | 061, 071 | Floor | `components/floor/` |
+| 129 | MCP Implementation | `blocked` | — | 080 | Floor | `lib/mcp/`, `app/api/floor/mcp/` |
+| 130 | Work Order Sync Alerts | `blocked` | — | 046, 061, 124 | Floor ⚠️ | `components/floor/` |
+| 131 | Slack Integration | `blocked` | — | 081 | Lab | `lib/integrations/`, `app/api/lab/` |
+| 132 | Feedback Analytics | `blocked` | — | 081 | Lab | `components/lab/` |
+| 133 | Priority Scoring | `blocked` | — | 081, 090 | Lab | `components/lab/` |
+| 134 | Global Search | `blocked` | — | all 001–133 | Cross ⚠️ | `components/search/`, `app/api/search/` |
+| 135 | Dark/Light Theme Toggle | `blocked` | — | 001, 116 | Cross | `app/globals.css`, `lib/theme/` |
+
+### Section 9: Polish & Deployment (136–150)
+
+| Phase | Name | Status | Branch | Prerequisites | Track | File Areas |
+|-------|------|--------|--------|---------------|-------|------------|
+| 136 | Error Boundaries & Fallback UI | `blocked` | — | all 001–135 | Quality | `components/`, `app/` |
+| 137 | Loading States & Skeletons | `blocked` | — | all prior | Quality | `components/`, `app/` |
+| 138 | Form Validation (Zod) | `blocked` | — | all forms | Quality | `lib/schemas/`, `components/` |
+| 139 | Responsive Design Audit | `blocked` | — | all 001–138 | Quality | all component dirs |
+| 140 | Accessibility Audit | `blocked` | — | all 001–139 | Quality | all component dirs |
+| 141 | Performance Optimization | `blocked` | — | all 001–140 | Perf | `next.config.ts`, `components/` |
+| 142 | Database Indexing & Tuning | `blocked` | — | all DB tables | Perf | `supabase/migrations/` |
+| 143 | Unit Tests: Foundation & Auth | `blocked` | — | 004, 005, 009 | Testing | `__tests__/`, `jest.config.*` |
+| 144 | Unit Tests: All Modules | `blocked` | — | 143 | Testing | `__tests__/` |
+| 145 | E2E Tests: Critical Workflows | `blocked` | — | all 001–144 | Testing | `e2e/`, `playwright.config.*` |
+| 146 | API Documentation | `blocked` | — | all API routes | Docs | `app/api/docs/` |
+| 147 | User Guide & Onboarding | `blocked` | — | all modules | Docs | `app/help/`, `components/onboarding/` |
+| 148 | CI/CD Pipeline | `blocked` | — | GitHub repo | DevOps | `.github/workflows/`, `vercel.json` |
+| 149 | Security Audit & Hardening | `blocked` | — | all 001–148 | Security | `lib/`, `app/api/` |
+| 150 | Production Launch Checklist | `blocked` | — | all 001–149 | Launch | project root |
+
+---
+
+## Parallel Tracks & Dependency Graph
+
+### Independent Module Tracks
+
+These tracks can run **in parallel** with each other because they touch different directories and database tables. The only shared file risk is `types/database.ts` for schema phases — merge those one at a time.
+
+```
+TRACK: HALL (components/hall/, app/api/hall/)
+017 → 018 → 019
+         ↘ 020 → 021, 022, 023
+024 (semi-independent, after 014)
+025 (needs 026 from Shop track) ⚠️
+
+TRACK: PATTERN SHOP (components/shop/, app/api/shop/)
+026 → 027 → [028, 029] → [030, 033] → [031, 034] → [032, 035] → [036, 037, 041]
+                                                              → [038, 039, 040, 042, 043, 045] → 044
+
+TRACK: CONTROL ROOM (components/room/, app/api/room/)
+046* → 047 → 049 → [048, 050] → 051* → [052*, 053, 054] → [055, 056] → [057, 058, 059] → 060
+* 046 needs 026 (feature_nodes FK)
+* 051, 052 need Shop feature tree
+
+TRACK: ASSEMBLY FLOOR (components/floor/, app/api/floor/)
+061 → 062 → 063 → [064, 067] → [065, 066] → [068, 069, 070] → [071*, 072, 073] → [074*, 076, 077, 078] → [075, 079] → 080
+* 071 needs 026 (feature rollup)
+* 074 needs 046 (blueprint reading)
+
+TRACK: INSIGHTS LAB (components/lab/, app/api/lab/)
+081 → [082, 083] → 084 → [085, 090] → [086, 094] → [087, 088*, 089*] → [091, 095] → [092*, 093*]
+* 088 needs 061 (work orders)
+* 089 needs 026 (features)
+* 092, 093 need multiple module tracks
+
+TRACK: ARTIFACTS (components/artifacts/)
+096 → 097 → [098, 099, 100] → 101
+
+TRACK: COMMENTS & NOTIFICATIONS (components/comments/, components/notifications/)
+105 → 106* → 107 → 108
+* 106 needs 099 (artifact linking)
+
+TRACK: KNOWLEDGE GRAPH (components/knowledge/)
+109 → 110 → [111*, 112]
+* 111 needs 106 (@mentions)
+
+TRACK: ADMIN (components/admin/)
+113 → [114*, 120]
+* 114 needs 108 (email notifications)
+115 needs 113, 114
+
+TRACK: REALTIME
+117 → 118* (needs 034, 049)
+```
+
+---
+
+## Suggested Build Waves
+
+These waves show the **recommended parallel grouping** of phases. Run all phases in a wave simultaneously, then merge all branches to main before starting the next wave.
+
+### Wave 1 — Module Schemas + Hall Continuation (4 parallel sessions)
+
+| Session | Phase | Track | Notes |
+|---------|-------|-------|-------|
+| A | **017** Edit & Delete Ideas | Hall | Continues Hall MVP |
+| B | **026** Pattern Shop Schema | Shop | New module schema |
+| C | **061** Assembly Floor Schema | Floor | New module schema |
+| D | **081** Insights Lab Schema | Lab | New module schema |
+
+**Merge order**: A first (no schema conflicts), then B, C, D one at a time (all touch `types/database.ts`).
+
+### Wave 2 — Module Layouts + Hall Continuation (4 parallel sessions)
+
+| Session | Phase | Track | Notes |
+|---------|-------|-------|-------|
+| A | **018** Tagging System | Hall | |
+| B | **027** Pattern Shop Layout | Shop | Needs 026✓ |
+| C | **062** Assembly Floor Layout | Floor | Needs 061✓ |
+| D | **083** Insights Lab Layout | Lab | Needs 081✓ |
+
+**Also available** (run if you have extra sessions): 020 (Hall Agent Infra), 082 (Feedback API), 096 (Artifacts Schema), 105 (Comments System), 109 (Knowledge Graph Schema), 113 (Org Console), 117 (Realtime Presence), 119 (Audit Trail).
+
+### Wave 3 — Core Features per Module (4+ parallel sessions)
+
+| Session | Phase | Track | Notes |
+|---------|-------|-------|-------|
+| A | **020** Hall Agent Infrastructure | Hall | |
+| B | **028** + **029** Product Overview + Feature Tree | Shop | Can combine in one session |
+| C | **063** Create Work Order | Floor | |
+| D | **084** Feedback Inbox | Lab | Needs 083✓ |
+
+**Also available**: 024 (Hall Realtime), 046 (Control Room Schema, needs 026✓), 097 (Artifact Upload, needs 096✓).
+
+### Wave 4+ — Deep Module Work
+
+Continue the pattern: advance each track's next available phases. As module tracks mature, cross-module phases (⚠️) become unblocked. Prioritize the critical path for your most-needed features.
+
+---
+
+## How to Find the Next Phase to Pull
+
+**Quickest way**: Check the [⮕ START HERE](#⮕-start-here-recommended-next-actions) section at the top. It lists the recommended next phases in priority order.
+
+**Manual method** (when recommendations are exhausted):
+1. Look at the Status Table — find phases marked `ready`
+2. Verify none of the `ready` phases share the same **Track** as a phase already `in-progress`
+3. Pick the lowest-numbered `ready` phase (or the one most aligned with your priorities)
+4. Update its status to `in-progress` and note your branch name
+
+### Quick "What's Ready?" Checklist
+
+For any phase:
+- [ ] All prerequisites show `done` in the Status Table?
+- [ ] No other phase from the same Track is `in-progress`?
+- [ ] If it's a schema phase, no other schema phase is currently being merged?
+
+If all three: **it's ready to pull.**
+
+---
+
+## Phase Session Instructions
+
+> **This section is read by Claude Code sessions.** When a session is told to "follow the instructions in roadmap.md", it reads this section.
+
+### Step 1: Confirm the Phase
+
+- Verify the phase you are about to build shows `ready` in the Status Table above.
+- If it shows `blocked` or `in-progress`, **stop** and tell the user. Pick the next `ready` phase from the "Recommended Next Actions" section instead.
+
+### Step 2: Read the Phase Spec
+
+- Read the file: `Input Artifacts/Build/Phases/Phase-XXX-*.md` (where XXX is the phase number).
+- This is your primary build specification.
+
+### Step 3: Read Existing Code Context
+
+- Look at the phase spec's **Prerequisites** section. For each prerequisite phase, read the key files it produced (use the **File Areas** column in the Status Table to find them).
+- At minimum, read:
+  - `types/database.ts` — current database types
+  - `lib/supabase/server.ts` — server client patterns
+  - `lib/auth/server.ts` — auth patterns (requireAuth, requireAuthWithProfile)
+  - `lib/utils.ts` — utility functions (cn, timeAgo)
+  - `app/globals.css` — brand colors and theme variables
+  - Any components in the same module directory that the phase builds on
+
+### Step 4: Key Conventions (must follow)
+
+- **Framework**: Next.js 16.1.6 with App Router, Turbopack, React 19, TypeScript strict mode
+- **Styling**: Tailwind CSS v4 with CSS-first config via `@theme` in `globals.css` (NOT `tailwind.config.ts`)
+- **Brand colors**: bg-primary `#0f1117`, bg-secondary `#1a1d27`, bg-tertiary `#252830`, text-primary `#e4e7ec`, text-secondary `#8b8fa3`, text-tertiary `#5a5f73`, accent-cyan `#00d4ff`, accent-purple `#8b5cf6`
+- **Auth/DB**: Supabase for auth + PostgreSQL with RLS; service role client (`createServiceClient()`) bypasses RLS for API routes
+- **API patterns**: Use `requireAuth()` from `lib/auth/server.ts` and `createServiceClient()` from `lib/supabase/server.ts`
+- **Utility**: `cn()` helper in `lib/utils.ts` combines clsx + tailwind-merge
+- **UI**: Glass panel styling via `glass-panel` CSS class. Toast system: `useToast()` → `addToast(message, type)`. Button supports `isLoading` prop, 5 variants, 3 sizes.
+- **ESLint rules**: Don't use `module` as a variable name. Don't call `setState` directly inside `useEffect` — use async pattern.
+- **Layout**: `AppLayout` is already wired into the project layout — don't re-wrap module pages with it.
+- **RLS**: For tenant isolation only — business logic in Next.js API routes.
+
+### Step 5: Git Branching
+
+- Create a feature branch from latest main:
+  ```
+  git checkout main && git pull && git checkout -b phase-XXX
+  ```
+- All work goes on this branch. Do NOT commit directly to main.
+
+### Step 6: Build the Phase
+
+- Follow the phase spec's requirements exactly.
+- Run `npm run build` and `npm run lint` after building — verify zero errors.
+
+### Step 7: Wrap Up
+
+When the phase is built and passing lint/build, present the user with:
+
+1. **What's new** — summary of what was built
+2. **What to test** — list of things to verify, with full clickable URLs (e.g., `http://localhost:3000/org/my-org/project/abc123/hall`)
+3. **Ask for changes** — "Want any modifications before we finalize?"
+4. **Commit** — "Ready to create a commit message with bullet points and push to GitHub?"
+5. **Next phase** — "After merging this branch to main, update the roadmap.md Status Table: mark this phase as `done`, then check the Recommended Next Actions section for what to start next."
+
+---
+
+## Cross-Module Dependency Map
+
+These phases require work from **multiple module tracks** to be complete before they can start. They are natural "convergence points" in the build.
+
+| Phase | Depends On Tracks | Why |
+|-------|-------------------|-----|
+| 025 | Hall + Shop | Promotes ideas to Pattern Shop seeds |
+| 046 | Foundation + Shop(026) | Control Room schema FKs to feature_nodes |
+| 051 | Shop + Room | Feature blueprints link to feature tree |
+| 052 | Shop + Room | Feature-blueprint bidirectional linking |
+| 071 | Shop + Floor | Progress rolls up to feature tree |
+| 074 | Room + Floor | Agent reads blueprints to create work orders |
+| 088 | Floor + Lab | Converts feedback to work orders |
+| 089 | Shop + Lab | Converts feedback to features |
+| 092 | Shop + Lab | Agent links feedback to features |
+| 093 | Floor + Lab + Shop | Agent suggests conversions across modules |
+| 102 | Shop(034) + Room(049) | Version history needs editors from both |
+| 106 | Artifacts + Comments | @Mentions needs artifact linking |
+| 111 | Knowledge + Comments | Auto-connections needs @mentions |
+| 114 | Admin + Notifications | Invitations need email system |
+| 118 | Shop(034) + Room(049) + Realtime | Collaborative editing needs editors + presence |
+| 122 | Shop + Admin | Agent writing instructions in project settings |
+| 124 | Shop + Room | Drift detection compares blueprints to requirements |
+| 130 | Room + Floor | Sync alerts when blueprints change |
+
+---
+
+## Progress Summary
+
+| Section | Total | Done | In Progress | Ready | Blocked |
+|---------|-------|------|-------------|-------|---------|
+| Foundation (001–010) | 10 | 10 | 0 | 0 | 0 |
+| The Hall (011–025) | 15 | 6 | 0 | 4 | 5 |
+| Pattern Shop (026–045) | 20 | 0 | 0 | 1 | 19 |
+| Control Room (046–060) | 15 | 0 | 0 | 0 | 15 |
+| Assembly Floor (061–080) | 20 | 0 | 0 | 1 | 19 |
+| Insights Lab (081–095) | 15 | 0 | 0 | 1 | 14 |
+| Cross-Cutting (096–120) | 25 | 0 | 0 | 6 | 19 |
+| Advanced (121–135) | 15 | 0 | 0 | 0 | 15 |
+| Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
+| **TOTAL** | **150** | **16** | **0** | **13** | **121** |
+
+**Currently ready to start**: 017, 018, 020, 024, 026, 061, 081, 096, 105, 109, 113, 117, 119
