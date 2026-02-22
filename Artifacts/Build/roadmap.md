@@ -9,7 +9,7 @@
 
 **Mode**: Sequential execution directly on `main` branch. No feature branches or worktrees.
 
-**Next phase to build**: **033 — Feature Requirements Document** (Shop)
+**Next phase to build**: **062 — Assembly Floor Page Layout** (Floor)
 
 | # | Phase | Name | Track | Why This Order |
 |---|-------|------|-------|----------------|
@@ -31,7 +31,7 @@
 | ~~16~~ | ~~029~~ | ~~Feature Tree Component~~ | ~~Shop~~ | done |
 | ~~17~~ | ~~028~~ | ~~Product Overview Document~~ | ~~Shop~~ | done |
 | ~~18~~ | ~~030~~ | ~~Add Nodes to Feature Tree~~ | ~~Shop~~ | done |
-| 19 | **033** | Feature Requirements Doc | Shop | Links features to requirements |
+| ~~19~~ | ~~033~~ | ~~Feature Requirements Doc~~ | ~~Shop~~ | done |
 | 20 | **062** | Assembly Floor Page Layout | Floor | Opens Floor UI work |
 
 **Strategy**: Schema phases early (#3-8) to maximize future flexibility. Then alternate between completing Hall and progressing Shop/Floor/Room layouts.
@@ -167,11 +167,11 @@ After this initial update, stay in this session. I will come back to you after e
 | 030 | Add Nodes to Feature Tree | `done` | — | 026, 029 | Shop | `components/shop/` |
 | 031 | Edit & Delete Tree Nodes | `ready` | — | 026, 029, 030 | Shop | `components/shop/` |
 | 032 | Feature Tree Drag-and-Drop | `blocked` | — | 026, 029, 030, 031 | Shop | `components/shop/` |
-| 033 | Feature Requirements Document | `ready` | — | 026, 027, 029 | Shop | `components/shop/` |
-| 034 | Requirements Document Editor | `blocked` | — | 027, 028, 033 | Shop | `components/shop/` |
+| 033 | Feature Requirements Document | `done` | — | 026, 027, 029 | Shop | `components/shop/` |
+| 034 | Requirements Document Editor | `ready` | — | 027, 028, 033 | Shop | `components/shop/` |
 | 035 | Feature Tree Status Tracking | `blocked` | — | 026, 029, 030, 031 | Shop | `components/shop/` |
 | 036 | Feature Tree Search & Filter | `blocked` | — | 027, 029, 035 | Shop | `components/shop/` |
-| 037 | Pattern Shop Agent Infra | `blocked` | — | 002, 026, 027, 029 | Shop | `components/shop/`, `app/api/shop/agent/` |
+| 037 | Pattern Shop Agent Infra | `ready` | — | 002, 026, 027, 029 | Shop | `components/shop/`, `app/api/shop/agent/` |
 | 038 | Agent: Feature Tree Generation | `blocked` | — | 026, 029, 030, 037 | Shop | `components/shop/` |
 | 039 | Agent: Requirements Review | `blocked` | — | 033, 034, 037 | Shop | `components/shop/` |
 | 040 | Agent: Gap Detection | `blocked` | — | 028, 029, 037 | Shop | `components/shop/` |
@@ -533,13 +533,13 @@ These phases require work from **multiple module tracks** to be complete before 
 |---------|-------|------|-------------|-------|---------|
 | Foundation (001–010) | 10 | 10 | 0 | 0 | 0 |
 | The Hall (011–025) | 15 | 12 | 0 | 3 | 0 |
-| Pattern Shop (026–045) | 20 | 5 | 0 | 2 | 13 |
+| Pattern Shop (026–045) | 20 | 6 | 0 | 3 | 11 |
 | Control Room (046–060) | 15 | 1 | 0 | 1 | 13 |
 | Assembly Floor (061–080) | 20 | 1 | 0 | 2 | 17 |
 | Insights Lab (081–095) | 15 | 1 | 0 | 2 | 12 |
 | Cross-Cutting (096–120) | 25 | 6 | 0 | 3 | 16 |
 | Advanced (121–135) | 15 | 0 | 0 | 2 | 13 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **36** | **0** | **15** | **99** |
+| **TOTAL** | **150** | **37** | **0** | **16** | **97** |
 
-**Currently ready to start**: 021, 022, 023, 031, 033, 047, 062, 080, 082, 083, 097, 110, 120, 131, 132
+**Currently ready to start**: 021, 022, 023, 031, 034, 037, 047, 062, 080, 082, 083, 097, 110, 120, 131, 132
