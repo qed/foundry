@@ -334,11 +334,11 @@ After this initial update, stay in this session. I will come back to you after e
 | 029 | Feature Tree Component | `done` | — | 026, 027 | Shop | `components/shop/` |
 | 030 | Add Nodes to Feature Tree | `done` | — | 026, 029 | Shop | `components/shop/` |
 | 031 | Edit & Delete Tree Nodes | `done` | — | 026, 029, 030 | Shop | `components/shop/` |
-| 032 | Feature Tree Drag-and-Drop | `ready` | — | 026, 029, 030, 031 | Shop | `components/shop/` |
+| 032 | Feature Tree Drag-and-Drop | `done` | — | 026, 029, 030, 031 | Shop | `components/shop/` |
 | 033 | Feature Requirements Document | `done` | — | 026, 027, 029 | Shop | `components/shop/` |
 | 034 | Requirements Document Editor | `done` | — | 027, 028, 033 | Shop | `components/shop/` |
 | 035 | Feature Tree Status Tracking | `done` | — | 026, 029, 030, 031 | Shop | `components/shop/` |
-| 036 | Feature Tree Search & Filter | `ready` | — | 027, 029, 035 | Shop | `components/shop/` |
+| 036 | Feature Tree Search & Filter | `done` | — | 027, 029, 035 | Shop | `components/shop/` |
 | 037 | Pattern Shop Agent Infra | `done` | — | 002, 026, 027, 029 | Shop | `components/shop/`, `app/api/shop/agent/` |
 | 038 | Agent: Feature Tree Generation | `ready` | — | 026, 029, 030, 037 | Shop | `components/shop/` |
 | 039 | Agent: Requirements Review | `ready` | — | 033, 034, 037 | Shop | `components/shop/` |
@@ -708,6 +708,6 @@ These phases require work from **multiple module tracks** to be complete before 
 | Cross-Cutting (096–120) | 25 | 10 | 0 | 6 | 9 |
 | Advanced (121–135) | 15 | 0 | 0 | 6 | 9 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **67** | **0** | **44** | **39** |
+| **TOTAL** | **150** | **69** | **0** | **42** | **39** |
 
-**Currently ready to start**: 036, 038, 039, 040, 041, 042, 043, 045, 052, 053, 055, 057, 058, 059, 066, 068, 070, 071, 072, 074, 076, 077, 078, 080, 082, 086, 088, 089, 090, 102, 106, 110, 118, 120, 121, 122, 124, 127, 131, 132
+**Currently ready to start**: 038, 039, 040, 041, 042, 043, 045, 052, 053, 055, 057, 058, 059, 066, 068, 070, 071, 072, 074, 076, 077, 078, 080, 082, 086, 088, 089, 090, 102, 106, 110, 118, 120, 121, 122, 124, 127, 131, 132
