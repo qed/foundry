@@ -36,7 +36,7 @@ Where XXX is the phase number (e.g., 017, 026, 113). This sets the Claude Code s
 | Artifacts | `PhaseHistory/artifacts.md` | 096–101 | `components/artifacts/`, `app/api/projects/*/artifacts/`, `lib/artifacts/` |
 | Cross-Cutting | `PhaseHistory/cross-cutting.md` | 105–119 | `lib/activity/`, `lib/realtime/`, `components/presence/` |
 
-**78 phases complete** (001–010, 011–020, 024–025, 019, 021–023, 026–045, 046–052, 054, 056, 061–065, 067, 069, 073, 081, 083–085, 096–101, 105, 109, 113, 117, 119).
+**79 phases complete** (001–010, 011–020, 024–025, 019, 021–023, 026–045, 046–054, 056, 061–065, 067, 069, 073, 081, 083–085, 096–101, 105, 109, 113, 117, 119).
 
 _Previously this was a single giant paragraph. Migrated to per-module files on 2026-02-22._
 
@@ -215,6 +215,7 @@ After building, run `npm run build` and `npm run lint` to verify zero errors. Th
 - Phase 045: Technical Requirements Documents (Shop) -- done
 - Phase 044: Pattern Shop Comments (Shop) -- done
 - Phase 052: Feature-Blueprint Linking (Room/Shop) -- done
+- Phase 053: Blueprint Templates (Room/Admin) -- done
 
 **Next up** (sequential order):
-053, 055, 057, 058, 059, 066, 068, 070, 071, 072, 074, 076, 077, 078, 080, 082, 086, 088, 089, 090, 102, 106, 110, 118, 120...
+055, 057, 058, 059, 066, 068, 070, 071, 072, 074, 076, 077, 078, 080, 082, 086, 088, 089, 090, 102, 106, 110, 118, 120...
