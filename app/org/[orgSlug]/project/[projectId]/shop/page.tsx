@@ -1,21 +1,46 @@
-import Image from 'next/image'
+import { requireAuth } from '@/lib/auth/server'
+import { createServiceClient } from '@/lib/supabase/server'
+import { ShopClient } from '@/components/shop/shop-client'
 
-export default function ShopPage() {
+interface ShopPageProps {
+  params: Promise<{ orgSlug: string; projectId: string }>
+}
+
+export default async function ShopPage({ params }: ShopPageProps) {
+  const { orgSlug, projectId } = await params
+  await requireAuth()
+  const supabase = createServiceClient()
+
+  // Fetch feature node stats
+  const { data: nodes } = await supabase
+    .from('feature_nodes')
+    .select('level, status')
+    .eq('project_id', projectId)
+    .is('deleted_at', null)
+
+  const nodeList = nodes || []
+
+  const stats = {
+    epics: nodeList.filter((n) => n.level === 'epic').length,
+    features: nodeList.filter((n) => n.level === 'feature').length,
+    subFeatures: nodeList.filter((n) => n.level === 'sub_feature').length,
+    tasks: nodeList.filter((n) => n.level === 'task').length,
+    completionPercent:
+      nodeList.length > 0
+        ? Math.round(
+            (nodeList.filter((n) => n.status === 'complete').length /
+              nodeList.length) *
+              100
+          )
+        : 0,
+  }
+
   return (
-    <div className="p-6 md:p-8">
-      <div className="flex items-center gap-3 mb-4">
-        <Image src="/icon-shop.png" alt="Pattern Shop" width={48} height={48} />
-        <h1 className="text-2xl font-bold text-text-primary">Pattern Shop</h1>
-      </div>
-      <p className="text-text-secondary mb-8">
-        Requirements & patterns workspace. Coming soon.
-      </p>
-
-      <div className="glass-panel rounded-lg p-12 text-center">
-        <p className="text-text-tertiary">
-          This module will be built in a future phase.
-        </p>
-      </div>
-    </div>
+    <ShopClient
+      projectId={projectId}
+      orgSlug={orgSlug}
+      initialStats={stats}
+      hasFeatureNodes={nodeList.length > 0}
+    />
   )
 }
