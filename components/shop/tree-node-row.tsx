@@ -10,10 +10,13 @@ import {
   CheckCircle2,
   Plus,
   GripVertical,
+  Circle,
 } from 'lucide-react'
 import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { cn } from '@/lib/utils'
 import type { TreeNode } from './feature-tree'
+
+type FeatureStatus = TreeNode['status']
 
 interface DropTargetState {
   nodeId: string
@@ -41,7 +44,15 @@ interface TreeNodeRowProps {
   onTitleSave: (nodeId: string, title: string) => void
   onTitleCancel: (nodeId: string, hasTitle: boolean) => void
   onDoubleClick?: (nodeId: string) => void
+  onStatusChange?: (nodeId: string, status: FeatureStatus) => void
 }
+
+const STATUS_OPTIONS: { value: FeatureStatus; label: string; dotClass: string }[] = [
+  { value: 'not_started', label: 'Not Started', dotClass: 'bg-text-tertiary' },
+  { value: 'in_progress', label: 'In Progress', dotClass: 'bg-accent-cyan' },
+  { value: 'complete', label: 'Complete', dotClass: 'bg-accent-success' },
+  { value: 'blocked', label: 'Blocked', dotClass: 'bg-accent-error' },
+]
 
 const LEVEL_ICONS = {
   epic: FolderOpen,
@@ -81,6 +92,7 @@ export const TreeNodeRow = memo(function TreeNodeRow({
   onTitleSave,
   onTitleCancel,
   onDoubleClick,
+  onStatusChange,
 }: TreeNodeRowProps) {
   const isExpanded = expandedIds.has(node.id)
   const isSelected = selectedNodeId === node.id
@@ -111,6 +123,10 @@ export const TreeNodeRow = memo(function TreeNodeRow({
   const [editValue, setEditValue] = useState(node.title === 'Untitled' ? '' : node.title)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  // Status dropdown state
+  const [statusOpen, setStatusOpen] = useState(false)
+  const statusRef = useRef<HTMLDivElement>(null)
+
   // Focus input when entering edit mode
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -118,6 +134,18 @@ export const TreeNodeRow = memo(function TreeNodeRow({
       inputRef.current.select()
     }
   }, [isEditing])
+
+  // Close status dropdown on click outside
+  useEffect(() => {
+    if (!statusOpen) return
+    const handleClick = (e: MouseEvent) => {
+      if (statusRef.current && !statusRef.current.contains(e.target as Node)) {
+        setStatusOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [statusOpen])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -209,14 +237,48 @@ export const TreeNodeRow = memo(function TreeNodeRow({
           <span className="w-[18px] flex-shrink-0" />
         )}
 
-        {/* Status dot */}
-        <span
-          className={cn(
-            'w-1.5 h-1.5 rounded-full flex-shrink-0',
-            STATUS_COLORS[node.status]
+        {/* Status dot (clickable dropdown) */}
+        <div ref={statusRef} className="relative flex-shrink-0">
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setStatusOpen((prev) => !prev)
+            }}
+            className={cn(
+              'w-3 h-3 rounded-full flex-shrink-0 transition-transform hover:scale-150',
+              STATUS_COLORS[node.status]
+            )}
+            title={node.status.replace('_', ' ')}
+            aria-label={`Status: ${node.status.replace('_', ' ')}`}
+          />
+          {statusOpen && (
+            <div className="absolute left-0 top-full mt-1 z-50 w-36 bg-bg-secondary border border-border-primary rounded-lg shadow-lg py-1">
+              {STATUS_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setStatusOpen(false)
+                    if (opt.value !== node.status) {
+                      onStatusChange?.(node.id, opt.value)
+                    }
+                  }}
+                  className={cn(
+                    'w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-bg-tertiary transition-colors',
+                    opt.value === node.status ? 'text-text-primary font-medium' : 'text-text-secondary'
+                  )}
+                >
+                  <Circle
+                    className={cn('w-2.5 h-2.5 flex-shrink-0', opt.dotClass.replace('bg-', 'text-'))}
+                    fill={opt.value === node.status ? 'currentColor' : 'none'}
+                    strokeWidth={opt.value === node.status ? 0 : 2}
+                  />
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           )}
-          title={node.status.replace('_', ' ')}
-        />
+        </div>
 
         {/* Level icon */}
         <LevelIcon
@@ -271,6 +333,29 @@ export const TreeNodeRow = memo(function TreeNodeRow({
         )}
       </div>
 
+      {/* Progress bar (when expanded and has children) */}
+      {isExpanded && hasChildren && (() => {
+        const total = node.children.length
+        const complete = node.children.filter((c) => c.status === 'complete').length
+        const percent = total > 0 ? Math.round((complete / total) * 100) : 0
+        return (
+          <div
+            className="group/progress relative"
+            style={{ paddingLeft: paddingLeft + 18, paddingRight: 8 }}
+          >
+            <div className="h-1 bg-bg-primary rounded overflow-hidden my-0.5">
+              <div
+                className="h-full bg-gradient-to-r from-accent-success to-accent-cyan transition-all duration-300"
+                style={{ width: `${percent}%` }}
+              />
+            </div>
+            <div className="hidden group-hover/progress:block absolute bottom-full left-0 mb-1 bg-bg-primary border border-border-primary text-text-secondary text-[10px] px-2 py-0.5 rounded whitespace-nowrap z-20" style={{ marginLeft: paddingLeft + 18 }}>
+              {complete} of {total} complete ({percent}%)
+            </div>
+          </div>
+        )
+      })()}
+
       {/* Drop zone: after this node (only if no children expanded) */}
       {draggedNodeId && !isDragged && (!isExpanded || !hasChildren) && (
         <div
@@ -309,6 +394,7 @@ export const TreeNodeRow = memo(function TreeNodeRow({
             onTitleSave={onTitleSave}
             onTitleCancel={onTitleCancel}
             onDoubleClick={onDoubleClick}
+            onStatusChange={onStatusChange}
           />
         ))}
 
