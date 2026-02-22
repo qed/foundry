@@ -734,6 +734,122 @@ export type Database = {
           },
         ];
       };
+      artifact_folders: {
+        Row: {
+          id: string;
+          project_id: string;
+          parent_folder_id: string | null;
+          name: string;
+          created_by: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          parent_folder_id?: string | null;
+          name: string;
+          created_by: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          parent_folder_id?: string | null;
+          name?: string;
+          created_by?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "artifact_folders_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "artifact_folders_parent_folder_id_fkey";
+            columns: ["parent_folder_id"];
+            isOneToOne: false;
+            referencedRelation: "artifact_folders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "artifact_folders_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      artifacts: {
+        Row: {
+          id: string;
+          project_id: string;
+          folder_id: string | null;
+          name: string;
+          file_type: string;
+          file_size: number;
+          storage_path: string;
+          content_text: string | null;
+          uploaded_by: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          folder_id?: string | null;
+          name: string;
+          file_type: string;
+          file_size: number;
+          storage_path: string;
+          content_text?: string | null;
+          uploaded_by: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          folder_id?: string | null;
+          name?: string;
+          file_type?: string;
+          file_size?: number;
+          storage_path?: string;
+          content_text?: string | null;
+          uploaded_by?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "artifacts_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "artifacts_folder_id_fkey";
+            columns: ["folder_id"];
+            isOneToOne: false;
+            referencedRelation: "artifact_folders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "artifacts_uploaded_by_fkey";
+            columns: ["uploaded_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       blueprints: {
         Row: {
           id: string;
@@ -1059,6 +1175,12 @@ export type Database = {
         };
         Returns: boolean;
       };
+      artifact_project_member: {
+        Args: {
+          check_artifact_id: string;
+        };
+        Returns: boolean;
+      };
     };
     Enums: Record<string, never>;
   };
@@ -1083,6 +1205,9 @@ export type RequirementVersion = Database["public"]["Tables"]["requirement_versi
 export type Phase = Database["public"]["Tables"]["phases"]["Row"];
 export type WorkOrder = Database["public"]["Tables"]["work_orders"]["Row"];
 export type WorkOrderActivity = Database["public"]["Tables"]["work_order_activity"]["Row"];
+
+export type ArtifactFolder = Database["public"]["Tables"]["artifact_folders"]["Row"];
+export type Artifact = Database["public"]["Tables"]["artifacts"]["Row"];
 
 export type Blueprint = Database["public"]["Tables"]["blueprints"]["Row"];
 export type BlueprintVersion = Database["public"]["Tables"]["blueprint_versions"]["Row"];
