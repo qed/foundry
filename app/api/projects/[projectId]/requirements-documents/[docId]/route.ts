@@ -125,3 +125,57 @@ export async function PUT(
     return handleAuthError(err)
   }
 }
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ projectId: string; docId: string }> }
+) {
+  try {
+    const user = await requireAuth()
+    const { projectId, docId } = await params
+    const supabase = createServiceClient()
+
+    // Verify project membership
+    const { data: membership } = await supabase
+      .from('project_members')
+      .select('id')
+      .eq('project_id', projectId)
+      .eq('user_id', user.id)
+      .single()
+
+    if (!membership) {
+      return Response.json({ error: 'Not authorized' }, { status: 403 })
+    }
+
+    // Verify doc exists and belongs to project
+    const { data: existing } = await supabase
+      .from('requirements_documents')
+      .select('id, doc_type')
+      .eq('id', docId)
+      .eq('project_id', projectId)
+      .single()
+
+    if (!existing) {
+      return Response.json({ error: 'Document not found' }, { status: 404 })
+    }
+
+    // Prevent deleting product_overview docs
+    if (existing.doc_type === 'product_overview') {
+      return Response.json({ error: 'Cannot delete product overview' }, { status: 400 })
+    }
+
+    const { error: deleteErr } = await supabase
+      .from('requirements_documents')
+      .delete()
+      .eq('id', docId)
+
+    if (deleteErr) {
+      console.error('Error deleting document:', deleteErr)
+      return Response.json({ error: 'Failed to delete' }, { status: 500 })
+    }
+
+    return Response.json({ success: true })
+  } catch (err) {
+    return handleAuthError(err)
+  }
+}

@@ -1,13 +1,14 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { FileText, ChevronRight, Download, Upload } from 'lucide-react'
+import { FileText, Download, Upload } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { FeatureTree } from './feature-tree'
 import { TreeSearchFilter, type FilterInfo } from './tree-search-filter'
 import { ExportTreeDialog } from './export-tree-dialog'
 import { ImportTreeDialog } from './import-tree-dialog'
 import { ExportAllDialog } from './export-all-dialog'
+import { TechnicalRequirementsSection } from './technical-requirements-section'
 import type { FeatureStatus, FeatureLevel } from '@/types/database'
 
 const ALL_STATUSES: FeatureStatus[] = ['not_started', 'in_progress', 'complete', 'blocked']
@@ -33,6 +34,7 @@ export function ShopLeftPanel({
   refreshTrigger,
 }: ShopLeftPanelProps) {
   const isOverviewSelected = selectedNodeId === 'product-overview'
+  const techReqDocId = selectedNodeId?.startsWith('tech-req:') ? selectedNodeId.slice(9) : null
 
   // Dialog states
   const [showExportTree, setShowExportTree] = useState(false)
@@ -127,7 +129,7 @@ export function ShopLeftPanel({
 
             <FeatureTree
               projectId={projectId}
-              selectedNodeId={isOverviewSelected ? null : selectedNodeId}
+              selectedNodeId={isOverviewSelected || techReqDocId ? null : selectedNodeId}
               onSelectNode={onSelectNode}
               searchQuery={searchQuery}
               selectedStatuses={selectedStatuses}
@@ -138,8 +140,8 @@ export function ShopLeftPanel({
             />
           </div>
 
-          {/* Export All + Technical Requirements */}
-          <div className="border-t border-border-default p-3 space-y-2">
+          {/* Export All */}
+          <div className="border-t border-border-default p-3">
             <button
               onClick={() => setShowExportAll(true)}
               className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm text-text-secondary hover:bg-bg-tertiary hover:text-text-primary transition-colors"
@@ -147,12 +149,14 @@ export function ShopLeftPanel({
               <Download className="w-4 h-4 flex-shrink-0" />
               <span className="truncate">Export All Requirements</span>
             </button>
-
-            <button className="w-full flex items-center gap-2 text-xs font-medium text-text-tertiary uppercase tracking-wider hover:text-text-secondary transition-colors">
-              <ChevronRight className="w-3.5 h-3.5" />
-              Technical Requirements
-            </button>
           </div>
+
+          {/* Technical Requirements */}
+          <TechnicalRequirementsSection
+            projectId={projectId}
+            selectedDocId={techReqDocId}
+            onSelectDocument={(docId) => onSelectNode(`tech-req:${docId}`)}
+          />
         </div>
 
         {/* Dialogs */}
