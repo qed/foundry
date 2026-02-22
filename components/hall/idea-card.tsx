@@ -9,9 +9,10 @@ import type { IdeaStatus } from '@/types/database'
 interface IdeaCardProps {
   idea: IdeaWithDetails
   onClick: () => void
+  highlighted?: boolean
 }
 
-export function IdeaCard({ idea, onClick }: IdeaCardProps) {
+export function IdeaCard({ idea, onClick, highlighted }: IdeaCardProps) {
   const statusCfg = STATUS_CONFIG[idea.status as IdeaStatus]
   const creatorInitials = idea.creator?.display_name
     ? idea.creator.display_name
@@ -28,7 +29,8 @@ export function IdeaCard({ idea, onClick }: IdeaCardProps) {
       className={cn(
         'w-full text-left glass-panel rounded-lg p-4 transition-all group',
         'hover:border-accent-cyan/30 hover:shadow-lg hover:shadow-accent-cyan/5',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan'
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan',
+        highlighted && 'animate-highlight'
       )}
     >
       {/* Status badge */}

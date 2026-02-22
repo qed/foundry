@@ -14,6 +14,8 @@ interface IdeaListProps {
   onSelectionChange: (ids: Set<string>) => void
   isLoading?: boolean
   onIdeaClick?: (ideaId: string) => void
+  highlightedIds?: Set<string>
+  newIds?: Set<string>
 }
 
 export function IdeaList({
@@ -22,6 +24,8 @@ export function IdeaList({
   onSelectionChange,
   isLoading,
   onIdeaClick,
+  highlightedIds,
+  newIds,
 }: IdeaListProps) {
   if (isLoading) {
     return (
@@ -81,6 +85,8 @@ export function IdeaList({
             isSelected={selectedIds.has(idea.id)}
             onToggle={() => toggleOne(idea.id)}
             onClick={() => onIdeaClick?.(idea.id)}
+            highlighted={highlightedIds?.has(idea.id)}
+            isNew={newIds?.has(idea.id)}
           />
         ))}
       </div>
@@ -93,11 +99,15 @@ function IdeaListRow({
   isSelected,
   onToggle,
   onClick,
+  highlighted,
+  isNew,
 }: {
   idea: IdeaWithDetails
   isSelected: boolean
   onToggle: () => void
   onClick?: () => void
+  highlighted?: boolean
+  isNew?: boolean
 }) {
   const statusCfg = STATUS_CONFIG[idea.status as IdeaStatus]
   const creatorInitials = idea.creator?.display_name
@@ -113,7 +123,9 @@ function IdeaListRow({
     <div
       className={cn(
         'flex items-center gap-3 px-3 py-3 transition-colors hover:bg-bg-tertiary/50 cursor-pointer group',
-        isSelected && 'bg-accent-cyan/5'
+        isSelected && 'bg-accent-cyan/5',
+        highlighted && 'animate-highlight',
+        isNew && 'animate-slide-in'
       )}
       onClick={onClick}
     >
