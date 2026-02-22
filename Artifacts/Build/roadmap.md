@@ -9,7 +9,7 @@
 
 **Mode**: Sequential execution directly on `main` branch. No feature branches or worktrees.
 
-**Next phase to build**: **025 — Hall -> Shop Promotion** (Hall/Shop)
+**Next phase to build**: **029 — Feature Tree Component** (Shop)
 
 | # | Phase | Name | Track | Why This Order |
 |---|-------|------|-------|----------------|
@@ -27,7 +27,7 @@
 | ~~12~~ | ~~020~~ | ~~Hall Agent Infrastructure~~ | ~~Hall~~ | done |
 | ~~13~~ | ~~024~~ | ~~Hall Real-Time Updates~~ | ~~Hall~~ | done |
 | ~~14~~ | ~~019~~ | ~~Bulk Operations~~ | ~~Hall~~ | done |
-| 15 | **025** | Hall -> Shop Promotion | Hall/Shop | Cross-module bridge |
+| ~~15~~ | ~~025~~ | ~~Hall -> Shop Promotion~~ | ~~Hall/Shop~~ | done |
 | 16 | **029** | Feature Tree Component | Shop | Core Shop component |
 | 17 | **028** | Product Overview Document | Shop | Shop document system |
 | 18 | **030** | Add Nodes to Feature Tree | Shop | Core tree interaction |
@@ -154,7 +154,7 @@ After this initial update, stay in this session. I will come back to you after e
 | 022 | Agent: Duplicate Detection | `ready` | — | 011, 013, 020 | Hall | `components/hall/` |
 | 023 | Agent: Connection Discovery | `ready` | — | 011, 016, 020 | Hall | `components/hall/` |
 | 024 | Hall Real-Time Updates | `done` | — | 002, 011, 012, 014 | Hall | `components/hall/`, `lib/realtime/` |
-| 025 | Hall → Shop Promotion | `ready` | — | 011, 016, 026 | Hall ⚠️ | `components/hall/`, `app/api/hall/` |
+| 025 | Hall → Shop Promotion | `done` | — | 011, 016, 026 | Hall ⚠️ | `components/hall/`, `app/api/hall/` |
 
 ### Section 3: The Pattern Shop MVP (026–045)
 
@@ -532,7 +532,7 @@ These phases require work from **multiple module tracks** to be complete before 
 | Section | Total | Done | In Progress | Ready | Blocked |
 |---------|-------|------|-------------|-------|---------|
 | Foundation (001–010) | 10 | 10 | 0 | 0 | 0 |
-| The Hall (011–025) | 15 | 11 | 0 | 4 | 0 |
+| The Hall (011–025) | 15 | 12 | 0 | 3 | 0 |
 | Pattern Shop (026–045) | 20 | 2 | 0 | 2 | 16 |
 | Control Room (046–060) | 15 | 1 | 0 | 1 | 13 |
 | Assembly Floor (061–080) | 20 | 1 | 0 | 2 | 17 |
@@ -540,6 +540,6 @@ These phases require work from **multiple module tracks** to be complete before 
 | Cross-Cutting (096–120) | 25 | 6 | 0 | 3 | 16 |
 | Advanced (121–135) | 15 | 0 | 0 | 2 | 13 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **32** | **0** | **16** | **102** |
+| **TOTAL** | **150** | **33** | **0** | **15** | **102** |
 
-**Currently ready to start**: 021, 022, 023, 025, 028, 029, 047, 062, 080, 082, 083, 097, 110, 120, 131, 132
+**Currently ready to start**: 021, 022, 023, 028, 029, 047, 062, 080, 082, 083, 097, 110, 120, 131, 132
