@@ -55,6 +55,14 @@ body {
   border: 1px solid rgba(46, 49, 64, 0.5);
 }
 
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 .text-gradient {
   background: linear-gradient(135deg, #00d4ff, #8b5cf6);
   -webkit-background-clip: text;
