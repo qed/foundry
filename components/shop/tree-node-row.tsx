@@ -14,7 +14,8 @@ import {
 } from 'lucide-react'
 import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { cn } from '@/lib/utils'
-import type { TreeNode } from './feature-tree'
+import type { TreeNode, BlueprintStatusMap } from './feature-tree'
+import { BlueprintStatusIcon } from './blueprint-status-icon'
 
 type FeatureStatus = TreeNode['status']
 
@@ -49,6 +50,7 @@ interface TreeNodeRowProps {
   matchingNodeIds?: Set<string>
   displayNodeIds?: Set<string>
   searchQuery?: string
+  blueprintStatusMap?: BlueprintStatusMap
 }
 
 const STATUS_OPTIONS: { value: FeatureStatus; label: string; dotClass: string }[] = [
@@ -117,6 +119,7 @@ export const TreeNodeRow = memo(function TreeNodeRow({
   matchingNodeIds,
   displayNodeIds,
   searchQuery,
+  blueprintStatusMap,
 }: TreeNodeRowProps) {
   const isExpanded = expandedIds.has(node.id)
   const isSelected = selectedNodeId === node.id
@@ -346,6 +349,13 @@ export const TreeNodeRow = memo(function TreeNodeRow({
           </span>
         )}
 
+        {/* Blueprint status icon (feature/epic/sub_feature nodes only, not tasks) */}
+        {!isEditing && blueprintStatusMap && node.level !== 'task' && (
+          <BlueprintStatusIcon
+            status={blueprintStatusMap[node.id] ?? null}
+          />
+        )}
+
         {/* Add child button (visible on hover, hidden during edit and drag) */}
         {!isEditing && !draggedNodeId && CAN_HAVE_CHILDREN.has(node.level) && (
           <button
@@ -429,6 +439,7 @@ export const TreeNodeRow = memo(function TreeNodeRow({
             matchingNodeIds={matchingNodeIds}
             displayNodeIds={displayNodeIds}
             searchQuery={searchQuery}
+            blueprintStatusMap={blueprintStatusMap}
           />
         ))}
 

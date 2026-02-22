@@ -11,6 +11,7 @@ import { VersionViewModal } from './version-view-modal'
 import { VersionCompareModal } from './version-compare-modal'
 import { RestoreVersionDialog } from './restore-version-dialog'
 import { CommentsPanel } from './comments-panel'
+import { BlueprintStatusCard } from './blueprint-status-card'
 
 interface RequirementsDocument {
   id: string
@@ -35,11 +36,13 @@ interface VersionInfo {
 interface FeatureRequirementEditorProps {
   projectId: string
   featureNodeId: string
+  orgSlug?: string
 }
 
 export function FeatureRequirementEditor({
   projectId,
   featureNodeId,
+  orgSlug,
 }: FeatureRequirementEditorProps) {
   const [doc, setDoc] = useState<RequirementsDocument | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -260,22 +263,31 @@ export function FeatureRequirementEditor({
   )
 
   return (
-    <RequirementsEditor
-      key={`${doc.id}-${editorKey}`}
-      content={doc.content || ''}
-      onSave={handleSave}
-      toolbarExtra={toolbarExtra}
-      versionPanel={versionPanel}
-      onContentSaved={handleContentSaved}
-      commentsPanel={({ selectedText, onClearSelection }) => (
-        <CommentsPanel
+    <div className="flex-1 flex flex-col min-w-0">
+      {orgSlug && (
+        <BlueprintStatusCard
           projectId={projectId}
-          entityType="requirement_doc"
-          entityId={doc.id}
-          selectedText={selectedText}
-          onClearSelection={onClearSelection}
+          featureNodeId={featureNodeId}
+          orgSlug={orgSlug}
         />
       )}
-    />
+      <RequirementsEditor
+        key={`${doc.id}-${editorKey}`}
+        content={doc.content || ''}
+        onSave={handleSave}
+        toolbarExtra={toolbarExtra}
+        versionPanel={versionPanel}
+        onContentSaved={handleContentSaved}
+        commentsPanel={({ selectedText, onClearSelection }) => (
+          <CommentsPanel
+            projectId={projectId}
+            entityType="requirement_doc"
+            entityId={doc.id}
+            selectedText={selectedText}
+            onClearSelection={onClearSelection}
+          />
+        )}
+      />
+    </div>
   )
 }

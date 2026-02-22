@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { Plus, GitBranch, Pencil, Trash2, ArrowUpDown } from 'lucide-react'
+import { Plus, GitBranch, Pencil, Trash2, ArrowUpDown, FileText } from 'lucide-react'
+import type { BlueprintStatus } from '@/types/database'
 import { cn } from '@/lib/utils'
 
 interface ContextMenuPosition {
@@ -18,6 +19,8 @@ interface NodeContextMenuProps {
   onDelete: () => void
   onChangeLevel: () => void
   onClose: () => void
+  blueprintStatus?: BlueprintStatus | null
+  onBlueprintAction?: () => void
 }
 
 export function NodeContextMenu({
@@ -29,6 +32,8 @@ export function NodeContextMenu({
   onDelete,
   onChangeLevel,
   onClose,
+  blueprintStatus,
+  onBlueprintAction,
 }: NodeContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -102,6 +107,19 @@ export function NodeContextMenu({
         <ArrowUpDown className="w-3.5 h-3.5" />
         Change Level
       </button>
+
+      {onBlueprintAction && (
+        <>
+          <div className="border-t border-border-default my-1" />
+          <button
+            onClick={() => { onBlueprintAction(); onClose() }}
+            className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-text-secondary hover:bg-bg-tertiary hover:text-text-primary text-left transition-colors"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            {blueprintStatus !== null && blueprintStatus !== undefined ? 'View Blueprint' : 'Create Blueprint'}
+          </button>
+        </>
+      )}
 
       <div className="border-t border-border-default my-1" />
 
