@@ -340,7 +340,7 @@ After this initial update, stay in this session. I will come back to you after e
 | 035 | Feature Tree Status Tracking | `done` | — | 026, 029, 030, 031 | Shop | `components/shop/` |
 | 036 | Feature Tree Search & Filter | `done` | — | 027, 029, 035 | Shop | `components/shop/` |
 | 037 | Pattern Shop Agent Infra | `done` | — | 002, 026, 027, 029 | Shop | `components/shop/`, `app/api/shop/agent/` |
-| 038 | Agent: Feature Tree Generation | `ready` | — | 026, 029, 030, 037 | Shop | `components/shop/` |
+| 038 | Agent: Feature Tree Generation | `done` | — | 026, 029, 030, 037 | Shop | `components/shop/` |
 | 039 | Agent: Requirements Review | `ready` | — | 033, 034, 037 | Shop | `components/shop/` |
 | 040 | Agent: Gap Detection | `ready` | — | 028, 029, 037 | Shop | `components/shop/` |
 | 041 | Feature Tree Statistics | `done` | — | 027, 029, 035 | Shop | `components/shop/` |
