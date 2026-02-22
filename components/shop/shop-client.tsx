@@ -84,7 +84,7 @@ export function ShopClient({
         />
 
         {/* Center panel: Document editor */}
-        <ShopCenterPanel selectedNodeId={selectedNodeId} />
+        <ShopCenterPanel selectedNodeId={selectedNodeId} projectId={projectId} />
 
         {/* Right panel: Agent chat */}
         <ShopRightPanel open={rightPanelOpen} />
