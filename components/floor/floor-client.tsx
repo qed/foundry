@@ -6,6 +6,7 @@ import { PhaseNavigation } from './phase-navigation'
 import { FloorContent } from './floor-content'
 import { FloorRightPanel } from './floor-right-panel'
 import { CreateWorkOrderModal } from './create-work-order-modal'
+import { WorkOrderDetail } from './work-order-detail'
 import { Spinner } from '@/components/ui/spinner'
 import type { Phase, WorkOrder } from '@/types/database'
 
@@ -22,6 +23,7 @@ interface FloorClientProps {
 export function FloorClient({ projectId, initialStats }: FloorClientProps) {
   const [rightPanelOpen, setRightPanelOpen] = useState(false)
   const [createModalOpen, setCreateModalOpen] = useState(false)
+  const [selectedWorkOrderId, setSelectedWorkOrderId] = useState<string | null>(null)
   const [view, setView] = useState<'kanban' | 'table'>('kanban')
   const [selectedPhaseId, setSelectedPhaseId] = useState<string | null>(null)
   const [phases, setPhases] = useState<Phase[]>([])
@@ -134,6 +136,7 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
             view={view}
             workOrders={workOrders}
             selectedPhaseId={selectedPhaseId}
+            onWorkOrderClick={(id) => setSelectedWorkOrderId(id)}
           />
         )}
 
@@ -148,6 +151,16 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
         projectId={projectId}
         phases={phases}
         onCreated={() => setFetchKey((k) => k + 1)}
+      />
+
+      {/* Work Order Detail Slide-Over */}
+      <WorkOrderDetail
+        workOrderId={selectedWorkOrderId}
+        open={selectedWorkOrderId !== null}
+        onClose={() => setSelectedWorkOrderId(null)}
+        projectId={projectId}
+        phases={phases}
+        onWorkOrderUpdated={() => setFetchKey((k) => k + 1)}
       />
     </div>
   )
