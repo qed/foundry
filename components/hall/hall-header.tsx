@@ -1,7 +1,8 @@
 'use client'
 
 import Image from 'next/image'
-import { Search, X } from 'lucide-react'
+import Link from 'next/link'
+import { Search, X, Tags } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ViewToggle } from './view-toggle'
 
@@ -11,6 +12,7 @@ interface HallHeaderProps {
   viewMode: 'grid' | 'list'
   onViewModeChange: (mode: 'grid' | 'list') => void
   onNewIdeaClick: () => void
+  tagsHref: string
 }
 
 export function HallHeader({
@@ -19,6 +21,7 @@ export function HallHeader({
   viewMode,
   onViewModeChange,
   onNewIdeaClick,
+  tagsHref,
 }: HallHeaderProps) {
   return (
     <div className="mb-6">
@@ -37,6 +40,15 @@ export function HallHeader({
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Manage Tags link — hidden on mobile */}
+          <Link
+            href={tagsHref}
+            className="hidden md:flex items-center gap-1.5 px-3 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-bg-tertiary rounded-lg transition-colors"
+          >
+            <Tags className="w-4 h-4" />
+            Manage Tags
+          </Link>
+
           {/* View toggle — hidden on mobile */}
           <div className="hidden md:block">
             <ViewToggle activeView={viewMode} onChange={onViewModeChange} />

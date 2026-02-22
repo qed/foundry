@@ -267,6 +267,7 @@ export function HallClient({
           updateParams({ view: mode === 'grid' ? null : mode })
         }
         onNewIdeaClick={() => setShowNewIdeaModal(true)}
+        tagsHref={`/org/${orgSlug}/project/${projectId}/hall/tags`}
       />
 
       {(ideas.length > 0 || hasActiveFilters) && (

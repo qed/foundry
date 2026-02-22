@@ -56,7 +56,7 @@ export function IdeaCreateModal({
     async function fetchTags() {
       setTagsLoading(true)
       try {
-        const res = await fetch(`/api/hall/tags?projectId=${projectId}`)
+        const res = await fetch(`/api/hall/tags?projectId=${projectId}&includeUsage=true`)
         if (res.ok) {
           const data = await res.json()
           setProjectTags(data)
@@ -430,6 +430,11 @@ export function IdeaCreateModal({
                             style={{ backgroundColor: tag.color }}
                           />
                           <span className="truncate">{tag.name}</span>
+                          {'usage_count' in tag && (
+                            <span className="text-text-tertiary text-xs">
+                              ({(tag as Tag & { usage_count?: number }).usage_count || 0})
+                            </span>
+                          )}
                           {selectedTagIds.includes(tag.id) && (
                             <span className="ml-auto text-accent-cyan text-xs">
                               Selected
