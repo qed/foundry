@@ -10,6 +10,7 @@ import { VersionHistoryPanel } from './version-history-panel'
 import { VersionViewModal } from './version-view-modal'
 import { VersionCompareModal } from './version-compare-modal'
 import { RestoreVersionDialog } from './restore-version-dialog'
+import { CommentsPanel } from './comments-panel'
 
 interface RequirementsDocument {
   id: string
@@ -266,6 +267,15 @@ export function FeatureRequirementEditor({
       toolbarExtra={toolbarExtra}
       versionPanel={versionPanel}
       onContentSaved={handleContentSaved}
+      commentsPanel={({ selectedText, onClearSelection }) => (
+        <CommentsPanel
+          projectId={projectId}
+          entityType="requirement_doc"
+          entityId={doc.id}
+          selectedText={selectedText}
+          onClearSelection={onClearSelection}
+        />
+      )}
     />
   )
 }
