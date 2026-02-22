@@ -5,6 +5,7 @@ import { Bot, User, Send, Sparkles } from 'lucide-react'
 import { cn, timeAgo } from '@/lib/utils'
 import { ProposedTreeReview, type ProposedTreeStructure } from './proposed-tree-review'
 import { FRDReviewPanel, type FRDReviewResult } from './frd-review-panel'
+import { GapDetectionPanel, type GapDetectionResult } from './gap-detection-panel'
 
 interface Message {
   id: string
@@ -59,6 +60,22 @@ function extractReviewFromMessage(content: string): FRDReviewResult | null {
         summary: data.summary || '',
         overallQuality: data.overallQuality || 'unknown',
         estimatedCompleteness: data.estimatedCompleteness ?? 0,
+      }
+    }
+  }
+  return null
+}
+
+function extractGapsFromMessage(content: string): GapDetectionResult | null {
+  const result = extractJsonAction(content)
+  if (result?.action === 'detect_gaps') {
+    const data = result.data as Partial<GapDetectionResult> & { action: string }
+    if (data?.gaps && Array.isArray(data.gaps)) {
+      return {
+        treeNodeCount: data.treeNodeCount ?? 0,
+        coveragePercent: data.coveragePercent ?? 0,
+        gaps: data.gaps,
+        summary: data.summary || '',
       }
     }
   }
@@ -344,6 +361,46 @@ export function ShopRightPanel({ open, projectId, selectedNodeId, onTreeInserted
             >
               <p className="text-xs text-text-tertiary italic">
                 FRD Review: {review.frdTitle} — {review.overallQuality} ({review.issues.length} issues)
+              </p>
+              <p className="text-[10px] text-text-tertiary mt-1">{timeAgo(msg.timestamp)}</p>
+            </div>
+          </div>
+        )
+      }
+
+      // Check if this assistant message contains gap detection results
+      const gaps = extractGapsFromMessage(msg.content)
+      if (gaps && !dismissedActionIds.has(msg.id)) {
+        return (
+          <div key={msg.id} className="flex gap-2 justify-start">
+            <div className="w-7 h-7 rounded-full bg-accent-purple/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <Bot className="w-4 h-4 text-accent-purple" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <GapDetectionPanel
+                result={gaps}
+                projectId={projectId}
+                onNodesCreated={onTreeInserted}
+                onDismiss={() => setDismissedActionIds((prev) => new Set(prev).add(msg.id))}
+              />
+              <p className="text-[10px] text-text-tertiary mt-1">{timeAgo(msg.timestamp)}</p>
+            </div>
+          </div>
+        )
+      }
+
+      // If gaps were already dismissed, show a brief summary
+      if (gaps && dismissedActionIds.has(msg.id)) {
+        return (
+          <div key={msg.id} className="flex gap-2 justify-start">
+            <div className="w-7 h-7 rounded-full bg-accent-purple/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <Bot className="w-4 h-4 text-accent-purple" />
+            </div>
+            <div
+              className="max-w-[80%] px-3 py-2 rounded-xl text-sm leading-relaxed bg-bg-tertiary text-text-primary rounded-bl-sm"
+            >
+              <p className="text-xs text-text-tertiary italic">
+                Gap Detection: {gaps.coveragePercent}% coverage ({gaps.gaps.length} gaps found)
               </p>
               <p className="text-[10px] text-text-tertiary mt-1">{timeAgo(msg.timestamp)}</p>
             </div>
