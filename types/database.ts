@@ -850,6 +850,66 @@ export type Database = {
           },
         ];
       };
+      entity_connections: {
+        Row: {
+          id: string;
+          project_id: string;
+          source_type: "idea" | "feature" | "blueprint" | "work_order" | "feedback" | "artifact";
+          source_id: string;
+          target_type: "idea" | "feature" | "blueprint" | "work_order" | "feedback" | "artifact";
+          target_id: string;
+          connection_type: "references" | "depends_on" | "relates_to" | "implements" | "derived_from" | "conflicts_with" | "complements";
+          created_by: string | null;
+          is_auto_detected: boolean;
+          metadata: Json | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          source_type: "idea" | "feature" | "blueprint" | "work_order" | "feedback" | "artifact";
+          source_id: string;
+          target_type: "idea" | "feature" | "blueprint" | "work_order" | "feedback" | "artifact";
+          target_id: string;
+          connection_type: "references" | "depends_on" | "relates_to" | "implements" | "derived_from" | "conflicts_with" | "complements";
+          created_by?: string | null;
+          is_auto_detected?: boolean;
+          metadata?: Json | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          source_type?: "idea" | "feature" | "blueprint" | "work_order" | "feedback" | "artifact";
+          source_id?: string;
+          target_type?: "idea" | "feature" | "blueprint" | "work_order" | "feedback" | "artifact";
+          target_id?: string;
+          connection_type?: "references" | "depends_on" | "relates_to" | "implements" | "derived_from" | "conflicts_with" | "complements";
+          created_by?: string | null;
+          is_auto_detected?: boolean;
+          metadata?: Json | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "entity_connections_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "entity_connections_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       comments: {
         Row: {
           id: string;
@@ -1279,6 +1339,7 @@ export type Phase = Database["public"]["Tables"]["phases"]["Row"];
 export type WorkOrder = Database["public"]["Tables"]["work_orders"]["Row"];
 export type WorkOrderActivity = Database["public"]["Tables"]["work_order_activity"]["Row"];
 
+export type EntityConnection = Database["public"]["Tables"]["entity_connections"]["Row"];
 export type Comment = Database["public"]["Tables"]["comments"]["Row"];
 
 export type ArtifactFolder = Database["public"]["Tables"]["artifact_folders"]["Row"];
@@ -1299,6 +1360,8 @@ export type DocType = RequirementsDocument["doc_type"];
 export type WorkOrderStatus = WorkOrder["status"];
 export type WorkOrderPriority = WorkOrder["priority"];
 export type PhaseStatus = Phase["status"];
+export type EntityConnectionType = EntityConnection["connection_type"];
+export type GraphEntityType = EntityConnection["source_type"];
 export type CommentEntityType = Comment["entity_type"];
 export type BlueprintType = Blueprint["blueprint_type"];
 export type BlueprintStatus = Blueprint["status"];
