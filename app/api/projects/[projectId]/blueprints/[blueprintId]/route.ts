@@ -78,7 +78,7 @@ export async function PATCH(
     // Verify blueprint exists
     const { data: existing } = await supabase
       .from('blueprints')
-      .select('id')
+      .select('id, blueprint_type')
       .eq('id', blueprintId)
       .eq('project_id', projectId)
       .single()
@@ -92,7 +92,8 @@ export async function PATCH(
 
     const updates: Record<string, unknown> = {}
 
-    if (body.title !== undefined) {
+    // Only allow title update for non-feature blueprints (feature titles sync from feature node)
+    if (body.title !== undefined && existing.blueprint_type !== 'feature') {
       const title = (body.title || '').trim()
       if (title.length > 255) {
         return Response.json({ error: 'Title must not exceed 255 characters' }, { status: 400 })
@@ -140,6 +141,47 @@ export async function PATCH(
     }
 
     return Response.json(updated)
+  } catch (err) {
+    return handleAuthError(err)
+  }
+}
+
+/**
+ * DELETE /api/projects/[projectId]/blueprints/[blueprintId]
+ */
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ projectId: string; blueprintId: string }> }
+) {
+  try {
+    const user = await requireAuth()
+    const { projectId, blueprintId } = await params
+    const supabase = createServiceClient()
+
+    // Verify project membership
+    const { data: membership } = await supabase
+      .from('project_members')
+      .select('id')
+      .eq('project_id', projectId)
+      .eq('user_id', user.id)
+      .single()
+
+    if (!membership) {
+      return Response.json({ error: 'Not authorized for this project' }, { status: 403 })
+    }
+
+    const { error } = await supabase
+      .from('blueprints')
+      .delete()
+      .eq('id', blueprintId)
+      .eq('project_id', projectId)
+
+    if (error) {
+      console.error('Error deleting blueprint:', error)
+      return Response.json({ error: 'Failed to delete blueprint' }, { status: 500 })
+    }
+
+    return Response.json({ success: true })
   } catch (err) {
     return handleAuthError(err)
   }

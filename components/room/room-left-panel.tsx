@@ -14,11 +14,21 @@ import {
 import { cn } from '@/lib/utils'
 import type { Blueprint, BlueprintType } from '@/types/database'
 
+export interface FeatureTreeNode {
+  id: string
+  title: string
+  level: string
+  parent_id: string | null
+  children: FeatureTreeNode[]
+}
+
 interface RoomLeftPanelProps {
   open: boolean
   blueprints: Blueprint[]
+  featureNodes: FeatureTreeNode[]
   selectedBlueprintId: string | null
   onSelectBlueprint: (id: string | null) => void
+  onCreateFeatureBlueprint: (featureNodeId: string) => void
 }
 
 const TYPE_TABS: { key: BlueprintType | 'all'; label: string }[] = [
@@ -45,8 +55,10 @@ const STATUS_LABELS: Record<string, string> = {
 export function RoomLeftPanel({
   open,
   blueprints,
+  featureNodes,
   selectedBlueprintId,
   onSelectBlueprint,
+  onCreateFeatureBlueprint,
 }: RoomLeftPanelProps) {
   const [search, setSearch] = useState('')
   const [activeTab, setActiveTab] = useState<BlueprintType | 'all'>('all')
@@ -72,7 +84,36 @@ export function RoomLeftPanel({
 
   const foundations = filtered.filter((bp) => bp.blueprint_type === 'foundation')
   const diagrams = filtered.filter((bp) => bp.blueprint_type === 'system_diagram')
-  const features = filtered.filter((bp) => bp.blueprint_type === 'feature')
+  const featureBlueprints = filtered.filter((bp) => bp.blueprint_type === 'feature')
+
+  // Build a map: feature_node_id -> blueprint for quick lookup
+  const blueprintByFeatureId = new Map<string, Blueprint>()
+  for (const bp of blueprints) {
+    if (bp.blueprint_type === 'feature' && bp.feature_node_id) {
+      blueprintByFeatureId.set(bp.feature_node_id, bp)
+    }
+  }
+
+  // Filter feature nodes by search (include node if it or any descendant matches)
+  const filterFeatureNodes = (nodes: FeatureTreeNode[], query: string): FeatureTreeNode[] => {
+    if (!query) return nodes
+    const q = query.toLowerCase()
+    return nodes
+      .map((node) => {
+        const filteredChildren = filterFeatureNodes(node.children, query)
+        const selfMatches = node.title.toLowerCase().includes(q)
+        if (selfMatches || filteredChildren.length > 0) {
+          return { ...node, children: filteredChildren }
+        }
+        return null
+      })
+      .filter((n): n is FeatureTreeNode => n !== null)
+  }
+
+  const filteredFeatureNodes = filterFeatureNodes(featureNodes, search)
+
+  // Count feature nodes that have blueprints
+  const featureBlueprintCount = featureBlueprints.length
 
   return (
     <div
@@ -151,19 +192,56 @@ export function RoomLeftPanel({
           )}
 
           {(activeTab === 'all' || activeTab === 'feature') && (
-            <BlueprintSection
-              title="Feature Blueprints"
-              icon={<Puzzle className="w-3.5 h-3.5" />}
-              count={features.length}
-              expanded={expandedSections.has('feature')}
-              onToggle={() => toggleSection('feature')}
-              blueprints={features}
-              selectedId={selectedBlueprintId}
-              onSelect={onSelectBlueprint}
-            />
+            <div className="border-b border-border-default/50">
+              {/* Feature section header */}
+              <button
+                onClick={() => toggleSection('feature')}
+                className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-bg-tertiary/50 transition-colors"
+              >
+                {expandedSections.has('feature') ? (
+                  <ChevronDown className="w-3 h-3 text-text-tertiary" />
+                ) : (
+                  <ChevronRight className="w-3 h-3 text-text-tertiary" />
+                )}
+                <span className="text-text-secondary">
+                  <Puzzle className="w-3.5 h-3.5" />
+                </span>
+                <span className="text-xs font-medium text-text-primary flex-1 text-left">
+                  Feature Blueprints
+                </span>
+                <span className="text-[10px] text-text-tertiary bg-bg-tertiary rounded-full px-1.5 py-0.5">
+                  {featureBlueprintCount}
+                </span>
+              </button>
+
+              {/* Feature tree items */}
+              {expandedSections.has('feature') && (
+                <div className="pb-1">
+                  {filteredFeatureNodes.length === 0 ? (
+                    <p className="text-[10px] text-text-tertiary px-8 py-2">
+                      {featureNodes.length === 0
+                        ? 'No features yet — add features in Pattern Shop'
+                        : 'No features match your search'}
+                    </p>
+                  ) : (
+                    filteredFeatureNodes.map((node) => (
+                      <FeatureNodeItem
+                        key={node.id}
+                        node={node}
+                        depth={0}
+                        blueprintMap={blueprintByFeatureId}
+                        selectedBlueprintId={selectedBlueprintId}
+                        onSelectBlueprint={onSelectBlueprint}
+                        onCreateBlueprint={onCreateFeatureBlueprint}
+                      />
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
           )}
 
-          {filtered.length === 0 && (
+          {filtered.length === 0 && filteredFeatureNodes.length === 0 && (
             <div className="flex flex-col items-center justify-center py-12 text-center px-4">
               <FileText className="w-8 h-8 text-text-tertiary/40 mb-2" />
               <p className="text-xs text-text-tertiary">
@@ -178,7 +256,7 @@ export function RoomLeftPanel({
           <button
             disabled
             className="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-accent-cyan/10 text-accent-cyan rounded-lg text-xs font-medium opacity-50 cursor-not-allowed"
-            title="Create blueprint (Phase 048/050/051)"
+            title="Create blueprint (Phase 048/050)"
           >
             <Plus className="w-3.5 h-3.5" />
             New Blueprint
@@ -188,6 +266,116 @@ export function RoomLeftPanel({
     </div>
   )
 }
+
+// ─── Feature tree node item ───────────────────────────────────────────
+
+interface FeatureNodeItemProps {
+  node: FeatureTreeNode
+  depth: number
+  blueprintMap: Map<string, Blueprint>
+  selectedBlueprintId: string | null
+  onSelectBlueprint: (id: string) => void
+  onCreateBlueprint: (featureNodeId: string) => void
+}
+
+function FeatureNodeItem({
+  node,
+  depth,
+  blueprintMap,
+  selectedBlueprintId,
+  onSelectBlueprint,
+  onCreateBlueprint,
+}: FeatureNodeItemProps) {
+  const [expanded, setExpanded] = useState(depth < 2)
+  const blueprint = blueprintMap.get(node.id)
+  const hasChildren = node.children.length > 0
+  const isSelected = blueprint?.id === selectedBlueprintId
+
+  return (
+    <div>
+      <div
+        className={cn(
+          'group flex items-center gap-1.5 py-1 pr-2 text-left transition-colors',
+          isSelected
+            ? 'bg-accent-cyan/10 text-accent-cyan border-l-2 border-accent-cyan'
+            : 'text-text-secondary hover:bg-bg-tertiary hover:text-text-primary'
+        )}
+        style={{ paddingLeft: `${8 + depth * 12}px` }}
+      >
+        {/* Expand/collapse toggle */}
+        {hasChildren ? (
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="p-0.5 text-text-tertiary hover:text-text-primary flex-shrink-0"
+          >
+            {expanded ? (
+              <ChevronDown className="w-3 h-3" />
+            ) : (
+              <ChevronRight className="w-3 h-3" />
+            )}
+          </button>
+        ) : (
+          <span className="w-4 flex-shrink-0" />
+        )}
+
+        {/* Node name - clickable to select blueprint or create */}
+        <button
+          onClick={() => {
+            if (blueprint) {
+              onSelectBlueprint(blueprint.id)
+            }
+          }}
+          className="text-xs truncate flex-1 text-left"
+          title={node.title}
+        >
+          {node.title}
+        </button>
+
+        {/* Blueprint status or "Create" button */}
+        {blueprint ? (
+          <span
+            className={cn(
+              'text-[9px] font-medium px-1.5 py-0.5 rounded-full flex-shrink-0',
+              STATUS_STYLES[blueprint.status] || ''
+            )}
+          >
+            {STATUS_LABELS[blueprint.status] || blueprint.status}
+          </span>
+        ) : (
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onCreateBlueprint(node.id)
+            }}
+            className="text-[9px] font-medium px-1.5 py-0.5 rounded-full flex-shrink-0 bg-accent-purple/10 text-accent-purple hover:bg-accent-purple/20 transition-colors opacity-0 group-hover:opacity-100"
+            title="Create blueprint"
+          >
+            Create
+          </button>
+        )}
+      </div>
+
+      {/* Children */}
+      {expanded && hasChildren && (
+        <div>
+          {node.children.map((child) => (
+            <FeatureNodeItem
+              key={child.id}
+              node={child}
+              depth={depth + 1}
+              blueprintMap={blueprintMap}
+              selectedBlueprintId={selectedBlueprintId}
+              onSelectBlueprint={onSelectBlueprint}
+              onCreateBlueprint={onCreateBlueprint}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Blueprint flat section (for foundations + diagrams) ──────────────
 
 interface BlueprintSectionProps {
   title: string

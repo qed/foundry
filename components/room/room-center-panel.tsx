@@ -1,30 +1,31 @@
 'use client'
 
-import { useCallback } from 'react'
-import { FileText } from 'lucide-react'
+import { useState, useCallback } from 'react'
+import { FileText, ExternalLink } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { EmptyState } from '@/components/ui/empty-state'
 import { BlueprintEditor } from './blueprint-editor'
-import type { Blueprint } from '@/types/database'
+import type { Blueprint, BlueprintStatus } from '@/types/database'
 import type { JSONContent } from '@tiptap/react'
 
 interface RoomCenterPanelProps {
   projectId: string
   blueprint: Blueprint | null
+  onStatusChange?: (blueprintId: string, status: BlueprintStatus) => void
 }
+
+const STATUS_OPTIONS: { value: BlueprintStatus; label: string }[] = [
+  { value: 'draft', label: 'Draft' },
+  { value: 'in_review', label: 'In Review' },
+  { value: 'approved', label: 'Approved' },
+  { value: 'implemented', label: 'Implemented' },
+]
 
 const STATUS_STYLES: Record<string, string> = {
-  draft: 'bg-text-tertiary/10 text-text-tertiary',
-  in_review: 'bg-accent-warning/10 text-accent-warning',
-  approved: 'bg-accent-success/10 text-accent-success',
-  implemented: 'bg-accent-cyan/10 text-accent-cyan',
-}
-
-const STATUS_LABELS: Record<string, string> = {
-  draft: 'Draft',
-  in_review: 'In Review',
-  approved: 'Approved',
-  implemented: 'Implemented',
+  draft: 'bg-text-tertiary/10 text-text-tertiary border-text-tertiary/20',
+  in_review: 'bg-accent-warning/10 text-accent-warning border-accent-warning/20',
+  approved: 'bg-accent-success/10 text-accent-success border-accent-success/20',
+  implemented: 'bg-accent-cyan/10 text-accent-cyan border-accent-cyan/20',
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -33,7 +34,9 @@ const TYPE_LABELS: Record<string, string> = {
   feature: 'Feature',
 }
 
-export function RoomCenterPanel({ projectId, blueprint }: RoomCenterPanelProps) {
+export function RoomCenterPanel({ projectId, blueprint, onStatusChange }: RoomCenterPanelProps) {
+  const [statusDropdownOpen, setStatusDropdownOpen] = useState(false)
+
   const handleSave = useCallback(async (content: JSONContent) => {
     if (!blueprint) return
     const res = await fetch(`/api/projects/${projectId}/blueprints/${blueprint.id}`, {
@@ -67,15 +70,63 @@ export function RoomCenterPanel({ projectId, blueprint }: RoomCenterPanelProps) 
         <span className="text-sm font-medium text-text-primary truncate">
           {blueprint.title}
         </span>
+
+        {/* View Feature link for feature blueprints */}
+        {blueprint.blueprint_type === 'feature' && blueprint.feature_node_id && (
+          <a
+            href={`/projects/${projectId}/shop?node=${blueprint.feature_node_id}`}
+            className="flex items-center gap-1 text-[10px] text-accent-purple hover:text-accent-purple/80 transition-colors flex-shrink-0"
+            title="View feature in Pattern Shop"
+          >
+            <ExternalLink className="w-3 h-3" />
+            View Feature
+          </a>
+        )}
+
         <div className="flex-1" />
-        <span
-          className={cn(
-            'text-[10px] font-medium px-2 py-0.5 rounded-full',
-            STATUS_STYLES[blueprint.status] || ''
+
+        {/* Status dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => setStatusDropdownOpen(!statusDropdownOpen)}
+            className={cn(
+              'text-[10px] font-medium px-2 py-0.5 rounded-full border cursor-pointer transition-colors',
+              STATUS_STYLES[blueprint.status] || ''
+            )}
+          >
+            {STATUS_OPTIONS.find((o) => o.value === blueprint.status)?.label || blueprint.status}
+          </button>
+
+          {statusDropdownOpen && (
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setStatusDropdownOpen(false)}
+              />
+              <div className="absolute right-0 top-full mt-1 z-20 bg-bg-secondary border border-border-default rounded-lg shadow-lg py-1 min-w-[120px]">
+                {STATUS_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => {
+                      setStatusDropdownOpen(false)
+                      if (opt.value !== blueprint.status && onStatusChange) {
+                        onStatusChange(blueprint.id, opt.value)
+                      }
+                    }}
+                    className={cn(
+                      'w-full text-left px-3 py-1.5 text-xs transition-colors',
+                      opt.value === blueprint.status
+                        ? 'text-accent-cyan bg-accent-cyan/5'
+                        : 'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary'
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </>
           )}
-        >
-          {STATUS_LABELS[blueprint.status] || blueprint.status}
-        </span>
+        </div>
       </div>
 
       {/* Editor */}
