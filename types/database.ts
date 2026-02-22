@@ -734,6 +734,147 @@ export type Database = {
           },
         ];
       };
+      blueprints: {
+        Row: {
+          id: string;
+          project_id: string;
+          feature_node_id: string | null;
+          blueprint_type: "foundation" | "system_diagram" | "feature";
+          title: string;
+          content: Json;
+          status: "draft" | "in_review" | "approved" | "implemented";
+          created_by: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          feature_node_id?: string | null;
+          blueprint_type: "foundation" | "system_diagram" | "feature";
+          title: string;
+          content: Json;
+          status?: "draft" | "in_review" | "approved" | "implemented";
+          created_by: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          feature_node_id?: string | null;
+          blueprint_type?: "foundation" | "system_diagram" | "feature";
+          title?: string;
+          content?: Json;
+          status?: "draft" | "in_review" | "approved" | "implemented";
+          created_by?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "blueprints_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "blueprints_feature_node_id_fkey";
+            columns: ["feature_node_id"];
+            isOneToOne: false;
+            referencedRelation: "feature_nodes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "blueprints_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      blueprint_versions: {
+        Row: {
+          id: string;
+          blueprint_id: string;
+          version_number: number;
+          content: Json;
+          created_by: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          blueprint_id: string;
+          version_number: number;
+          content: Json;
+          created_by: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          blueprint_id?: string;
+          version_number?: number;
+          content?: Json;
+          created_by?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "blueprint_versions_blueprint_id_fkey";
+            columns: ["blueprint_id"];
+            isOneToOne: false;
+            referencedRelation: "blueprints";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "blueprint_versions_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      blueprint_templates: {
+        Row: {
+          id: string;
+          org_id: string | null;
+          name: string;
+          blueprint_type: "foundation" | "system_diagram" | "feature";
+          outline_content: Json;
+          is_default: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          org_id?: string | null;
+          name: string;
+          blueprint_type: "foundation" | "system_diagram" | "feature";
+          outline_content: Json;
+          is_default?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          org_id?: string | null;
+          name?: string;
+          blueprint_type?: "foundation" | "system_diagram" | "feature";
+          outline_content?: Json;
+          is_default?: boolean;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "blueprint_templates_org_id_fkey";
+            columns: ["org_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       feedback_submissions: {
         Row: {
           id: string;
@@ -912,6 +1053,12 @@ export type Database = {
         };
         Returns: boolean;
       };
+      blueprint_project_member: {
+        Args: {
+          check_blueprint_id: string;
+        };
+        Returns: boolean;
+      };
     };
     Enums: Record<string, never>;
   };
@@ -937,6 +1084,10 @@ export type Phase = Database["public"]["Tables"]["phases"]["Row"];
 export type WorkOrder = Database["public"]["Tables"]["work_orders"]["Row"];
 export type WorkOrderActivity = Database["public"]["Tables"]["work_order_activity"]["Row"];
 
+export type Blueprint = Database["public"]["Tables"]["blueprints"]["Row"];
+export type BlueprintVersion = Database["public"]["Tables"]["blueprint_versions"]["Row"];
+export type BlueprintTemplate = Database["public"]["Tables"]["blueprint_templates"]["Row"];
+
 export type AppKey = Database["public"]["Tables"]["app_keys"]["Row"];
 export type FeedbackSubmission = Database["public"]["Tables"]["feedback_submissions"]["Row"];
 
@@ -948,6 +1099,8 @@ export type DocType = RequirementsDocument["doc_type"];
 export type WorkOrderStatus = WorkOrder["status"];
 export type WorkOrderPriority = WorkOrder["priority"];
 export type PhaseStatus = Phase["status"];
+export type BlueprintType = Blueprint["blueprint_type"];
+export type BlueprintStatus = Blueprint["status"];
 export type AppKeyStatus = AppKey["status"];
 export type FeedbackCategory = FeedbackSubmission["category"];
 export type FeedbackStatus = FeedbackSubmission["status"];
