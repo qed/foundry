@@ -9,9 +9,17 @@ import {
   Layers,
   CheckCircle2,
   Plus,
+  GripVertical,
 } from 'lucide-react'
+import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { cn } from '@/lib/utils'
 import type { TreeNode } from './feature-tree'
+
+interface DropTargetState {
+  nodeId: string
+  zone: 'before' | 'on' | 'after'
+  valid: boolean
+}
 
 interface TreeNodeRowProps {
   node: TreeNode
@@ -19,6 +27,8 @@ interface TreeNodeRowProps {
   expandedIds: Set<string>
   selectedNodeId: string | null
   editingNodeId: string | null
+  draggedNodeId: string | null
+  dropTarget: DropTargetState | null
   onToggleExpand: (nodeId: string) => void
   onSelectNode: (nodeId: string) => void
   onAddChild: (parentId: string, parentLevel: TreeNode['level']) => void
@@ -62,6 +72,8 @@ export const TreeNodeRow = memo(function TreeNodeRow({
   expandedIds,
   selectedNodeId,
   editingNodeId,
+  draggedNodeId,
+  dropTarget,
   onToggleExpand,
   onSelectNode,
   onAddChild,
@@ -73,9 +85,27 @@ export const TreeNodeRow = memo(function TreeNodeRow({
   const isExpanded = expandedIds.has(node.id)
   const isSelected = selectedNodeId === node.id
   const isEditing = editingNodeId === node.id
+  const isDragged = draggedNodeId === node.id
   const hasChildren = node.children.length > 0
   const LevelIcon = LEVEL_ICONS[node.level]
   const paddingLeft = depth * 16 + 8
+
+  // Drag-and-drop
+  const { attributes, listeners, setNodeRef: setDragRef, isDragging } = useDraggable({
+    id: node.id,
+    data: { node },
+    disabled: isEditing,
+  })
+
+  // Three drop zones per node: before, on (reparent), after
+  const { setNodeRef: setBeforeRef } = useDroppable({ id: `${node.id}-zone-before` })
+  const { setNodeRef: setOnRef } = useDroppable({ id: `${node.id}-zone-on` })
+  const { setNodeRef: setAfterRef } = useDroppable({ id: `${node.id}-zone-after` })
+
+  const isDropBefore = dropTarget?.nodeId === node.id && dropTarget.zone === 'before'
+  const isDropOn = dropTarget?.nodeId === node.id && dropTarget.zone === 'on'
+  const isDropAfter = dropTarget?.nodeId === node.id && dropTarget.zone === 'after'
+  const isDropValid = dropTarget?.nodeId === node.id ? dropTarget.valid : true
 
   // Inline edit state
   const [editValue, setEditValue] = useState(node.title === 'Untitled' ? '' : node.title)
@@ -105,20 +135,60 @@ export const TreeNodeRow = memo(function TreeNodeRow({
 
   return (
     <>
+      {/* Drop zone: before this node */}
+      {draggedNodeId && !isDragged && (
+        <div
+          ref={setBeforeRef}
+          className="relative h-1"
+          style={{ marginLeft: paddingLeft }}
+        >
+          {isDropBefore && (
+            <div
+              className={cn(
+                'absolute inset-x-0 top-0 h-0.5 rounded',
+                isDropValid ? 'bg-accent-success' : 'bg-accent-error'
+              )}
+            />
+          )}
+        </div>
+      )}
+
       <div
+        ref={setDragRef}
         className={cn(
-          'flex items-center gap-1.5 py-1.5 pr-2 cursor-pointer transition-colors group',
+          'flex items-center gap-1.5 py-1.5 pr-2 cursor-pointer transition-colors group relative',
           isSelected
             ? 'bg-accent-cyan/10 border-l-2 border-accent-cyan'
-            : 'border-l-2 border-transparent hover:bg-bg-tertiary'
+            : 'border-l-2 border-transparent hover:bg-bg-tertiary',
+          isDragging && 'opacity-30',
+          isDropOn && isDropValid && 'ring-1 ring-accent-success bg-accent-success/5',
+          isDropOn && !isDropValid && 'ring-1 ring-accent-error bg-accent-error/5'
         )}
         style={{ paddingLeft }}
-        onClick={() => !isEditing && onSelectNode(node.id)}
+        onClick={() => !isEditing && !isDragging && onSelectNode(node.id)}
         onContextMenu={(e) => onContextMenu(e, node.id, node.level, node.parent_id)}
         role="treeitem"
         aria-expanded={hasChildren ? isExpanded : undefined}
         aria-selected={isSelected}
       >
+        {/* Drop zone: on this node (reparent) */}
+        {draggedNodeId && !isDragged && (
+          <div ref={setOnRef} className="absolute inset-0 z-10" />
+        )}
+
+        {/* Drag handle */}
+        {!isEditing && (
+          <button
+            {...attributes}
+            {...listeners}
+            className="p-0.5 rounded hover:bg-bg-primary/50 transition-colors flex-shrink-0 opacity-0 group-hover:opacity-100 cursor-grab active:cursor-grabbing touch-none"
+            onClick={(e) => e.stopPropagation()}
+            tabIndex={-1}
+          >
+            <GripVertical className="w-3 h-3 text-text-tertiary" />
+          </button>
+        )}
+
         {/* Expand/collapse chevron */}
         {hasChildren ? (
           <button
@@ -186,8 +256,8 @@ export const TreeNodeRow = memo(function TreeNodeRow({
           </span>
         )}
 
-        {/* Add child button (visible on hover, hidden during edit) */}
-        {!isEditing && CAN_HAVE_CHILDREN.has(node.level) && (
+        {/* Add child button (visible on hover, hidden during edit and drag) */}
+        {!isEditing && !draggedNodeId && CAN_HAVE_CHILDREN.has(node.level) && (
           <button
             onClick={(e) => {
               e.stopPropagation()
@@ -201,10 +271,28 @@ export const TreeNodeRow = memo(function TreeNodeRow({
         )}
       </div>
 
+      {/* Drop zone: after this node (only if no children expanded) */}
+      {draggedNodeId && !isDragged && (!isExpanded || !hasChildren) && (
+        <div
+          ref={setAfterRef}
+          className="relative h-1"
+          style={{ marginLeft: paddingLeft }}
+        >
+          {isDropAfter && (
+            <div
+              className={cn(
+                'absolute inset-x-0 top-0 h-0.5 rounded',
+                isDropValid ? 'bg-accent-success' : 'bg-accent-error'
+              )}
+            />
+          )}
+        </div>
+      )}
+
       {/* Children (if expanded) */}
       {isExpanded &&
         hasChildren &&
-        node.children.map((child) => (
+        node.children.map((child, _idx) => (
           <TreeNodeRow
             key={child.id}
             node={child}
@@ -212,6 +300,8 @@ export const TreeNodeRow = memo(function TreeNodeRow({
             expandedIds={expandedIds}
             selectedNodeId={selectedNodeId}
             editingNodeId={editingNodeId}
+            draggedNodeId={draggedNodeId}
+            dropTarget={dropTarget}
             onToggleExpand={onToggleExpand}
             onSelectNode={onSelectNode}
             onAddChild={onAddChild}
@@ -221,6 +311,24 @@ export const TreeNodeRow = memo(function TreeNodeRow({
             onDoubleClick={onDoubleClick}
           />
         ))}
+
+      {/* Drop zone: after last child (when expanded) */}
+      {draggedNodeId && !isDragged && isExpanded && hasChildren && (
+        <div
+          ref={setAfterRef}
+          className="relative h-1"
+          style={{ marginLeft: paddingLeft }}
+        >
+          {isDropAfter && (
+            <div
+              className={cn(
+                'absolute inset-x-0 top-0 h-0.5 rounded',
+                isDropValid ? 'bg-accent-success' : 'bg-accent-error'
+              )}
+            />
+          )}
+        </div>
+      )}
     </>
   )
 })
