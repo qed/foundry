@@ -22,6 +22,7 @@ import {
 import { OrgSwitcher } from './org-switcher'
 import { ProjectSwitcher } from './project-switcher'
 import { KeyboardHint } from './keyboard-hint'
+import { PresenceWidget } from '@/components/presence/presence-widget'
 
 const MODULES: {
   id: string
@@ -188,6 +189,9 @@ export function Sidebar({ onClose }: SidebarProps) {
           )
         })}
       </nav>
+
+      {/* Presence widget */}
+      <PresenceWidget collapsed={isCollapsed} />
 
       {/* Footer with keyboard hints */}
       {!isCollapsed && (
