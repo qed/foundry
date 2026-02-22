@@ -13,6 +13,8 @@ import { NoResultsState } from './no-results-state'
 import { LoadMoreTrigger } from './load-more-trigger'
 import { IdeaCreateModal } from './idea-create-modal'
 import { IdeaDetailSlideOver } from './idea-detail-slide-over'
+import { DuplicateAlert } from './duplicate-alert'
+import type { DuplicateIdea } from './duplicate-alert'
 import { AgentPanel } from './agent-panel'
 import { ConnectionStatus } from './connection-status'
 import { BulkActionBar } from './bulk-action-bar'
@@ -74,6 +76,11 @@ export function HallClient({
   const [showBulkTagModal, setShowBulkTagModal] = useState(false)
   const [showBulkStatusModal, setShowBulkStatusModal] = useState(false)
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false)
+  const [duplicateAlert, setDuplicateAlert] = useState<{
+    ideaId: string
+    title: string
+    duplicates: DuplicateIdea[]
+  } | null>(null)
 
   const { addToast } = useToast()
 
@@ -255,19 +262,53 @@ export function HallClient({
       .finally(() => setIsLoadingMore(false))
   }, [fetchFromApi, isLoadingMore, hasMore, ideas.length])
 
-  // Refetch after creating an idea (reset to page 1 with current filters)
-  const handleIdeaCreated = useCallback(() => {
-    setIsRefetching(true)
+  // Detect duplicates for a newly created idea (fire-and-forget)
+  const detectDuplicates = useCallback(
+    async (ideaId: string, ideaTitle: string, ideaBody: string | null) => {
+      try {
+        const res = await fetch('/api/agent/hall/detect-duplicates', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            projectId,
+            ideaId,
+            ideaTitle,
+            ideaBody: ideaBody || '',
+          }),
+        })
+        if (!res.ok) return
+        const data = await res.json()
+        if (data.duplicates && data.duplicates.length > 0) {
+          setDuplicateAlert({ ideaId, title: ideaTitle, duplicates: data.duplicates })
+        }
+      } catch {
+        // Non-blocking — silently ignore
+      }
+    },
+    [projectId]
+  )
 
-    fetchFromApi(0)
-      .then((data) => {
-        setIdeas(data.ideas)
-        setTotal(data.total)
-        setHasMore(data.hasMore)
-      })
-      .catch(() => {})
-      .finally(() => setIsRefetching(false))
-  }, [fetchFromApi])
+  // Refetch after creating an idea (reset to page 1 with current filters)
+  const handleIdeaCreated = useCallback(
+    (idea?: { id: string; title: string; body: string | null }) => {
+      setIsRefetching(true)
+
+      fetchFromApi(0)
+        .then((data) => {
+          setIdeas(data.ideas)
+          setTotal(data.total)
+          setHasMore(data.hasMore)
+        })
+        .catch(() => {})
+        .finally(() => setIsRefetching(false))
+
+      // Fire-and-forget duplicate detection
+      if (idea) {
+        detectDuplicates(idea.id, idea.title, idea.body)
+      }
+    },
+    [fetchFromApi, detectDuplicates]
+  )
 
   // Handle idea updated from edit form
   const handleIdeaUpdated = useCallback((updatedIdea: IdeaWithDetails) => {
@@ -506,6 +547,29 @@ export function HallClient({
           }
           hasActiveFilters={hasActiveFilters}
           total={total}
+        />
+      )}
+
+      {/* Duplicate Detection Alert */}
+      {duplicateAlert && (
+        <DuplicateAlert
+          newIdeaId={duplicateAlert.ideaId}
+          newIdeaTitle={duplicateAlert.title}
+          duplicates={duplicateAlert.duplicates}
+          onDismiss={() => setDuplicateAlert(null)}
+          onViewIdea={(ideaId) => {
+            setSelectedIdeaId(ideaId)
+          }}
+          onLinked={() => {
+            // Refetch to update connection counts
+            fetchFromApi(0)
+              .then((data) => {
+                setIdeas(data.ideas)
+                setTotal(data.total)
+                setHasMore(data.hasMore)
+              })
+              .catch(() => {})
+          }}
         />
       )}
 

@@ -11,7 +11,7 @@ interface IdeaCreateModalProps {
   isOpen: boolean
   onClose: () => void
   projectId: string
-  onIdeaCreated?: () => void
+  onIdeaCreated?: (idea?: { id: string; title: string; body: string | null }) => void
 }
 
 interface NewTagEntry {
@@ -258,10 +258,11 @@ export function IdeaCreateModal({
         return
       }
 
+      const created = await res.json()
       addToast('Idea created!', 'success')
       resetForm()
       onClose()
-      onIdeaCreated?.()
+      onIdeaCreated?.({ id: created.id, title: created.title, body: created.body })
     } catch {
       setErrors({ form: 'An error occurred. Please try again.' })
       addToast('Failed to create idea. Please try again.', 'error')
