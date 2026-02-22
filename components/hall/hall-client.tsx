@@ -15,11 +15,15 @@ import { IdeaCreateModal } from './idea-create-modal'
 import { IdeaDetailSlideOver } from './idea-detail-slide-over'
 import { AgentPanel } from './agent-panel'
 import { ConnectionStatus } from './connection-status'
+import { BulkActionBar } from './bulk-action-bar'
+import { BulkTagModal } from './bulk-tag-modal'
+import { BulkStatusModal } from './bulk-status-modal'
+import { BulkDeleteModal } from './bulk-delete-modal'
 import { Spinner } from '@/components/ui/spinner'
 import { useToast } from '@/components/ui/toast-container'
 import { useRealtimeIdeas } from '@/lib/realtime/use-realtime-ideas'
 import type { IdeaWithDetails, SortOption } from './types'
-import type { Tag, Idea } from '@/types/database'
+import type { Tag, Idea, IdeaStatus } from '@/types/database'
 
 const PAGE_SIZE = 12
 
@@ -67,6 +71,9 @@ export function HallClient({
   const [showNewIdeaModal, setShowNewIdeaModal] = useState(false)
   const [selectedIdeaId, setSelectedIdeaId] = useState<string | null>(null)
   const [agentOpen, setAgentOpen] = useState(false)
+  const [showBulkTagModal, setShowBulkTagModal] = useState(false)
+  const [showBulkStatusModal, setShowBulkStatusModal] = useState(false)
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false)
 
   const { addToast } = useToast()
 
@@ -319,6 +326,124 @@ export function HallClient({
     })
   }, [addToast, fetchFromApi])
 
+  // Bulk tag handler
+  const handleBulkTag = useCallback(
+    async (tagIds: string[]) => {
+      const ideaIds = Array.from(selectedIds)
+      const res = await fetch('/api/hall/bulk/tag', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectId, ideaIds, tagIds }),
+      })
+
+      if (!res.ok) {
+        addToast('Failed to tag ideas', 'error')
+        return
+      }
+
+      addToast(`Tagged ${ideaIds.length} ${ideaIds.length === 1 ? 'idea' : 'ideas'}`, 'success')
+      setSelectedIds(new Set())
+
+      // Refetch to get updated tag data
+      fetchFromApi(0)
+        .then((data) => {
+          setIdeas(data.ideas)
+          setTotal(data.total)
+          setHasMore(data.hasMore)
+        })
+        .catch(() => {})
+    },
+    [selectedIds, projectId, addToast, fetchFromApi]
+  )
+
+  // Bulk status handler
+  const handleBulkStatus = useCallback(
+    async (status: IdeaStatus) => {
+      const ideaIds = Array.from(selectedIds)
+      const res = await fetch('/api/hall/bulk/status', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectId, ideaIds, status }),
+      })
+
+      if (!res.ok) {
+        addToast('Failed to update status', 'error')
+        return
+      }
+
+      const { updated } = await res.json()
+      addToast(
+        `Updated ${updated} ${updated === 1 ? 'idea' : 'ideas'} to ${status}`,
+        'success'
+      )
+      setSelectedIds(new Set())
+
+      // Refetch
+      fetchFromApi(0)
+        .then((data) => {
+          setIdeas(data.ideas)
+          setTotal(data.total)
+          setHasMore(data.hasMore)
+        })
+        .catch(() => {})
+    },
+    [selectedIds, projectId, addToast, fetchFromApi]
+  )
+
+  // Bulk archive handler
+  const handleBulkArchive = useCallback(async () => {
+    const ideaIds = Array.from(selectedIds)
+    const res = await fetch('/api/hall/bulk/archive', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ projectId, ideaIds }),
+    })
+
+    if (!res.ok) {
+      addToast('Failed to archive ideas', 'error')
+      return
+    }
+
+    const { archived, previousStatuses } = await res.json()
+
+    // Optimistic removal
+    setIdeas((prev) => prev.filter((idea) => !selectedIds.has(idea.id)))
+    setTotal((prev) => prev - archived)
+    setSelectedIds(new Set())
+
+    // Undo toast
+    addToast(`Archived ${archived} ${archived === 1 ? 'idea' : 'ideas'}`, 'info', 10000, {
+      label: 'Undo',
+      onClick: async () => {
+        try {
+          const undoRes = await fetch('/api/hall/bulk/unarchive', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ projectId, previousStatuses }),
+          })
+
+          if (!undoRes.ok) {
+            addToast('Failed to undo archive', 'error')
+            return
+          }
+
+          const { restored } = await undoRes.json()
+          addToast(`Restored ${restored} ${restored === 1 ? 'idea' : 'ideas'}`, 'success')
+
+          fetchFromApi(0)
+            .then((data) => {
+              setIdeas(data.ideas)
+              setTotal(data.total)
+              setHasMore(data.hasMore)
+            })
+            .catch(() => {})
+        } catch {
+          addToast('Failed to undo archive', 'error')
+        }
+      },
+    })
+  }, [selectedIds, projectId, addToast, fetchFromApi])
+
   // URL state updater
   const updateParams = useCallback(
     (updates: Record<string, string | null>) => {
@@ -401,6 +526,8 @@ export function HallClient({
             onIdeaClick={setSelectedIdeaId}
             highlightedIds={highlightedIds}
             newIds={newIds}
+            selectedIds={selectedIds}
+            onSelectionChange={setSelectedIds}
           />
         ) : (
           <IdeaList
@@ -441,6 +568,36 @@ export function HallClient({
           All {total} {total === 1 ? 'idea' : 'ideas'} loaded
         </p>
       )}
+
+      {/* Bulk Action Bar */}
+      <BulkActionBar
+        selectedCount={selectedIds.size}
+        onTag={() => setShowBulkTagModal(true)}
+        onChangeStatus={() => setShowBulkStatusModal(true)}
+        onDelete={() => setShowBulkDeleteModal(true)}
+        onDeselect={() => setSelectedIds(new Set())}
+      />
+
+      {/* Bulk Modals */}
+      <BulkTagModal
+        isOpen={showBulkTagModal}
+        onClose={() => setShowBulkTagModal(false)}
+        projectTags={projectTags}
+        selectedCount={selectedIds.size}
+        onConfirm={handleBulkTag}
+      />
+      <BulkStatusModal
+        isOpen={showBulkStatusModal}
+        onClose={() => setShowBulkStatusModal(false)}
+        selectedCount={selectedIds.size}
+        onConfirm={handleBulkStatus}
+      />
+      <BulkDeleteModal
+        isOpen={showBulkDeleteModal}
+        onClose={() => setShowBulkDeleteModal(false)}
+        selectedCount={selectedIds.size}
+        onConfirm={handleBulkArchive}
+      />
 
       {/* Mobile FAB */}
       <button
