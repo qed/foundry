@@ -689,6 +689,134 @@ export type Database = {
           },
         ];
       };
+      app_keys: {
+        Row: {
+          id: string;
+          project_id: string;
+          key_value: string;
+          name: string;
+          status: "active" | "revoked";
+          created_by: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          key_value: string;
+          name: string;
+          status?: "active" | "revoked";
+          created_by: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          key_value?: string;
+          name?: string;
+          status?: "active" | "revoked";
+          created_by?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "app_keys_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "app_keys_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      feedback_submissions: {
+        Row: {
+          id: string;
+          project_id: string;
+          app_key_id: string | null;
+          content: string;
+          submitter_email: string | null;
+          submitter_name: string | null;
+          metadata: Json;
+          category: "bug" | "feature_request" | "ux_issue" | "performance" | "other" | "uncategorized";
+          tags: string[] | null;
+          score: number | null;
+          status: "new" | "triaged" | "converted" | "archived";
+          converted_to_work_order_id: string | null;
+          converted_to_feature_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          app_key_id?: string | null;
+          content: string;
+          submitter_email?: string | null;
+          submitter_name?: string | null;
+          metadata?: Json;
+          category?: "bug" | "feature_request" | "ux_issue" | "performance" | "other" | "uncategorized";
+          tags?: string[] | null;
+          score?: number | null;
+          status?: "new" | "triaged" | "converted" | "archived";
+          converted_to_work_order_id?: string | null;
+          converted_to_feature_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          app_key_id?: string | null;
+          content?: string;
+          submitter_email?: string | null;
+          submitter_name?: string | null;
+          metadata?: Json;
+          category?: "bug" | "feature_request" | "ux_issue" | "performance" | "other" | "uncategorized";
+          tags?: string[] | null;
+          score?: number | null;
+          status?: "new" | "triaged" | "converted" | "archived";
+          converted_to_work_order_id?: string | null;
+          converted_to_feature_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "feedback_submissions_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "feedback_submissions_app_key_id_fkey";
+            columns: ["app_key_id"];
+            isOneToOne: false;
+            referencedRelation: "app_keys";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "feedback_submissions_converted_to_work_order_id_fkey";
+            columns: ["converted_to_work_order_id"];
+            isOneToOne: false;
+            referencedRelation: "work_orders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "feedback_submissions_converted_to_feature_id_fkey";
+            columns: ["converted_to_feature_id"];
+            isOneToOne: false;
+            referencedRelation: "feature_nodes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       requirement_versions: {
         Row: {
           id: string;
@@ -778,6 +906,12 @@ export type Database = {
         };
         Returns: boolean;
       };
+      is_active_app_key: {
+        Args: {
+          check_app_key_id: string;
+        };
+        Returns: boolean;
+      };
     };
     Enums: Record<string, never>;
   };
@@ -803,6 +937,9 @@ export type Phase = Database["public"]["Tables"]["phases"]["Row"];
 export type WorkOrder = Database["public"]["Tables"]["work_orders"]["Row"];
 export type WorkOrderActivity = Database["public"]["Tables"]["work_order_activity"]["Row"];
 
+export type AppKey = Database["public"]["Tables"]["app_keys"]["Row"];
+export type FeedbackSubmission = Database["public"]["Tables"]["feedback_submissions"]["Row"];
+
 // Status type aliases
 export type IdeaStatus = Idea["status"];
 export type FeatureLevel = FeatureNode["level"];
@@ -811,3 +948,6 @@ export type DocType = RequirementsDocument["doc_type"];
 export type WorkOrderStatus = WorkOrder["status"];
 export type WorkOrderPriority = WorkOrder["priority"];
 export type PhaseStatus = Phase["status"];
+export type AppKeyStatus = AppKey["status"];
+export type FeedbackCategory = FeedbackSubmission["category"];
+export type FeedbackStatus = FeedbackSubmission["status"];
