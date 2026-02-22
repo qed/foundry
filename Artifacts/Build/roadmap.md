@@ -213,10 +213,10 @@ After this initial update, stay in this session. I will come back to you after e
 | 066 | Kanban Card Display | `ready` | — | 062, 065 | Floor | `components/floor/` |
 | 067 | Work Order List/Table View | `done` | — | 061, 062, 064 | Floor | `components/floor/` |
 | 068 | Work Order Assignment | `ready` | — | 010, 061, 064, 065, 067 | Floor | `components/floor/` |
-| 069 | Work Order Phases | `ready` | — | 061, 062, 065 | Floor | `components/floor/` |
-| 070 | Priority & Sequencing | `blocked` | — | 061, 065, 067, 069 | Floor | `components/floor/` |
-| 071 | Progress Tracking & Rollup | `blocked` | — | 026, 061, 069 | Floor ⚠️ | `components/floor/` |
-| 072 | Work Order Search & Filter | `blocked` | — | 061, 062, 067, 069 | Floor | `components/floor/` |
+| 069 | Work Order Phases | `done` | — | 061, 062, 065 | Floor | `components/floor/` |
+| 070 | Priority & Sequencing | `ready` | — | 061, 065, 067, 069 | Floor | `components/floor/` |
+| 071 | Progress Tracking & Rollup | `ready` | — | 026, 061, 069 | Floor ⚠️ | `components/floor/` |
+| 072 | Work Order Search & Filter | `ready` | — | 061, 062, 067, 069 | Floor | `components/floor/` |
 | 073 | Assembly Floor Agent Infra | `ready` | — | 002, 061, 062 | Floor | `components/floor/`, `app/api/floor/agent/` |
 | 074 | Agent: WO Extraction | `blocked` | — | 046, 061, 073 | Floor ⚠️ | `components/floor/` |
 | 075 | Agent: Phase Planning | `blocked` | — | 061, 069, 073, 074 | Floor | `components/floor/` |
@@ -535,11 +535,11 @@ These phases require work from **multiple module tracks** to be complete before 
 | The Hall (011–025) | 15 | 12 | 0 | 3 | 0 |
 | Pattern Shop (026–045) | 20 | 8 | 0 | 6 | 6 |
 | Control Room (046–060) | 15 | 3 | 0 | 3 | 9 |
-| Assembly Floor (061–080) | 20 | 6 | 0 | 7 | 7 |
+| Assembly Floor (061–080) | 20 | 7 | 0 | 9 | 4 |
 | Insights Lab (081–095) | 15 | 2 | 0 | 3 | 10 |
 | Cross-Cutting (096–120) | 25 | 6 | 0 | 5 | 14 |
 | Advanced (121–135) | 15 | 0 | 0 | 2 | 13 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **47** | **0** | **31** | **72** |
+| **TOTAL** | **150** | **48** | **0** | **33** | **69** |
 
-**Currently ready to start**: 021, 022, 023, 032, 035, 037, 042, 043, 045, 048, 050, 051, 066, 068, 069, 073, 077, 078, 080, 082, 084, 090, 097, 102, 110, 118, 120, 131, 132
+**Currently ready to start**: 021, 022, 023, 032, 035, 037, 042, 043, 045, 048, 050, 051, 066, 068, 070, 071, 072, 073, 077, 078, 080, 082, 084, 090, 097, 102, 110, 118, 120, 131, 132
