@@ -15,7 +15,7 @@
 
 ---
 
-### Completed Phases (61/150)
+### Completed Phases (62/150)
 
 001–010 (Foundation), 011–020 (Hall core), 024–031 (Hall realtime + Shop layout/tree), 033–034 (Shop docs), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 061–065 (Floor schema/layout/WO/kanban), 067 (WO list), 069 (WO phases), 073 (Floor agent), 081 (Lab schema), 083–085 (Lab layout/inbox/detail), 096–097 (Artifacts schema/upload), 105 (Comments schema), 109 (Knowledge schema), 113 (Org console), 117 (Realtime presence), 119 (Audit trail)
 
@@ -420,10 +420,10 @@ After this initial update, stay in this session. I will come back to you after e
 |-------|------|--------|--------|---------------|-------|------------|
 | 096 | Artifacts Database & Storage | `done` | — | 002 | Artifacts | `supabase/migrations/`, `types/database.ts` |
 | 097 | Artifact Upload UI | `done` | — | 096 | Artifacts | `components/artifacts/` |
-| 098 | Artifact Browser & Management | `ready` | — | 096, 097 | Artifacts | `components/artifacts/` |
+| 098 | Artifact Browser & Management | `done` | — | 096, 097 | Artifacts | `components/artifacts/` |
 | 099 | Artifact Linking to Entities | `ready` | — | 096, 097 | Artifacts | `components/artifacts/` |
 | 100 | Artifact Search & Indexing | `ready` | — | 096, 097 | Artifacts | `components/artifacts/` |
-| 101 | Artifact Folders & Organization | `blocked` | — | 096, 098 | Artifacts | `components/artifacts/` |
+| 101 | Artifact Folders & Organization | `ready` | — | 096, 098 | Artifacts | `components/artifacts/` |
 | 102 | Document Version History | `ready` | — | 002, 034, 049 | Versioning ⚠️ | `components/versioning/`, `lib/` |
 | 103 | Version Diff & Comparison | `blocked` | — | 102 | Versioning | `components/versioning/` |
 | 104 | Version Restore | `blocked` | — | 102, 103 | Versioning | `components/versioning/` |
@@ -705,9 +705,9 @@ These phases require work from **multiple module tracks** to be complete before 
 | Control Room (046–060) | 15 | 5 | 0 | 6 | 4 |
 | Assembly Floor (061–080) | 20 | 8 | 0 | 10 | 2 |
 | Insights Lab (081–095) | 15 | 4 | 0 | 5 | 6 |
-| Cross-Cutting (096–120) | 25 | 7 | 0 | 7 | 11 |
+| Cross-Cutting (096–120) | 25 | 8 | 0 | 7 | 10 |
 | Advanced (121–135) | 15 | 0 | 0 | 6 | 9 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **61** | **0** | **44** | **45** |
+| **TOTAL** | **150** | **62** | **0** | **44** | **44** |
 
-**Currently ready to start**: 032, 035, 038, 039, 040, 042, 043, 045, 052, 053, 055, 057, 058, 059, 066, 068, 070, 071, 072, 074, 076, 077, 078, 080, 082, 086, 088, 089, 090, 098, 099, 100, 102, 110, 118, 120, 121, 122, 124, 127, 131, 132
+**Currently ready to start**: 032, 035, 038, 039, 040, 042, 043, 045, 052, 053, 055, 057, 058, 059, 066, 068, 070, 071, 072, 074, 076, 077, 078, 080, 082, 086, 088, 089, 090, 099, 100, 101, 102, 110, 118, 120, 121, 122, 124, 127, 131, 132
