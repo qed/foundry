@@ -175,21 +175,36 @@ export function PhaseNavigation({
           <button
             onClick={() => onSelectPhase(null)}
             className={cn(
-              'flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex-shrink-0',
+              'flex flex-col gap-1 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex-shrink-0',
               selectedPhaseId === null
                 ? 'bg-accent-cyan/10 text-accent-cyan'
                 : 'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary'
             )}
           >
-            All Phases
-            <span className="text-[10px] text-text-tertiary">
-              {allDone}/{workOrders.length}
+            <span className="flex items-center gap-2">
+              All Phases
+              <span className="text-[10px] text-text-tertiary">
+                {allDone}/{workOrders.length}
+              </span>
             </span>
+            {workOrders.length > 0 && (
+              <span className="w-full h-1 rounded-full bg-bg-tertiary overflow-hidden">
+                <span
+                  className={cn(
+                    'block h-full rounded-full transition-all',
+                    allDone === workOrders.length ? 'bg-accent-success' : 'bg-accent-cyan'
+                  )}
+                  style={{ width: `${Math.round((allDone / workOrders.length) * 100)}%` }}
+                />
+              </span>
+            )}
           </button>
 
           {phases.map((phase) => {
             const progress = getPhaseProgress(phase.id)
             const isEditing = editingId === phase.id
+
+            const pct = progress.total > 0 ? Math.round((progress.done / progress.total) * 100) : 0
 
             return (
               <button
@@ -199,38 +214,51 @@ export function PhaseNavigation({
                 }}
                 onContextMenu={(e) => handleContextMenu(e, phase.id)}
                 className={cn(
-                  'flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex-shrink-0',
+                  'flex flex-col gap-1 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex-shrink-0',
                   selectedPhaseId === phase.id
                     ? 'bg-accent-cyan/10 text-accent-cyan'
                     : 'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary'
                 )}
               >
-                <span
-                  className={cn(
-                    'w-1.5 h-1.5 rounded-full flex-shrink-0',
-                    STATUS_COLORS[phase.status] || 'bg-text-tertiary'
-                  )}
-                />
-                {isEditing ? (
-                  <input
-                    ref={editInputRef}
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleRename(phase.id)
-                      if (e.key === 'Escape') setEditingId(null)
-                    }}
-                    onBlur={() => handleRename(phase.id)}
-                    onClick={(e) => e.stopPropagation()}
-                    className="bg-bg-primary border border-border-default rounded px-1 py-0.5 text-xs text-text-primary w-24 outline-none focus:border-accent-cyan"
-                    maxLength={100}
+                <span className="flex items-center gap-2">
+                  <span
+                    className={cn(
+                      'w-1.5 h-1.5 rounded-full flex-shrink-0',
+                      STATUS_COLORS[phase.status] || 'bg-text-tertiary'
+                    )}
                   />
-                ) : (
-                  phase.name
-                )}
-                <span className="text-[10px] text-text-tertiary">
-                  {progress.done}/{progress.total}
+                  {isEditing ? (
+                    <input
+                      ref={editInputRef}
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleRename(phase.id)
+                        if (e.key === 'Escape') setEditingId(null)
+                      }}
+                      onBlur={() => handleRename(phase.id)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="bg-bg-primary border border-border-default rounded px-1 py-0.5 text-xs text-text-primary w-24 outline-none focus:border-accent-cyan"
+                      maxLength={100}
+                    />
+                  ) : (
+                    phase.name
+                  )}
+                  <span className="text-[10px] text-text-tertiary">
+                    {progress.done}/{progress.total}
+                  </span>
                 </span>
+                {progress.total > 0 && (
+                  <span className="w-full h-1 rounded-full bg-bg-tertiary overflow-hidden">
+                    <span
+                      className={cn(
+                        'block h-full rounded-full transition-all',
+                        pct >= 100 ? 'bg-accent-success' : 'bg-accent-cyan'
+                      )}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </span>
+                )}
               </button>
             )
           })}

@@ -19,6 +19,7 @@ interface FloorContentProps {
   onAssignmentChange?: (workOrderId: string, assigneeId: string | null) => void
   onPriorityChange?: (workOrderId: string, priority: WorkOrderPriority) => void
   onReorder?: (items: { id: string; position: number }[]) => void
+  featureProgress?: Map<string, { done: number; total: number }>
 }
 
 export function FloorContent({
@@ -35,6 +36,7 @@ export function FloorContent({
   onAssignmentChange,
   onPriorityChange,
   onReorder,
+  featureProgress,
 }: FloorContentProps) {
   const filtered = selectedPhaseId
     ? workOrders.filter((wo) => wo.phase_id === selectedPhaseId)
@@ -51,6 +53,7 @@ export function FloorContent({
         onAssignmentChange={onAssignmentChange}
         onPriorityChange={onPriorityChange}
         onReorder={onReorder}
+        featureProgress={featureProgress}
       />
     )
   }

@@ -192,6 +192,19 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
     return workOrders.filter((wo) => wo.assignee_id === user.id).length
   }, [workOrders, user])
 
+  // Feature progress rollup: done/total for each feature that has linked work orders
+  const featureProgress = useMemo(() => {
+    const map = new Map<string, { done: number; total: number }>()
+    for (const wo of workOrders) {
+      if (!wo.feature_node_id) continue
+      const entry = map.get(wo.feature_node_id) || { done: 0, total: 0 }
+      entry.total++
+      if (wo.status === 'done') entry.done++
+      map.set(wo.feature_node_id, entry)
+    }
+    return map
+  }, [workOrders])
+
   // Handle assignment change from inline selectors
   const handleAssignmentChange = useCallback(async (workOrderId: string, assigneeId: string | null) => {
     // Optimistic update
@@ -376,6 +389,7 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
             onAssignmentChange={handleAssignmentChange}
             onPriorityChange={handlePriorityChange}
             onReorder={handleReorder}
+            featureProgress={featureProgress}
           />
         )}
 

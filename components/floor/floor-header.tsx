@@ -61,21 +61,32 @@ export function FloorHeader({
       <div className="hidden md:flex items-center gap-2 ml-2">
         <span className="text-xs text-text-secondary">
           <span className="font-medium text-text-primary">{doneWorkOrders}</span>
-          /{totalWorkOrders} work orders complete
+          /{totalWorkOrders} complete
         </span>
         {totalWorkOrders > 0 && (
-          <span
-            className={cn(
-              'text-xs font-medium',
-              completionPercent >= 100
-                ? 'text-accent-success'
-                : completionPercent > 0
-                  ? 'text-accent-cyan'
-                  : 'text-text-tertiary'
-            )}
-          >
-            ({completionPercent}%)
-          </span>
+          <>
+            <span
+              className={cn(
+                'text-xs font-medium',
+                completionPercent >= 100
+                  ? 'text-accent-success'
+                  : completionPercent > 0
+                    ? 'text-accent-cyan'
+                    : 'text-text-tertiary'
+              )}
+            >
+              {completionPercent}%
+            </span>
+            <span className="w-20 h-1.5 rounded-full bg-bg-tertiary overflow-hidden">
+              <span
+                className={cn(
+                  'block h-full rounded-full transition-all',
+                  completionPercent >= 100 ? 'bg-accent-success' : 'bg-accent-cyan'
+                )}
+                style={{ width: `${completionPercent}%` }}
+              />
+            </span>
+          </>
         )}
       </div>
 

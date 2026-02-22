@@ -36,6 +36,7 @@ interface KanbanBoardProps {
   onAssignmentChange?: (workOrderId: string, assigneeId: string | null) => void
   onPriorityChange?: (workOrderId: string, priority: WorkOrderPriority) => void
   onReorder?: (items: { id: string; position: number }[]) => void
+  featureProgress?: Map<string, { done: number; total: number }>
 }
 
 const COLUMNS: { key: WorkOrderStatus; label: string; headerColor: string; dotBg: string }[] = [
@@ -77,6 +78,7 @@ export function KanbanBoard({
   onAssignmentChange,
   onPriorityChange,
   onReorder,
+  featureProgress,
 }: KanbanBoardProps) {
   const [activeId, setActiveId] = useState<string | null>(null)
   const [optimisticMoves, setOptimisticMoves] = useState<Record<string, WorkOrderStatus>>({})
@@ -228,6 +230,7 @@ export function KanbanBoard({
               onPriorityToggle={(id) => setPriorityOpenFor((prev) => prev === id ? null : id)}
               onPriorityClose={() => setPriorityOpenFor(null)}
               onPriorityChange={onPriorityChange}
+              featureProgress={featureProgress}
             />
           )
         })}
@@ -265,6 +268,7 @@ function KanbanColumn({
   onPriorityToggle,
   onPriorityClose,
   onPriorityChange,
+  featureProgress,
 }: {
   column: (typeof COLUMNS)[number]
   workOrders: WorkOrder[]
@@ -281,6 +285,7 @@ function KanbanColumn({
   onPriorityToggle: (id: string) => void
   onPriorityClose: () => void
   onPriorityChange?: (workOrderId: string, priority: WorkOrderPriority) => void
+  featureProgress?: Map<string, { done: number; total: number }>
 }) {
   const { isOver, setNodeRef } = useDroppable({ id: column.key })
 
@@ -340,6 +345,7 @@ function KanbanColumn({
                   onPriorityToggle={() => onPriorityToggle(wo.id)}
                   onPriorityClose={onPriorityClose}
                   onPriorityChange={onPriorityChange}
+                  featureProgress={featureProgress}
                 />
               ))}
             </div>
@@ -366,6 +372,7 @@ function SortableCard({
   onPriorityToggle,
   onPriorityClose,
   onPriorityChange,
+  featureProgress,
 }: {
   workOrder: WorkOrder
   memberMap: Map<string, MemberInfo>
@@ -380,6 +387,7 @@ function SortableCard({
   onPriorityToggle: () => void
   onPriorityClose: () => void
   onPriorityChange?: (workOrderId: string, priority: WorkOrderPriority) => void
+  featureProgress?: Map<string, { done: number; total: number }>
 }) {
   const {
     attributes,
@@ -421,6 +429,7 @@ function SortableCard({
         onPriorityToggle={onPriorityToggle}
         onPriorityClose={onPriorityClose}
         onPriorityChange={onPriorityChange}
+        featureProgress={featureProgress}
       />
     </div>
   )
@@ -446,6 +455,7 @@ function CardContent({
   onPriorityToggle,
   onPriorityClose,
   onPriorityChange,
+  featureProgress,
 }: {
   workOrder: WorkOrder
   isDragOverlay?: boolean
@@ -464,6 +474,7 @@ function CardContent({
   onPriorityToggle?: () => void
   onPriorityClose?: () => void
   onPriorityChange?: (workOrderId: string, priority: WorkOrderPriority) => void
+  featureProgress?: Map<string, { done: number; total: number }>
 }) {
   const acLines = workOrder.acceptance_criteria
     ? workOrder.acceptance_criteria
@@ -557,12 +568,32 @@ function CardContent({
         </div>
       </div>
 
-      {/* Feature tag */}
-      {feature && (
-        <span className="inline-block text-[10px] text-accent-purple bg-accent-purple/10 px-1.5 py-0.5 rounded mt-1.5 max-w-full truncate">
-          {feature.title}
-        </span>
-      )}
+      {/* Feature tag + progress */}
+      {feature && (() => {
+        const fp = workOrder.feature_node_id ? featureProgress?.get(workOrder.feature_node_id) : null
+        const fpPct = fp && fp.total > 0 ? Math.round((fp.done / fp.total) * 100) : 0
+        return (
+          <div className="flex items-center gap-1.5 mt-1.5">
+            <span className="text-[10px] text-accent-purple bg-accent-purple/10 px-1.5 py-0.5 rounded truncate max-w-[140px]">
+              {feature.title}
+            </span>
+            {fp && (
+              <span className="flex items-center gap-1 flex-shrink-0">
+                <span className="w-10 h-1 rounded-full bg-bg-tertiary overflow-hidden">
+                  <span
+                    className={cn(
+                      'block h-full rounded-full transition-all',
+                      fpPct >= 100 ? 'bg-accent-success' : 'bg-accent-purple'
+                    )}
+                    style={{ width: `${fpPct}%` }}
+                  />
+                </span>
+                <span className="text-[9px] text-text-tertiary">{fp.done}/{fp.total}</span>
+              </span>
+            )}
+          </div>
+        )
+      })()}
 
       {/* Footer: priority label, AC count, assignee */}
       <div className="flex items-center justify-between mt-2">
