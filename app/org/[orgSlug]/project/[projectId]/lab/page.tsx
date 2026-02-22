@@ -1,21 +1,30 @@
-import Image from 'next/image'
+import { requireAuth } from '@/lib/auth/server'
+import { createServiceClient } from '@/lib/supabase/server'
+import { LabClient } from '@/components/lab/lab-client'
 
-export default function LabPage() {
-  return (
-    <div className="p-6 md:p-8">
-      <div className="flex items-center gap-3 mb-4">
-        <Image src="/icon-lab.png" alt="Insights Lab" width={48} height={48} />
-        <h1 className="text-2xl font-bold text-text-primary">Insights Lab</h1>
-      </div>
-      <p className="text-text-secondary mb-8">
-        Feedback & analytics workspace. Coming soon.
-      </p>
+interface LabPageProps {
+  params: Promise<{ orgSlug: string; projectId: string }>
+}
 
-      <div className="glass-panel rounded-lg p-12 text-center">
-        <p className="text-text-tertiary">
-          This module will be built in a future phase.
-        </p>
-      </div>
-    </div>
-  )
+export default async function LabPage({ params }: LabPageProps) {
+  const { projectId } = await params
+  await requireAuth()
+  const supabase = createServiceClient()
+
+  // Fetch feedback stats for initial render
+  const { data: feedback } = await supabase
+    .from('feedback_submissions')
+    .select('status')
+    .eq('project_id', projectId)
+
+  const fbList = feedback || []
+
+  const initialStats = {
+    total: fbList.length,
+    newCount: fbList.filter((f) => f.status === 'new').length,
+    triaged: fbList.filter((f) => f.status === 'triaged').length,
+    converted: fbList.filter((f) => f.status === 'converted').length,
+  }
+
+  return <LabClient projectId={projectId} initialStats={initialStats} />
 }
