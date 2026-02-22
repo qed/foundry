@@ -1,8 +1,14 @@
 'use client'
 
-import { Search, FileText, ChevronRight } from 'lucide-react'
+import { useState, useCallback } from 'react'
+import { FileText, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { FeatureTree } from './feature-tree'
+import { TreeSearchFilter, type FilterInfo } from './tree-search-filter'
+import type { FeatureStatus, FeatureLevel } from '@/types/database'
+
+const ALL_STATUSES: FeatureStatus[] = ['not_started', 'in_progress', 'complete', 'blocked']
+const ALL_LEVELS: FeatureLevel[] = ['epic', 'feature', 'sub_feature', 'task']
 
 interface ShopLeftPanelProps {
   open: boolean
@@ -19,6 +25,21 @@ export function ShopLeftPanel({
 }: ShopLeftPanelProps) {
   const isOverviewSelected = selectedNodeId === 'product-overview'
 
+  // Search & filter state
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedStatuses, setSelectedStatuses] = useState<FeatureStatus[]>([...ALL_STATUSES])
+  const [selectedLevels, setSelectedLevels] = useState<FeatureLevel[]>([...ALL_LEVELS])
+  const [filterInfo, setFilterInfo] = useState<FilterInfo | null>(null)
+
+  const isFiltering =
+    searchQuery.length > 0 ||
+    selectedStatuses.length < 4 ||
+    selectedLevels.length < 4
+
+  const handleFilterInfo = useCallback((info: FilterInfo) => {
+    setFilterInfo(info)
+  }, [])
+
   return (
     <div
       className={cn(
@@ -27,17 +48,17 @@ export function ShopLeftPanel({
       )}
     >
       <div className="w-[280px] h-full flex flex-col">
-        {/* Search */}
-        <div className="p-3 border-b border-border-default">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-tertiary" />
-            <input
-              type="text"
-              placeholder="Search features..."
-              className="w-full pl-9 pr-3 py-1.5 bg-bg-primary border border-border-default rounded-lg text-xs text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent-cyan focus:border-transparent"
-            />
-          </div>
-        </div>
+        {/* Search & Filter */}
+        <TreeSearchFilter
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          selectedStatuses={selectedStatuses}
+          onStatusChange={setSelectedStatuses}
+          selectedLevels={selectedLevels}
+          onLevelChange={setSelectedLevels}
+          filterInfo={filterInfo}
+          isFiltering={isFiltering}
+        />
 
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto">
@@ -74,6 +95,10 @@ export function ShopLeftPanel({
               projectId={projectId}
               selectedNodeId={isOverviewSelected ? null : selectedNodeId}
               onSelectNode={onSelectNode}
+              searchQuery={searchQuery}
+              selectedStatuses={selectedStatuses}
+              selectedLevels={selectedLevels}
+              onFilterInfo={handleFilterInfo}
             />
           </div>
 
