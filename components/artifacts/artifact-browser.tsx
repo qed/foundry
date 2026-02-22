@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import {
   Grid3X3,
   List,
@@ -10,6 +10,8 @@ import {
   MoreHorizontal,
   Trash2,
   Loader2,
+  Search,
+  X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useToast } from '@/components/ui/toast-container'
@@ -43,6 +45,12 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
   const [showUpload, setShowUpload] = useState(false)
   const [showNewFolder, setShowNewFolder] = useState(false)
   const [newFolderName, setNewFolderName] = useState('')
+
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isSearching, setIsSearching] = useState(false)
+  const [searchResults, setSearchResults] = useState<Artifact[] | null>(null)
+  const [searchResultCount, setSearchResultCount] = useState(0)
 
   // Rename state
   const [renamingId, setRenamingId] = useState<string | null>(null)
@@ -96,6 +104,57 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
   useEffect(() => {
     fetchContents()
   }, [fetchContents])
+
+  // ── Search (debounced 300ms) ──────────────────────────────
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    if (searchTimerRef.current) {
+      clearTimeout(searchTimerRef.current)
+    }
+
+    if (!searchQuery || searchQuery.length < 2) {
+      setSearchResults(null)
+      setSearchResultCount(0)
+      setIsSearching(false)
+      return
+    }
+
+    setIsSearching(true)
+    searchTimerRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/artifacts/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            project_id: projectId,
+            query: searchQuery,
+            folder_id: currentFolderId,
+            limit: 50,
+          }),
+        })
+        if (res.ok) {
+          const data = await res.json()
+          setSearchResults(data.artifacts || [])
+          setSearchResultCount(data.total_count || 0)
+        }
+      } catch {
+        // Non-blocking
+      } finally {
+        setIsSearching(false)
+      }
+    }, 300)
+
+    return () => {
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current)
+    }
+  }, [searchQuery, projectId, currentFolderId])
+
+  const clearSearch = useCallback(() => {
+    setSearchQuery('')
+    setSearchResults(null)
+    setSearchResultCount(0)
+  }, [])
 
   // ── Navigation ─────────────────────────────────────────────
   const navigateToFolder = useCallback(
@@ -293,10 +352,11 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
   }, [])
 
   const contextArtifact = contextMenu
-    ? artifacts.find((a) => a.id === contextMenu.artifactId)
+    ? (searchResults || artifacts).find((a) => a.id === contextMenu.artifactId)
     : null
 
-  const isEmpty = folders.length === 0 && artifacts.length === 0 && !isLoading
+  const displayArtifacts = searchResults || artifacts
+  const isEmpty = folders.length === 0 && artifacts.length === 0 && !isLoading && !searchResults
 
   return (
     <div className="flex h-full">
@@ -307,6 +367,26 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
           <BreadcrumbNav path={breadcrumb} onNavigate={navigateToFolder} />
 
           <div className="flex items-center gap-2 shrink-0">
+            {/* Search bar */}
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-tertiary" />
+              <input
+                type="text"
+                placeholder="Search artifacts..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-36 sm:w-48 pl-8 pr-7 py-1.5 bg-bg-primary border border-border-default rounded-lg text-xs text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-1 focus:ring-accent-cyan"
+              />
+              {searchQuery && (
+                <button
+                  onClick={clearSearch}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-text-tertiary hover:text-text-primary"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+            <div className="w-px h-5 bg-border-default" />
             <button
               onClick={() => setShowUpload(!showUpload)}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-accent-cyan text-bg-primary rounded-lg hover:bg-accent-cyan/90 transition-colors"
@@ -421,10 +501,40 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
             </div>
           )}
 
+          {/* Search results info bar */}
+          {searchResults !== null && !isSearching && (
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs text-text-secondary">
+                {searchResultCount} artifact{searchResultCount !== 1 ? 's' : ''} found
+              </p>
+              <button
+                onClick={clearSearch}
+                className="text-xs text-accent-cyan hover:text-accent-cyan/80 transition-colors"
+              >
+                Clear search
+              </button>
+            </div>
+          )}
+
+          {isSearching && (
+            <div className="flex items-center gap-2 mb-3">
+              <Loader2 className="w-3.5 h-3.5 text-text-tertiary animate-spin" />
+              <p className="text-xs text-text-tertiary">Searching...</p>
+            </div>
+          )}
+
+          {searchResults !== null && searchResults.length === 0 && !isSearching && (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <Search className="w-8 h-8 text-text-tertiary mb-3" />
+              <p className="text-sm text-text-secondary mb-1">No results found</p>
+              <p className="text-xs text-text-tertiary">Try a different search term</p>
+            </div>
+          )}
+
           {!isLoading && !isEmpty && (
             <>
-              {/* Folders */}
-              {folders.length > 0 && (
+              {/* Folders (hidden during search) */}
+              {!searchResults && folders.length > 0 && (
                 <div className="mb-6">
                   <h3 className="text-[10px] font-semibold text-text-tertiary uppercase tracking-wider mb-2">
                     Folders
@@ -463,9 +573,9 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
               )}
 
               {/* Artifacts */}
-              {artifacts.length > 0 && (
+              {displayArtifacts.length > 0 && (
                 <div>
-                  {folders.length > 0 && (
+                  {!searchResults && folders.length > 0 && (
                     <h3 className="text-[10px] font-semibold text-text-tertiary uppercase tracking-wider mb-2">
                       Files
                     </h3>
@@ -473,7 +583,7 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
 
                   {viewMode === 'grid' ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-                      {artifacts.map((artifact) => (
+                      {displayArtifacts.map((artifact) => (
                         <div
                           key={artifact.id}
                           onClick={() => openPreview(artifact)}
@@ -544,7 +654,7 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
                           </tr>
                         </thead>
                         <tbody>
-                          {artifacts.map((artifact) => (
+                          {displayArtifacts.map((artifact) => (
                             <tr
                               key={artifact.id}
                               onClick={() => openPreview(artifact)}
