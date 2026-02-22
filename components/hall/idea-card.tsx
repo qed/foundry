@@ -10,9 +10,11 @@ interface IdeaCardProps {
   idea: IdeaWithDetails
   onClick: () => void
   highlighted?: boolean
+  isSelected?: boolean
+  onSelect?: (id: string) => void
 }
 
-export function IdeaCard({ idea, onClick, highlighted }: IdeaCardProps) {
+export function IdeaCard({ idea, onClick, highlighted, isSelected, onSelect }: IdeaCardProps) {
   const statusCfg = STATUS_CONFIG[idea.status as IdeaStatus]
   const creatorInitials = idea.creator?.display_name
     ? idea.creator.display_name
@@ -27,12 +29,28 @@ export function IdeaCard({ idea, onClick, highlighted }: IdeaCardProps) {
     <button
       onClick={onClick}
       className={cn(
-        'w-full text-left glass-panel rounded-lg p-4 transition-all group',
+        'w-full text-left glass-panel rounded-lg p-4 transition-all group relative',
         'hover:border-accent-cyan/30 hover:shadow-lg hover:shadow-accent-cyan/5',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan',
-        highlighted && 'animate-highlight'
+        highlighted && 'animate-highlight',
+        isSelected && 'border-accent-cyan/40 bg-accent-cyan/5'
       )}
     >
+      {/* Selection checkbox */}
+      {onSelect && (
+        <label
+          className="absolute top-2 right-2 z-10 flex items-center"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <input
+            type="checkbox"
+            checked={isSelected || false}
+            onChange={() => onSelect(idea.id)}
+            className="w-4 h-4 rounded border-border-default accent-accent-cyan cursor-pointer"
+          />
+        </label>
+      )}
+
       {/* Status badge */}
       <div className="flex items-center justify-between mb-2">
         <Badge variant={statusCfg.variant} className="text-[10px]">
