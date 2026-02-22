@@ -5,6 +5,7 @@ import { useOrg } from '@/lib/context/org-context'
 import { useProject } from '@/lib/context/project-context'
 import { UserMenu } from './user-menu'
 import { Breadcrumb, type BreadcrumbItem } from './breadcrumb'
+import { HeaderPresence } from '@/components/presence/header-presence'
 import { Menu } from 'lucide-react'
 
 const MODULE_NAMES: Record<string, string> = {
@@ -56,8 +57,9 @@ export function Header({ onMenuClick }: HeaderProps) {
         <Breadcrumb items={breadcrumbs} />
       </div>
 
-      {/* Right side: user menu */}
-      <div className="ml-4">
+      {/* Right side: presence + user menu */}
+      <div className="ml-4 flex items-center gap-3">
+        <HeaderPresence />
         <UserMenu />
       </div>
     </header>
