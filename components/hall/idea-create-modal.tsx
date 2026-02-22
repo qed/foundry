@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { X, Search, Plus } from 'lucide-react'
+import { X, Search, Plus, Check, Sparkles, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/toast-container'
@@ -17,6 +17,15 @@ interface IdeaCreateModalProps {
 interface NewTagEntry {
   name: string
   color: string
+}
+
+interface TagSuggestion {
+  id?: string
+  name: string
+  isNew: boolean
+  confidence: number
+  suggestedColor: string
+  reasoning: string
 }
 
 const TITLE_MAX = 200
@@ -40,6 +49,11 @@ export function IdeaCreateModal({
   const [tagSearch, setTagSearch] = useState('')
   const [newTagColor, setNewTagColor] = useState(DEFAULT_TAG_COLOR)
   const [tagsLoading, setTagsLoading] = useState(false)
+
+  // Auto-tag suggestions
+  const [suggestions, setSuggestions] = useState<TagSuggestion[]>([])
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false)
+  const suggestionsTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Form state
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -95,10 +109,16 @@ export function IdeaCreateModal({
     setBody('')
     setSelectedTagIds([])
     setNewTags([])
+    setSuggestions([])
+    setSuggestionsLoading(false)
     setTagSearch('')
     setNewTagColor(DEFAULT_TAG_COLOR)
     setErrors({})
     setIsDirty(false)
+    if (suggestionsTimer.current) {
+      clearTimeout(suggestionsTimer.current)
+      suggestionsTimer.current = null
+    }
   }, [])
 
   const handleClose = useCallback(() => {
@@ -109,6 +129,64 @@ export function IdeaCreateModal({
     resetForm()
     onClose()
   }, [isDirty, isSubmitting, resetForm, onClose])
+
+  // ── Auto-tag suggestions ─────────────────────────────────────
+  const requestSuggestions = useCallback(async (ideaTitle: string, ideaBody: string) => {
+    if (!ideaTitle.trim()) {
+      setSuggestions([])
+      return
+    }
+
+    setSuggestionsLoading(true)
+    try {
+      const res = await fetch('/api/agent/hall/suggest-tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId,
+          ideaTitle,
+          ideaBody,
+          existingTags: projectTags.map((t) => ({ id: t.id, name: t.name, color: t.color })),
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setSuggestions(data.suggestions || [])
+      }
+    } catch {
+      // Suggestions failed — non-blocking
+    } finally {
+      setSuggestionsLoading(false)
+    }
+  }, [projectId, projectTags])
+
+  const debounceSuggestions = useCallback((ideaTitle: string, ideaBody: string) => {
+    if (suggestionsTimer.current) clearTimeout(suggestionsTimer.current)
+    suggestionsTimer.current = setTimeout(() => {
+      requestSuggestions(ideaTitle, ideaBody)
+    }, 800)
+  }, [requestSuggestions])
+
+  const handleAcceptSuggestion = useCallback((suggestion: TagSuggestion) => {
+    if (!suggestion.isNew && suggestion.id) {
+      // Existing tag — add to selected IDs
+      setSelectedTagIds((prev) =>
+        prev.includes(suggestion.id!) ? prev : [...prev, suggestion.id!]
+      )
+    } else {
+      // New tag — add to newTags
+      setNewTags((prev) => {
+        if (prev.some((t) => t.name.toLowerCase() === suggestion.name.toLowerCase())) return prev
+        return [...prev, { name: suggestion.name, color: suggestion.suggestedColor }]
+      })
+    }
+    // Remove from suggestions
+    setSuggestions((prev) => prev.filter((s) => s.name !== suggestion.name))
+  }, [])
+
+  const handleRejectSuggestion = useCallback((name: string) => {
+    setSuggestions((prev) => prev.filter((s) => s.name !== name))
+  }, [])
 
   const handleToggleTag = (tagId: string) => {
     setSelectedTagIds((prev) =>
@@ -265,8 +343,10 @@ export function IdeaCreateModal({
               maxLength={TITLE_MAX}
               value={title}
               onChange={(e) => {
-                setTitle(e.target.value)
-                if (errors.title && e.target.value.trim()) {
+                const val = e.target.value
+                setTitle(val)
+                debounceSuggestions(val, body)
+                if (errors.title && val.trim()) {
                   setErrors((prev) => {
                     const next = { ...prev }
                     delete next.title
@@ -307,7 +387,9 @@ export function IdeaCreateModal({
               maxLength={BODY_MAX}
               value={body}
               onChange={(e) => {
-                setBody(e.target.value)
+                const val = e.target.value
+                setBody(val)
+                debounceSuggestions(title, val)
                 if (errors.body) {
                   setErrors((prev) => {
                     const next = { ...prev }
@@ -335,6 +417,58 @@ export function IdeaCreateModal({
               </span>
             </div>
           </div>
+
+          {/* Auto-tag Suggestions */}
+          {(suggestions.length > 0 || suggestionsLoading) && (
+            <div className="p-3 bg-accent-purple/5 border border-accent-purple/20 rounded-lg">
+              <div className="flex items-center gap-1.5 mb-2">
+                <Sparkles className="w-3.5 h-3.5 text-accent-purple" />
+                <span className="text-xs font-medium text-accent-purple">Suggested Tags</span>
+                {suggestionsLoading && (
+                  <Loader2 className="w-3 h-3 text-accent-purple animate-spin ml-1" />
+                )}
+              </div>
+              {suggestions.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {suggestions.map((s) => (
+                    <div
+                      key={s.name}
+                      className="group inline-flex items-center gap-1.5 px-2.5 py-1 bg-bg-secondary border border-border-default rounded-full text-xs transition-colors hover:border-accent-purple/40"
+                      title={s.reasoning}
+                    >
+                      <span
+                        className="w-2 h-2 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: s.suggestedColor }}
+                      />
+                      <span className="text-text-primary">{s.name}</span>
+                      {s.isNew && (
+                        <span className="text-[9px] text-accent-purple opacity-70">new</span>
+                      )}
+                      <span className="text-[10px] text-text-tertiary font-medium">
+                        {Math.round(s.confidence * 100)}%
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleAcceptSuggestion(s)}
+                        className="text-accent-success hover:text-accent-success/80 transition-colors"
+                        title="Accept suggestion"
+                      >
+                        <Check className="w-3 h-3" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRejectSuggestion(s.name)}
+                        className="text-text-tertiary hover:text-accent-error transition-colors"
+                        title="Dismiss suggestion"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Tags Section */}
           <div>
