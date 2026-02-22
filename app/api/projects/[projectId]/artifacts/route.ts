@@ -3,6 +3,7 @@ import { requireAuth } from '@/lib/auth/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { handleAuthError } from '@/lib/auth/errors'
 import { ACCEPTED_EXTENSIONS, MAX_FILE_SIZE, getFileExtension } from '@/lib/artifacts/file-types'
+import { extractText } from '@/lib/artifacts/extraction'
 
 /**
  * GET /api/projects/[projectId]/artifacts
@@ -133,7 +134,7 @@ export async function POST(
       )
     }
 
-    // Create artifact record
+    // Create artifact record with extracting status
     const artifactName = customName?.trim() || file.name
     const { data: artifact, error: insertError } = await supabase
       .from('artifacts')
@@ -145,6 +146,7 @@ export async function POST(
         file_size: file.size,
         storage_path: storagePath,
         uploaded_by: user.id,
+        processing_status: 'extracting_text',
       })
       .select()
       .single()
@@ -157,6 +159,27 @@ export async function POST(
         { error: 'Failed to save artifact metadata' },
         { status: 500 }
       )
+    }
+
+    // Extract text content (inline, non-blocking for response)
+    try {
+      const contentText = await extractText(fileBuffer, ext)
+      await supabase
+        .from('artifacts')
+        .update({
+          content_text: contentText,
+          processing_status: 'complete',
+        })
+        .eq('id', artifact.id)
+      artifact.content_text = contentText
+      artifact.processing_status = 'complete'
+    } catch (extractionError) {
+      console.error('Text extraction error:', extractionError)
+      await supabase
+        .from('artifacts')
+        .update({ processing_status: 'failed' })
+        .eq('id', artifact.id)
+      artifact.processing_status = 'failed'
     }
 
     return Response.json({ artifact }, { status: 201 })

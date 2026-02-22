@@ -805,6 +805,7 @@ export type Database = {
           file_size: number;
           storage_path: string;
           content_text: string | null;
+          processing_status: string;
           uploaded_by: string;
           created_at: string;
           updated_at: string;
@@ -818,6 +819,7 @@ export type Database = {
           file_size: number;
           storage_path: string;
           content_text?: string | null;
+          processing_status?: string;
           uploaded_by: string;
           created_at?: string;
           updated_at?: string;
@@ -831,6 +833,7 @@ export type Database = {
           file_size?: number;
           storage_path?: string;
           content_text?: string | null;
+          processing_status?: string;
           uploaded_by?: string;
           created_at?: string;
           updated_at?: string;
