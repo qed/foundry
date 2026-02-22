@@ -385,6 +385,176 @@ export type Database = {
           },
         ];
       };
+      feature_nodes: {
+        Row: {
+          id: string;
+          project_id: string;
+          parent_id: string | null;
+          title: string;
+          description: string | null;
+          level: "epic" | "feature" | "sub_feature" | "task";
+          status: "not_started" | "in_progress" | "complete" | "blocked";
+          position: number;
+          created_by: string;
+          created_at: string;
+          updated_at: string;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          parent_id?: string | null;
+          title: string;
+          description?: string | null;
+          level: "epic" | "feature" | "sub_feature" | "task";
+          status?: "not_started" | "in_progress" | "complete" | "blocked";
+          position?: number;
+          created_by: string;
+          created_at?: string;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          parent_id?: string | null;
+          title?: string;
+          description?: string | null;
+          level?: "epic" | "feature" | "sub_feature" | "task";
+          status?: "not_started" | "in_progress" | "complete" | "blocked";
+          position?: number;
+          created_by?: string;
+          created_at?: string;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "feature_nodes_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "feature_nodes_parent_id_fkey";
+            columns: ["parent_id"];
+            isOneToOne: false;
+            referencedRelation: "feature_nodes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "feature_nodes_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      requirements_documents: {
+        Row: {
+          id: string;
+          project_id: string;
+          feature_node_id: string | null;
+          doc_type: "product_overview" | "feature_requirement" | "technical_requirement";
+          title: string;
+          content: string;
+          created_by: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          feature_node_id?: string | null;
+          doc_type: "product_overview" | "feature_requirement" | "technical_requirement";
+          title: string;
+          content?: string;
+          created_by: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          feature_node_id?: string | null;
+          doc_type?: "product_overview" | "feature_requirement" | "technical_requirement";
+          title?: string;
+          content?: string;
+          created_by?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "requirements_documents_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "requirements_documents_feature_node_id_fkey";
+            columns: ["feature_node_id"];
+            isOneToOne: false;
+            referencedRelation: "feature_nodes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "requirements_documents_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      requirement_versions: {
+        Row: {
+          id: string;
+          requirement_doc_id: string;
+          version_number: number;
+          content: string;
+          created_by: string;
+          created_at: string;
+          change_summary: string | null;
+        };
+        Insert: {
+          id?: string;
+          requirement_doc_id: string;
+          version_number: number;
+          content: string;
+          created_by: string;
+          created_at?: string;
+          change_summary?: string | null;
+        };
+        Update: {
+          id?: string;
+          requirement_doc_id?: string;
+          version_number?: number;
+          content?: string;
+          created_by?: string;
+          created_at?: string;
+          change_summary?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "requirement_versions_requirement_doc_id_fkey";
+            columns: ["requirement_doc_id"];
+            isOneToOne: false;
+            referencedRelation: "requirements_documents";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "requirement_versions_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -417,6 +587,12 @@ export type Database = {
         };
         Returns: boolean;
       };
+      requirement_doc_project_member: {
+        Args: {
+          check_doc_id: string;
+        };
+        Returns: boolean;
+      };
     };
     Enums: Record<string, never>;
   };
@@ -434,5 +610,12 @@ export type IdeaTag = Database["public"]["Tables"]["idea_tags"]["Row"];
 export type IdeaConnection = Database["public"]["Tables"]["idea_connections"]["Row"];
 export type AgentConversation = Database["public"]["Tables"]["agent_conversations"]["Row"];
 
-// Status type for ideas
+export type FeatureNode = Database["public"]["Tables"]["feature_nodes"]["Row"];
+export type RequirementsDocument = Database["public"]["Tables"]["requirements_documents"]["Row"];
+export type RequirementVersion = Database["public"]["Tables"]["requirement_versions"]["Row"];
+
+// Status type aliases
 export type IdeaStatus = Idea["status"];
+export type FeatureLevel = FeatureNode["level"];
+export type FeatureStatus = FeatureNode["status"];
+export type DocType = RequirementsDocument["doc_type"];
