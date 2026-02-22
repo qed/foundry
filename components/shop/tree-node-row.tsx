@@ -1,6 +1,6 @@
 'use client'
 
-import { memo } from 'react'
+import { memo, useState, useRef, useEffect } from 'react'
 import {
   ChevronDown,
   ChevronRight,
@@ -8,6 +8,7 @@ import {
   Puzzle,
   Layers,
   CheckCircle2,
+  Plus,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { TreeNode } from './feature-tree'
@@ -17,8 +18,18 @@ interface TreeNodeRowProps {
   depth: number
   expandedIds: Set<string>
   selectedNodeId: string | null
+  editingNodeId: string | null
   onToggleExpand: (nodeId: string) => void
   onSelectNode: (nodeId: string) => void
+  onAddChild: (parentId: string, parentLevel: TreeNode['level']) => void
+  onContextMenu: (
+    e: React.MouseEvent,
+    nodeId: string,
+    nodeLevel: TreeNode['level'],
+    parentId: string | null
+  ) => void
+  onTitleSave: (nodeId: string, title: string) => void
+  onTitleCancel: (nodeId: string, hasTitle: boolean) => void
 }
 
 const LEVEL_ICONS = {
@@ -42,19 +53,53 @@ const STATUS_ICON_COLORS = {
   blocked: 'text-accent-error',
 } as const
 
+const CAN_HAVE_CHILDREN = new Set(['epic', 'feature', 'sub_feature'])
+
 export const TreeNodeRow = memo(function TreeNodeRow({
   node,
   depth,
   expandedIds,
   selectedNodeId,
+  editingNodeId,
   onToggleExpand,
   onSelectNode,
+  onAddChild,
+  onContextMenu,
+  onTitleSave,
+  onTitleCancel,
 }: TreeNodeRowProps) {
   const isExpanded = expandedIds.has(node.id)
   const isSelected = selectedNodeId === node.id
+  const isEditing = editingNodeId === node.id
   const hasChildren = node.children.length > 0
   const LevelIcon = LEVEL_ICONS[node.level]
-  const paddingLeft = depth * 16 + 8 // 8px base + 16px per depth level
+  const paddingLeft = depth * 16 + 8
+
+  // Inline edit state
+  const [editValue, setEditValue] = useState(node.title === 'Untitled' ? '' : node.title)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  // Focus input when entering edit mode
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus()
+      inputRef.current.select()
+    }
+  }, [isEditing])
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      onTitleSave(node.id, editValue)
+    } else if (e.key === 'Escape') {
+      e.preventDefault()
+      onTitleCancel(node.id, node.title !== 'Untitled' && node.title.trim().length > 0)
+    }
+  }
+
+  const handleBlur = () => {
+    onTitleSave(node.id, editValue)
+  }
 
   return (
     <>
@@ -66,7 +111,8 @@ export const TreeNodeRow = memo(function TreeNodeRow({
             : 'border-l-2 border-transparent hover:bg-bg-tertiary'
         )}
         style={{ paddingLeft }}
-        onClick={() => onSelectNode(node.id)}
+        onClick={() => !isEditing && onSelectNode(node.id)}
+        onContextMenu={(e) => onContextMenu(e, node.id, node.level, node.parent_id)}
         role="treeitem"
         aria-expanded={hasChildren ? isExpanded : undefined}
         aria-selected={isSelected}
@@ -108,17 +154,45 @@ export const TreeNodeRow = memo(function TreeNodeRow({
           )}
         />
 
-        {/* Title */}
-        <span
-          className={cn(
-            'text-xs truncate flex-1',
-            isSelected
-              ? 'text-text-primary font-semibold'
-              : 'text-text-secondary group-hover:text-text-primary'
-          )}
-        >
-          {node.title}
-        </span>
+        {/* Title or inline editor */}
+        {isEditing ? (
+          <input
+            ref={inputRef}
+            type="text"
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onBlur={handleBlur}
+            onClick={(e) => e.stopPropagation()}
+            placeholder="Enter node title..."
+            className="flex-1 text-xs bg-bg-primary border border-accent-cyan rounded px-1.5 py-0.5 text-text-primary placeholder:text-text-tertiary outline-none focus:ring-1 focus:ring-accent-cyan min-w-0"
+          />
+        ) : (
+          <span
+            className={cn(
+              'text-xs truncate flex-1',
+              isSelected
+                ? 'text-text-primary font-semibold'
+                : 'text-text-secondary group-hover:text-text-primary'
+            )}
+          >
+            {node.title}
+          </span>
+        )}
+
+        {/* Add child button (visible on hover, hidden during edit) */}
+        {!isEditing && CAN_HAVE_CHILDREN.has(node.level) && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onAddChild(node.id, node.level)
+            }}
+            className="p-0.5 rounded hover:bg-bg-primary/50 transition-colors flex-shrink-0 opacity-0 group-hover:opacity-100"
+            title="Add child node"
+          >
+            <Plus className="w-3 h-3 text-text-tertiary hover:text-accent-cyan" />
+          </button>
+        )}
       </div>
 
       {/* Children (if expanded) */}
@@ -131,8 +205,13 @@ export const TreeNodeRow = memo(function TreeNodeRow({
             depth={depth + 1}
             expandedIds={expandedIds}
             selectedNodeId={selectedNodeId}
+            editingNodeId={editingNodeId}
             onToggleExpand={onToggleExpand}
             onSelectNode={onSelectNode}
+            onAddChild={onAddChild}
+            onContextMenu={onContextMenu}
+            onTitleSave={onTitleSave}
+            onTitleCancel={onTitleCancel}
           />
         ))}
     </>
