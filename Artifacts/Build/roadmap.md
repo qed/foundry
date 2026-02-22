@@ -9,7 +9,7 @@
 
 **Mode**: Sequential execution directly on `main` branch. No feature branches or worktrees.
 
-**Next phase to build**: **020 — Hall Agent Infrastructure** (Hall)
+**Next phase to build**: **024 — Hall Real-Time Updates** (Hall)
 
 | # | Phase | Name | Track | Why This Order |
 |---|-------|------|-------|----------------|
@@ -24,7 +24,7 @@
 | ~~9~~ | ~~113~~ | ~~Organization Console~~ | ~~Admin~~ | done |
 | ~~10~~ | ~~117~~ | ~~Real-Time Presence~~ | ~~Realtime~~ | done |
 | ~~11~~ | ~~119~~ | ~~Audit Trail & Activity Log~~ | ~~Admin~~ | done |
-| 12 | **020** | Hall Agent Infrastructure | Hall | Unblocks AI features (021-023) |
+| ~~12~~ | ~~020~~ | ~~Hall Agent Infrastructure~~ | ~~Hall~~ | done |
 | 13 | **024** | Hall Real-Time Updates | Hall | Adds real-time to Hall |
 | 14 | **019** | Bulk Operations | Hall | Completes Hall CRUD |
 | 15 | **025** | Hall -> Shop Promotion | Hall/Shop | Cross-module bridge |
@@ -149,10 +149,10 @@ After this initial update, stay in this session. I will come back to you after e
 | 017 | Edit & Delete Ideas | `done` | — | 011, 016 | Hall | `components/hall/`, `app/api/hall/ideas/[ideaId]/` |
 | 018 | Tagging & Tag Management | `done` | — | 011, 013, 014 | Hall | `components/hall/`, `app/api/hall/tags/` |
 | 019 | Bulk Operations | `ready` | — | 014, 017, 018 | Hall | `components/hall/` |
-| 020 | Hall Agent Infrastructure | `ready` | — | 002, 011, 012 | Hall | `components/hall/`, `app/api/hall/agent/` |
-| 021 | Agent: Auto-Tag Suggestions | `blocked` | — | 013, 018, 020 | Hall | `components/hall/` |
-| 022 | Agent: Duplicate Detection | `blocked` | — | 011, 013, 020 | Hall | `components/hall/` |
-| 023 | Agent: Connection Discovery | `blocked` | — | 011, 016, 020 | Hall | `components/hall/` |
+| 020 | Hall Agent Infrastructure | `done` | — | 002, 011, 012 | Hall | `components/hall/`, `app/api/hall/agent/` |
+| 021 | Agent: Auto-Tag Suggestions | `ready` | — | 013, 018, 020 | Hall | `components/hall/` |
+| 022 | Agent: Duplicate Detection | `ready` | — | 011, 013, 020 | Hall | `components/hall/` |
+| 023 | Agent: Connection Discovery | `ready` | — | 011, 016, 020 | Hall | `components/hall/` |
 | 024 | Hall Real-Time Updates | `ready` | — | 002, 011, 012, 014 | Hall | `components/hall/`, `lib/realtime/` |
 | 025 | Hall → Shop Promotion | `ready` | — | 011, 016, 026 | Hall ⚠️ | `components/hall/`, `app/api/hall/` |
 
@@ -532,7 +532,7 @@ These phases require work from **multiple module tracks** to be complete before 
 | Section | Total | Done | In Progress | Ready | Blocked |
 |---------|-------|------|-------------|-------|---------|
 | Foundation (001–010) | 10 | 10 | 0 | 0 | 0 |
-| The Hall (011–025) | 15 | 8 | 0 | 4 | 3 |
+| The Hall (011–025) | 15 | 9 | 0 | 6 | 0 |
 | Pattern Shop (026–045) | 20 | 2 | 0 | 2 | 16 |
 | Control Room (046–060) | 15 | 1 | 0 | 1 | 13 |
 | Assembly Floor (061–080) | 20 | 1 | 0 | 2 | 17 |
@@ -540,6 +540,6 @@ These phases require work from **multiple module tracks** to be complete before 
 | Cross-Cutting (096–120) | 25 | 6 | 0 | 3 | 16 |
 | Advanced (121–135) | 15 | 0 | 0 | 2 | 13 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **29** | **0** | **16** | **105** |
+| **TOTAL** | **150** | **30** | **0** | **18** | **102** |
 
-**Currently ready to start**: 019, 020, 024, 025, 028, 029, 047, 062, 080, 082, 083, 097, 110, 120, 131, 132
+**Currently ready to start**: 019, 021, 022, 023, 024, 025, 028, 029, 047, 062, 080, 082, 083, 097, 110, 120, 131, 132

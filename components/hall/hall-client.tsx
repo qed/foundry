@@ -2,7 +2,7 @@
 
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, Bot } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { HallHeader } from './hall-header'
 import { FilterBar } from './filter-bar'
@@ -13,6 +13,7 @@ import { NoResultsState } from './no-results-state'
 import { LoadMoreTrigger } from './load-more-trigger'
 import { IdeaCreateModal } from './idea-create-modal'
 import { IdeaDetailSlideOver } from './idea-detail-slide-over'
+import { AgentPanel } from './agent-panel'
 import { Spinner } from '@/components/ui/spinner'
 import { useToast } from '@/components/ui/toast-container'
 import type { IdeaWithDetails, SortOption } from './types'
@@ -63,6 +64,7 @@ export function HallClient({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [showNewIdeaModal, setShowNewIdeaModal] = useState(false)
   const [selectedIdeaId, setSelectedIdeaId] = useState<string | null>(null)
+  const [agentOpen, setAgentOpen] = useState(false)
 
   const { addToast } = useToast()
 
@@ -379,6 +381,33 @@ export function HallClient({
         onIdeaUpdated={handleIdeaUpdated}
         onIdeaArchived={handleIdeaArchived}
       />
+
+      {/* Agent toggle button */}
+      {!agentOpen && (
+        <button
+          onClick={() => setAgentOpen(true)}
+          className="fixed bottom-20 right-20 md:bottom-6 md:right-6 z-40 w-12 h-12 rounded-full bg-accent-purple text-white shadow-lg shadow-accent-purple/25 flex items-center justify-center hover:bg-accent-purple/90 active:scale-95 transition-all"
+          aria-label="Open Hall Agent"
+          title="Hall Agent"
+        >
+          <Bot className="w-5 h-5" />
+        </button>
+      )}
+
+      {/* Agent Panel */}
+      <AgentPanel
+        projectId={projectId}
+        isOpen={agentOpen}
+        onClose={() => setAgentOpen(false)}
+      />
+
+      {/* Agent overlay on mobile */}
+      {agentOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30 sm:hidden"
+          onClick={() => setAgentOpen(false)}
+        />
+      )}
     </div>
   )
 }
