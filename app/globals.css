@@ -178,3 +178,50 @@ body {
   font-weight: 600;
   color: var(--color-text-primary);
 }
+.prose-foundry h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-text-primary);
+}
+.prose-foundry ul {
+  list-style-type: disc;
+}
+.prose-foundry ol {
+  list-style-type: decimal;
+}
+.prose-foundry u {
+  text-decoration: underline;
+}
+.prose-foundry pre {
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-default);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+.prose-foundry code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8125rem;
+  color: var(--color-accent-purple);
+}
+.prose-foundry pre code {
+  color: var(--color-text-primary);
+}
+.prose-foundry blockquote {
+  border-left: 3px solid var(--color-accent-cyan);
+  padding-left: 1rem;
+  margin-bottom: 0.75rem;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+.prose-foundry hr {
+  border: none;
+  border-top: 1px solid var(--color-border-default);
+  margin: 1.5rem 0;
+}
