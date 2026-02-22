@@ -161,9 +161,9 @@ After this initial update, stay in this session. I will come back to you after e
 | Phase | Name | Status | Branch | Prerequisites | Track | File Areas |
 |-------|------|--------|--------|---------------|-------|------------|
 | 026 | Pattern Shop Database Schema | `done` | — | 001, 002 | Shop | `supabase/migrations/`, `types/database.ts` |
-| 027 | Pattern Shop Page Layout | `ready` | — | 006, 010, 026 | Shop | `components/shop/`, `app/.../shop/` |
-| 028 | Product Overview Document | `blocked` | — | 026, 027 | Shop | `components/shop/` |
-| 029 | Feature Tree Component | `blocked` | — | 026, 027 | Shop | `components/shop/` |
+| 027 | Pattern Shop Page Layout | `done` | — | 006, 010, 026 | Shop | `components/shop/`, `app/.../shop/` |
+| 028 | Product Overview Document | `ready` | — | 026, 027 | Shop | `components/shop/` |
+| 029 | Feature Tree Component | `ready` | — | 026, 027 | Shop | `components/shop/` |
 | 030 | Add Nodes to Feature Tree | `blocked` | — | 026, 029 | Shop | `components/shop/` |
 | 031 | Edit & Delete Tree Nodes | `blocked` | — | 026, 029, 030 | Shop | `components/shop/` |
 | 032 | Feature Tree Drag-and-Drop | `blocked` | — | 026, 029, 030, 031 | Shop | `components/shop/` |
@@ -533,13 +533,13 @@ These phases require work from **multiple module tracks** to be complete before 
 |---------|-------|------|-------------|-------|---------|
 | Foundation (001–010) | 10 | 10 | 0 | 0 | 0 |
 | The Hall (011–025) | 15 | 8 | 0 | 4 | 3 |
-| Pattern Shop (026–045) | 20 | 1 | 0 | 1 | 18 |
+| Pattern Shop (026–045) | 20 | 2 | 0 | 2 | 16 |
 | Control Room (046–060) | 15 | 0 | 0 | 1 | 14 |
 | Assembly Floor (061–080) | 20 | 0 | 0 | 1 | 19 |
 | Insights Lab (081–095) | 15 | 0 | 0 | 1 | 14 |
 | Cross-Cutting (096–120) | 25 | 0 | 0 | 6 | 19 |
 | Advanced (121–135) | 15 | 0 | 0 | 0 | 15 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **19** | **0** | **14** | **117** |
+| **TOTAL** | **150** | **20** | **0** | **15** | **115** |
 
-**Currently ready to start**: 019, 020, 024, 025, 027, 046, 061, 081, 096, 105, 109, 113, 117, 119
+**Currently ready to start**: 019, 020, 024, 025, 028, 029, 046, 061, 081, 096, 105, 109, 113, 117, 119
