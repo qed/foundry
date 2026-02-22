@@ -5,8 +5,10 @@ import { FileText, ExternalLink } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { EmptyState } from '@/components/ui/empty-state'
 import { BlueprintEditor } from './blueprint-editor'
+import { SystemDiagramEditor } from './system-diagram-editor'
 import type { Blueprint, BlueprintStatus } from '@/types/database'
 import type { JSONContent } from '@tiptap/react'
+import type { MermaidContent } from '@/lib/blueprints/system-diagram-template'
 
 interface RoomCenterPanelProps {
   projectId: string
@@ -38,6 +40,16 @@ export function RoomCenterPanel({ projectId, blueprint, onStatusChange }: RoomCe
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false)
 
   const handleSave = useCallback(async (content: JSONContent) => {
+    if (!blueprint) return
+    const res = await fetch(`/api/projects/${projectId}/blueprints/${blueprint.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content }),
+    })
+    if (!res.ok) throw new Error('Save failed')
+  }, [projectId, blueprint])
+
+  const handleDiagramSave = useCallback(async (content: MermaidContent) => {
     if (!blueprint) return
     const res = await fetch(`/api/projects/${projectId}/blueprints/${blueprint.id}`, {
       method: 'PATCH',
@@ -130,11 +142,19 @@ export function RoomCenterPanel({ projectId, blueprint, onStatusChange }: RoomCe
       </div>
 
       {/* Editor */}
-      <BlueprintEditor
-        key={blueprint.id}
-        content={blueprint.content as JSONContent | null}
-        onSave={handleSave}
-      />
+      {blueprint.blueprint_type === 'system_diagram' ? (
+        <SystemDiagramEditor
+          key={blueprint.id}
+          content={blueprint.content as MermaidContent | null}
+          onSave={handleDiagramSave}
+        />
+      ) : (
+        <BlueprintEditor
+          key={blueprint.id}
+          content={blueprint.content as JSONContent | null}
+          onSave={handleSave}
+        />
+      )}
     </div>
   )
 }
