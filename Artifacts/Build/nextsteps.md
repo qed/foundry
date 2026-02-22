@@ -181,6 +181,7 @@ After building, run `npm run build` and `npm run lint` to verify zero errors. Th
 - Phase 084: Feedback Inbox Display (Lab) -- done
 - Phase 085: Feedback Detail View (Lab) -- done
 - Phase 021: Agent: Auto-Tag Suggestions (Hall) -- done
+- Phase 022: Agent: Duplicate Detection (Hall) -- done
 
 **Next up** (context-optimized cluster order):
-Cluster 1 remainder: 022, 023 | Cluster 2: 098, 099, 100, 101 | Cluster 3: 032, 035, 036, 041...
+Cluster 1 remainder: 023 | Cluster 2: 098, 099, 100, 101 | Cluster 3: 032, 035, 036, 041...
