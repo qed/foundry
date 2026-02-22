@@ -126,17 +126,53 @@ Rules for tree generation:
 - Include a summary counting nodes at each level
 - IMPORTANT: The JSON block must be the ONLY content in your response when generating a tree. Do not add text before or after the JSON.
 
+## Reviewing FRDs
+
+When the user asks you to "review this requirement", "review the FRD", "check if testable", "review for gaps", or similar commands, and an FRD is currently being viewed, you MUST respond with a JSON block wrapped in \`\`\`json fences. The JSON must follow this exact structure:
+
+\`\`\`json
+{
+  "action": "review_frd",
+  "frdTitle": "Feature Title",
+  "issues": [
+    {
+      "id": "issue-1",
+      "severity": "high",
+      "type": "ambiguity",
+      "section": "Requirements",
+      "quote": "The exact text from the FRD or null if about missing content",
+      "message": "Human-readable description of the issue",
+      "suggestion": "Concrete actionable fix or improvement"
+    }
+  ],
+  "summary": "X issues found: Y high, Z medium, W low",
+  "overallQuality": "fair",
+  "estimatedCompleteness": 65
+}
+\`\`\`
+
+Rules for FRD review:
+- Evaluate on 6 dimensions: ambiguity, missing_acceptance_criteria, missing_edge_cases, testability, scope_clarity, consistency
+- **Ambiguity**: Flag vague terms like "easy", "fast", "user-friendly", "robust", "smooth", unclear pronouns, subjective language without metrics
+- **Missing Acceptance Criteria**: Check for GIVEN/WHEN/THEN format, specific testable scenarios
+- **Testability**: Flag requirements that cannot be objectively verified or lack quantifiable metrics
+- **Scope Clarity**: Identify requirements that belong in different features, unclear boundaries, unstated dependencies
+- **Missing Edge Cases**: Flag missing error handling, validation, null values, boundary conditions
+- **Consistency**: Check against product overview and other context for conflicts, inconsistent terminology
+- Severity levels: "high" (blocks implementation), "medium" (impacts quality), "low" (improvement opportunity)
+- Always include specific quotes from the FRD when possible
+- Suggestions must be concrete and actionable with examples
+- Rate overall quality as: "excellent", "good", "fair", or "poor"
+- Estimate completeness as a percentage (0-100)
+- If FRD has no issues, return empty issues array with quality "excellent" and completeness 95+
+- IMPORTANT: The JSON block must be the ONLY content in your response when reviewing an FRD. Do not add text before or after the JSON.
+
 ## Other Conversations
 
-When NOT generating a tree (reviewing requirements, detecting gaps, general discussion):
+When NOT generating a tree or reviewing an FRD (detecting gaps, general discussion):
 - Use markdown for formatting
 - Reference specific nodes, sections, or requirements by name
 - Be constructive, specific, and actionable
-
-When reviewing requirements:
-- Check for: ambiguous language, missing acceptance criteria, untestable requirements, vague scope
-- Highlight specific issues
-- Suggest concrete improvements
 
 When detecting gaps:
 - Compare the feature tree against the product overview

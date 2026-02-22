@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { Bot, User, Send, Sparkles } from 'lucide-react'
 import { cn, timeAgo } from '@/lib/utils'
 import { ProposedTreeReview, type ProposedTreeStructure } from './proposed-tree-review'
+import { FRDReviewPanel, type FRDReviewResult } from './frd-review-panel'
 
 interface Message {
   id: string
@@ -20,21 +21,46 @@ interface ShopRightPanelProps {
 }
 
 /**
- * Try to extract a generate_tree JSON from an assistant message.
- * Returns the parsed tree structure or null.
+ * Try to extract structured JSON from an assistant message.
+ * Supports generate_tree and review_frd actions.
  */
-function extractTreeFromMessage(content: string): ProposedTreeStructure | null {
-  // Look for ```json ... ``` block containing generate_tree action
+function extractJsonAction(content: string): { action: string; data: unknown } | null {
   const jsonBlockMatch = content.match(/```json\s*([\s\S]*?)```/)
   if (!jsonBlockMatch) return null
 
   try {
     const parsed = JSON.parse(jsonBlockMatch[1].trim())
-    if (parsed?.action === 'generate_tree' && parsed?.tree?.nodes) {
-      return parsed.tree as ProposedTreeStructure
+    if (parsed?.action) {
+      return { action: parsed.action, data: parsed }
     }
   } catch {
     // Not valid JSON — show as plain text
+  }
+  return null
+}
+
+function extractTreeFromMessage(content: string): ProposedTreeStructure | null {
+  const result = extractJsonAction(content)
+  if (result?.action === 'generate_tree') {
+    const data = result.data as { tree?: ProposedTreeStructure }
+    if (data?.tree?.nodes) return data.tree
+  }
+  return null
+}
+
+function extractReviewFromMessage(content: string): FRDReviewResult | null {
+  const result = extractJsonAction(content)
+  if (result?.action === 'review_frd') {
+    const data = result.data as Partial<FRDReviewResult> & { action: string }
+    if (data?.issues && Array.isArray(data.issues)) {
+      return {
+        frdTitle: data.frdTitle || 'FRD Review',
+        issues: data.issues,
+        summary: data.summary || '',
+        overallQuality: data.overallQuality || 'unknown',
+        estimatedCompleteness: data.estimatedCompleteness ?? 0,
+      }
+    }
   }
   return null
 }
@@ -44,8 +70,8 @@ export function ShopRightPanel({ open, projectId, selectedNodeId, onTreeInserted
   const [isStreaming, setIsStreaming] = useState(false)
   const [historyLoaded, setHistoryLoaded] = useState(false)
   const [input, setInput] = useState('')
-  // Track which message IDs have had their tree cancelled/inserted (so we don't re-show review)
-  const [dismissedTreeIds, setDismissedTreeIds] = useState<Set<string>>(new Set())
+  // Track which message IDs have had their action UI dismissed (tree inserted/cancelled, review dismissed)
+  const [dismissedActionIds, setDismissedActionIds] = useState<Set<string>>(new Set())
   const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -208,7 +234,7 @@ export function ShopRightPanel({ open, projectId, selectedNodeId, onTreeInserted
   }
 
   function handleTreeInserted(messageId: string) {
-    setDismissedTreeIds((prev) => new Set(prev).add(messageId))
+    setDismissedActionIds((prev) => new Set(prev).add(messageId))
 
     // Add a success follow-up message
     const successMsg: Message = {
@@ -227,7 +253,7 @@ export function ShopRightPanel({ open, projectId, selectedNodeId, onTreeInserted
   }
 
   function handleTreeCancel(messageId: string) {
-    setDismissedTreeIds((prev) => new Set(prev).add(messageId))
+    setDismissedActionIds((prev) => new Set(prev).add(messageId))
 
     const cancelMsg: Message = {
       id: crypto.randomUUID(),
@@ -249,7 +275,7 @@ export function ShopRightPanel({ open, projectId, selectedNodeId, onTreeInserted
     // Check if this assistant message contains a tree
     if (!isUser && !isStreaming) {
       const tree = extractTreeFromMessage(msg.content)
-      if (tree && !dismissedTreeIds.has(msg.id)) {
+      if (tree && !dismissedActionIds.has(msg.id)) {
         return (
           <div key={msg.id} className="flex gap-2 justify-start">
             <div className="w-7 h-7 rounded-full bg-accent-purple/20 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -269,7 +295,7 @@ export function ShopRightPanel({ open, projectId, selectedNodeId, onTreeInserted
       }
 
       // If tree was already dismissed, show a brief summary instead of raw JSON
-      if (tree && dismissedTreeIds.has(msg.id)) {
+      if (tree && dismissedActionIds.has(msg.id)) {
         return (
           <div key={msg.id} className="flex gap-2 justify-start">
             <div className="w-7 h-7 rounded-full bg-accent-purple/20 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -280,6 +306,44 @@ export function ShopRightPanel({ open, projectId, selectedNodeId, onTreeInserted
             >
               <p className="text-xs text-text-tertiary italic">
                 Generated feature tree ({tree.summary || `${tree.nodes.length} epics`})
+              </p>
+              <p className="text-[10px] text-text-tertiary mt-1">{timeAgo(msg.timestamp)}</p>
+            </div>
+          </div>
+        )
+      }
+
+      // Check if this assistant message contains an FRD review
+      const review = extractReviewFromMessage(msg.content)
+      if (review && !dismissedActionIds.has(msg.id)) {
+        return (
+          <div key={msg.id} className="flex gap-2 justify-start">
+            <div className="w-7 h-7 rounded-full bg-accent-purple/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <Bot className="w-4 h-4 text-accent-purple" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <FRDReviewPanel
+                review={review}
+                onDismiss={() => setDismissedActionIds((prev) => new Set(prev).add(msg.id))}
+              />
+              <p className="text-[10px] text-text-tertiary mt-1">{timeAgo(msg.timestamp)}</p>
+            </div>
+          </div>
+        )
+      }
+
+      // If review was already dismissed, show a brief summary
+      if (review && dismissedActionIds.has(msg.id)) {
+        return (
+          <div key={msg.id} className="flex gap-2 justify-start">
+            <div className="w-7 h-7 rounded-full bg-accent-purple/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <Bot className="w-4 h-4 text-accent-purple" />
+            </div>
+            <div
+              className="max-w-[80%] px-3 py-2 rounded-xl text-sm leading-relaxed bg-bg-tertiary text-text-primary rounded-bl-sm"
+            >
+              <p className="text-xs text-text-tertiary italic">
+                FRD Review: {review.frdTitle} — {review.overallQuality} ({review.issues.length} issues)
               </p>
               <p className="text-[10px] text-text-tertiary mt-1">{timeAgo(msg.timestamp)}</p>
             </div>
