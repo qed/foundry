@@ -318,7 +318,7 @@ After this initial update, stay in this session. I will come back to you after e
 | 018 | Tagging & Tag Management | `done` | — | 011, 013, 014 | Hall | `components/hall/`, `app/api/hall/tags/` |
 | 019 | Bulk Operations | `done` | — | 014, 017, 018 | Hall | `components/hall/` |
 | 020 | Hall Agent Infrastructure | `done` | — | 002, 011, 012 | Hall | `components/hall/`, `app/api/hall/agent/` |
-| 021 | Agent: Auto-Tag Suggestions | `ready` | — | 013, 018, 020 | Hall | `components/hall/` |
+| 021 | Agent: Auto-Tag Suggestions | `done` | — | 013, 018, 020 | Hall | `components/hall/` |
 | 022 | Agent: Duplicate Detection | `ready` | — | 011, 013, 020 | Hall | `components/hall/` |
 | 023 | Agent: Connection Discovery | `ready` | — | 011, 016, 020 | Hall | `components/hall/` |
 | 024 | Hall Real-Time Updates | `done` | — | 002, 011, 012, 014 | Hall | `components/hall/`, `lib/realtime/` |
@@ -700,7 +700,7 @@ These phases require work from **multiple module tracks** to be complete before 
 | Section | Total | Done | In Progress | Ready | Blocked |
 |---------|-------|------|-------------|-------|---------|
 | Foundation (001–010) | 10 | 10 | 0 | 0 | 0 |
-| The Hall (011–025) | 15 | 12 | 0 | 3 | 0 |
+| The Hall (011–025) | 15 | 13 | 0 | 2 | 0 |
 | Pattern Shop (026–045) | 20 | 9 | 0 | 8 | 3 |
 | Control Room (046–060) | 15 | 5 | 0 | 6 | 4 |
 | Assembly Floor (061–080) | 20 | 8 | 0 | 10 | 2 |
@@ -708,6 +708,6 @@ These phases require work from **multiple module tracks** to be complete before 
 | Cross-Cutting (096–120) | 25 | 7 | 0 | 7 | 11 |
 | Advanced (121–135) | 15 | 0 | 0 | 5 | 10 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **58** | **0** | **46** | **46** |
+| **TOTAL** | **150** | **59** | **0** | **45** | **46** |
 
-**Currently ready to start**: 021, 022, 023, 032, 035, 038, 039, 040, 042, 043, 045, 052, 053, 055, 057, 058, 059, 066, 068, 070, 071, 072, 074, 076, 077, 078, 080, 082, 086, 088, 089, 090, 098, 099, 100, 102, 110, 118, 120, 122, 124, 127, 131, 132
+**Currently ready to start**: 022, 023, 032, 035, 038, 039, 040, 042, 043, 045, 052, 053, 055, 057, 058, 059, 066, 068, 070, 071, 072, 074, 076, 077, 078, 080, 082, 086, 088, 089, 090, 098, 099, 100, 102, 110, 118, 120, 122, 124, 127, 131, 132

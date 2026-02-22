@@ -180,6 +180,7 @@ After building, run `npm run build` and `npm run lint` to verify zero errors. Th
 - Phase 054: Blueprint Status Tracking (Room) -- done
 - Phase 084: Feedback Inbox Display (Lab) -- done
 - Phase 085: Feedback Detail View (Lab) -- done
+- Phase 021: Agent: Auto-Tag Suggestions (Hall) -- done
 
-**Next up** (in priority order):
-Pick from ready list: 021, 022, 023, 032, 035, 038, 039, 040, 042, 043, 045, 052, 053, 055, 057, 058, 059, 066, 068, 070, 071, 072, 074, 076, 077, 078, 080, 082, 086, 088, 089, 090, 098, 099, 100, 102, 110, 118, 120, 122, 131, 132
+**Next up** (context-optimized cluster order):
+Cluster 1 remainder: 022, 023 | Cluster 2: 098, 099, 100, 101 | Cluster 3: 032, 035, 036, 041...
