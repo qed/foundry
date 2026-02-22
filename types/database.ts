@@ -850,6 +850,73 @@ export type Database = {
           },
         ];
       };
+      comments: {
+        Row: {
+          id: string;
+          project_id: string;
+          entity_type: "idea" | "feature_node" | "requirement_doc" | "blueprint" | "work_order" | "feedback";
+          entity_id: string;
+          parent_comment_id: string | null;
+          content: string;
+          author_id: string;
+          anchor_data: Json | null;
+          is_resolved: boolean;
+          created_at: string;
+          updated_at: string;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          entity_type: "idea" | "feature_node" | "requirement_doc" | "blueprint" | "work_order" | "feedback";
+          entity_id: string;
+          parent_comment_id?: string | null;
+          content: string;
+          author_id: string;
+          anchor_data?: Json | null;
+          is_resolved?: boolean;
+          created_at?: string;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          entity_type?: "idea" | "feature_node" | "requirement_doc" | "blueprint" | "work_order" | "feedback";
+          entity_id?: string;
+          parent_comment_id?: string | null;
+          content?: string;
+          author_id?: string;
+          anchor_data?: Json | null;
+          is_resolved?: boolean;
+          created_at?: string;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "comments_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "comments_parent_comment_id_fkey";
+            columns: ["parent_comment_id"];
+            isOneToOne: false;
+            referencedRelation: "comments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "comments_author_id_fkey";
+            columns: ["author_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       blueprints: {
         Row: {
           id: string;
@@ -1181,6 +1248,12 @@ export type Database = {
         };
         Returns: boolean;
       };
+      comment_project_member: {
+        Args: {
+          check_comment_id: string;
+        };
+        Returns: boolean;
+      };
     };
     Enums: Record<string, never>;
   };
@@ -1206,6 +1279,8 @@ export type Phase = Database["public"]["Tables"]["phases"]["Row"];
 export type WorkOrder = Database["public"]["Tables"]["work_orders"]["Row"];
 export type WorkOrderActivity = Database["public"]["Tables"]["work_order_activity"]["Row"];
 
+export type Comment = Database["public"]["Tables"]["comments"]["Row"];
+
 export type ArtifactFolder = Database["public"]["Tables"]["artifact_folders"]["Row"];
 export type Artifact = Database["public"]["Tables"]["artifacts"]["Row"];
 
@@ -1224,6 +1299,7 @@ export type DocType = RequirementsDocument["doc_type"];
 export type WorkOrderStatus = WorkOrder["status"];
 export type WorkOrderPriority = WorkOrder["priority"];
 export type PhaseStatus = Phase["status"];
+export type CommentEntityType = Comment["entity_type"];
 export type BlueprintType = Blueprint["blueprint_type"];
 export type BlueprintStatus = Blueprint["status"];
 export type AppKeyStatus = AppKey["status"];
