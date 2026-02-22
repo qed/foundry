@@ -70,6 +70,12 @@ export function LabClient({ projectId, initialStats }: LabClientProps) {
     setPage(newPage)
   }, [])
 
+  const handleFeedbackUpdate = useCallback((updated: FeedbackSubmission) => {
+    setFeedback((prev) =>
+      prev.map((f) => (f.id === updated.id ? updated : f))
+    )
+  }, [])
+
   const stats: LabStats = isLoading
     ? initialStats
     : {
@@ -112,7 +118,11 @@ export function LabClient({ projectId, initialStats }: LabClientProps) {
 
         {/* Right panel: Detail (60%) */}
         <div className="hidden md:flex flex-1 min-w-0 bg-bg-primary">
-          <LabDetailPanel feedback={selectedFeedback} />
+          <LabDetailPanel
+            feedback={selectedFeedback}
+            projectId={projectId}
+            onUpdate={handleFeedbackUpdate}
+          />
         </div>
       </div>
 
