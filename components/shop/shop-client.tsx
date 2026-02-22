@@ -24,6 +24,7 @@ export function ShopClient({
   const [rightPanelOpen, setRightPanelOpen] = useState(true)
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
   const [stats, setStats] = useState<ShopStats>(initialStats)
+  const [treeRefreshTrigger, setTreeRefreshTrigger] = useState(0)
 
   // Auto-collapse right panel on narrow screens
   useEffect(() => {
@@ -73,6 +74,12 @@ export function ShopClient({
     }
   }, [projectId])
 
+  // Called when agent inserts a feature tree — refresh both stats and tree
+  const handleTreeInserted = useCallback(() => {
+    setTreeRefreshTrigger((prev) => prev + 1)
+    refreshStats()
+  }, [refreshStats])
+
   return (
     <div className="flex flex-col h-full">
       {/* Shop Header */}
@@ -96,13 +103,14 @@ export function ShopClient({
           selectedNodeId={selectedNodeId}
           onSelectNode={setSelectedNodeId}
           onTreeChange={refreshStats}
+          refreshTrigger={treeRefreshTrigger}
         />
 
         {/* Center panel: Document editor */}
         <ShopCenterPanel selectedNodeId={selectedNodeId} projectId={projectId} />
 
         {/* Right panel: Agent chat */}
-        <ShopRightPanel open={rightPanelOpen} projectId={projectId} selectedNodeId={selectedNodeId} />
+        <ShopRightPanel open={rightPanelOpen} projectId={projectId} selectedNodeId={selectedNodeId} onTreeInserted={handleTreeInserted} />
       </div>
     </div>
   )

@@ -47,6 +47,8 @@ interface FeatureTreeProps {
   selectedLevels?: FeatureLevel[]
   onFilterInfo?: (info: FilterInfo) => void
   onTreeChange?: () => void
+  /** Increment to trigger an external refetch (e.g., after agent inserts nodes) */
+  refreshTrigger?: number
 }
 
 interface ContextMenuState {
@@ -122,6 +124,7 @@ export function FeatureTree({
   selectedLevels = ALL_LEVELS,
   onFilterInfo,
   onTreeChange,
+  refreshTrigger = 0,
 }: FeatureTreeProps) {
   const [tree, setTree] = useState<TreeNode[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -265,6 +268,15 @@ export function FeatureTree({
   useEffect(() => {
     fetchTree()
   }, [fetchTree])
+
+  // Refetch when externally triggered (e.g., agent inserts nodes)
+  const prevTriggerRef = useRef(refreshTrigger)
+  useEffect(() => {
+    if (refreshTrigger !== prevTriggerRef.current) {
+      prevTriggerRef.current = refreshTrigger
+      fetchTree()
+    }
+  }, [refreshTrigger, fetchTree])
 
   const handleToggleExpand = useCallback((nodeId: string) => {
     setExpandedIds((prev) => {

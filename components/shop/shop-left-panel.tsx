@@ -16,6 +16,7 @@ interface ShopLeftPanelProps {
   selectedNodeId: string | null
   onSelectNode: (nodeId: string) => void
   onTreeChange?: () => void
+  refreshTrigger?: number
 }
 
 export function ShopLeftPanel({
@@ -24,6 +25,7 @@ export function ShopLeftPanel({
   selectedNodeId,
   onSelectNode,
   onTreeChange,
+  refreshTrigger,
 }: ShopLeftPanelProps) {
   const isOverviewSelected = selectedNodeId === 'product-overview'
 
@@ -102,6 +104,7 @@ export function ShopLeftPanel({
               selectedLevels={selectedLevels}
               onFilterInfo={handleFilterInfo}
               onTreeChange={onTreeChange}
+              refreshTrigger={refreshTrigger}
             />
           </div>
 
