@@ -1,19 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { ShopHeader } from './shop-header'
+import { useState, useEffect, useCallback } from 'react'
+import { ShopHeader, type ShopStats } from './shop-header'
 import { ShopLeftPanel } from './shop-left-panel'
 import { ShopCenterPanel } from './shop-center-panel'
 import { ShopRightPanel } from './shop-right-panel'
 import { ShopGettingStarted } from './shop-getting-started'
-
-interface ShopStats {
-  epics: number
-  features: number
-  subFeatures: number
-  tasks: number
-  completionPercent: number
-}
 
 interface ShopClientProps {
   projectId: string
@@ -31,6 +23,7 @@ export function ShopClient({
   const [leftPanelOpen, setLeftPanelOpen] = useState(true)
   const [rightPanelOpen, setRightPanelOpen] = useState(true)
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
+  const [stats, setStats] = useState<ShopStats>(initialStats)
 
   // Auto-collapse right panel on narrow screens
   useEffect(() => {
@@ -59,11 +52,32 @@ export function ShopClient({
     return () => mq.removeEventListener('change', handleChange)
   }, [])
 
+  // Refetch stats from API
+  const refreshStats = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/projects/${projectId}/feature-nodes/stats`)
+      if (!res.ok) return
+      const data = await res.json()
+      setStats({
+        epics: data.epicCount,
+        features: data.featureCount,
+        subFeatures: data.subfeatureCount,
+        tasks: data.taskCount,
+        completionPercent: data.completionPercent,
+        inProgressPercent: data.inProgressPercent,
+        blockedNodeCount: data.blockedNodeCount,
+        statusBreakdown: data.statusBreakdown,
+      })
+    } catch {
+      // Silently ignore — stats will refresh on next tree change
+    }
+  }, [projectId])
+
   return (
     <div className="flex flex-col h-full">
       {/* Shop Header */}
       <ShopHeader
-        stats={initialStats}
+        stats={stats}
         leftPanelOpen={leftPanelOpen}
         rightPanelOpen={rightPanelOpen}
         onToggleLeftPanel={() => setLeftPanelOpen((prev) => !prev)}
@@ -81,6 +95,7 @@ export function ShopClient({
           projectId={projectId}
           selectedNodeId={selectedNodeId}
           onSelectNode={setSelectedNodeId}
+          onTreeChange={refreshStats}
         />
 
         {/* Center panel: Document editor */}
