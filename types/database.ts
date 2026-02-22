@@ -510,6 +510,185 @@ export type Database = {
           },
         ];
       };
+      phases: {
+        Row: {
+          id: string;
+          project_id: string;
+          name: string;
+          description: string | null;
+          position: number;
+          status: "planned" | "active" | "completed";
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          name: string;
+          description?: string | null;
+          position?: number;
+          status?: "planned" | "active" | "completed";
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          name?: string;
+          description?: string | null;
+          position?: number;
+          status?: "planned" | "active" | "completed";
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "phases_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      work_orders: {
+        Row: {
+          id: string;
+          project_id: string;
+          feature_node_id: string | null;
+          phase_id: string | null;
+          title: string;
+          description: string | null;
+          description_json: Json | null;
+          acceptance_criteria: string | null;
+          implementation_plan: string | null;
+          implementation_plan_json: Json | null;
+          status: "backlog" | "ready" | "in_progress" | "in_review" | "done";
+          priority: "critical" | "high" | "medium" | "low";
+          assignee_id: string | null;
+          position: number;
+          created_by: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          feature_node_id?: string | null;
+          phase_id?: string | null;
+          title: string;
+          description?: string | null;
+          description_json?: Json | null;
+          acceptance_criteria?: string | null;
+          implementation_plan?: string | null;
+          implementation_plan_json?: Json | null;
+          status?: "backlog" | "ready" | "in_progress" | "in_review" | "done";
+          priority?: "critical" | "high" | "medium" | "low";
+          assignee_id?: string | null;
+          position?: number;
+          created_by: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          feature_node_id?: string | null;
+          phase_id?: string | null;
+          title?: string;
+          description?: string | null;
+          description_json?: Json | null;
+          acceptance_criteria?: string | null;
+          implementation_plan?: string | null;
+          implementation_plan_json?: Json | null;
+          status?: "backlog" | "ready" | "in_progress" | "in_review" | "done";
+          priority?: "critical" | "high" | "medium" | "low";
+          assignee_id?: string | null;
+          position?: number;
+          created_by?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "work_orders_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "work_orders_feature_node_id_fkey";
+            columns: ["feature_node_id"];
+            isOneToOne: false;
+            referencedRelation: "feature_nodes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "work_orders_phase_id_fkey";
+            columns: ["phase_id"];
+            isOneToOne: false;
+            referencedRelation: "phases";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "work_orders_assignee_id_fkey";
+            columns: ["assignee_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "work_orders_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      work_order_activity: {
+        Row: {
+          id: string;
+          work_order_id: string;
+          user_id: string;
+          action: string;
+          details: Json | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          work_order_id: string;
+          user_id: string;
+          action: string;
+          details?: Json | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          work_order_id?: string;
+          user_id?: string;
+          action?: string;
+          details?: Json | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "work_order_activity_work_order_id_fkey";
+            columns: ["work_order_id"];
+            isOneToOne: false;
+            referencedRelation: "work_orders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "work_order_activity_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       requirement_versions: {
         Row: {
           id: string;
@@ -593,6 +772,12 @@ export type Database = {
         };
         Returns: boolean;
       };
+      work_order_project_member: {
+        Args: {
+          check_work_order_id: string;
+        };
+        Returns: boolean;
+      };
     };
     Enums: Record<string, never>;
   };
@@ -614,8 +799,15 @@ export type FeatureNode = Database["public"]["Tables"]["feature_nodes"]["Row"];
 export type RequirementsDocument = Database["public"]["Tables"]["requirements_documents"]["Row"];
 export type RequirementVersion = Database["public"]["Tables"]["requirement_versions"]["Row"];
 
+export type Phase = Database["public"]["Tables"]["phases"]["Row"];
+export type WorkOrder = Database["public"]["Tables"]["work_orders"]["Row"];
+export type WorkOrderActivity = Database["public"]["Tables"]["work_order_activity"]["Row"];
+
 // Status type aliases
 export type IdeaStatus = Idea["status"];
 export type FeatureLevel = FeatureNode["level"];
 export type FeatureStatus = FeatureNode["status"];
 export type DocType = RequirementsDocument["doc_type"];
+export type WorkOrderStatus = WorkOrder["status"];
+export type WorkOrderPriority = WorkOrder["priority"];
+export type PhaseStatus = Phase["status"];
