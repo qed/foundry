@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Bot, User, Send, Sparkles } from 'lucide-react'
+import { Bot, User, Send, Sparkles, FileDown, RefreshCw } from 'lucide-react'
 import { cn, timeAgo } from '@/lib/utils'
 
 interface Message {
@@ -9,12 +9,14 @@ interface Message {
   role: 'user' | 'assistant'
   content: string
   timestamp: string
+  isGeneration?: boolean
 }
 
 interface RoomRightPanelProps {
   open: boolean
   projectId: string
   selectedBlueprintId: string | null
+  onApplyDraft?: (markdownContent: string) => void
 }
 
 const EXAMPLE_PROMPTS = [
@@ -24,11 +26,25 @@ const EXAMPLE_PROMPTS = [
   'Suggest API endpoints',
 ]
 
-export function RoomRightPanel({ open, projectId, selectedBlueprintId }: RoomRightPanelProps) {
+// Detect if the user asked to generate a blueprint
+const GENERATION_PATTERNS = [
+  /generate\s*(a\s+)?blueprint/i,
+  /create\s*(a\s+)?blueprint\s*(draft)?/i,
+  /draft\s*(a\s+)?blueprint/i,
+  /write\s*(a\s+)?blueprint/i,
+  /generate\s*(a\s+)?(technical\s+)?spec/i,
+]
+
+function isGenerationRequest(text: string): boolean {
+  return GENERATION_PATTERNS.some((p) => p.test(text))
+}
+
+export function RoomRightPanel({ open, projectId, selectedBlueprintId, onApplyDraft }: RoomRightPanelProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [isStreaming, setIsStreaming] = useState(false)
   const [historyLoaded, setHistoryLoaded] = useState(false)
   const [input, setInput] = useState('')
+  const [applyingDraft, setApplyingDraft] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -91,6 +107,8 @@ export function RoomRightPanel({ open, projectId, selectedBlueprintId }: RoomRig
 
     setInput('')
 
+    const wasGeneration = isGenerationRequest(text)
+
     const userMessage: Message = {
       id: crypto.randomUUID(),
       role: 'user',
@@ -122,6 +140,9 @@ export function RoomRightPanel({ open, projectId, selectedBlueprintId }: RoomRig
         throw new Error(data.error || 'Failed to get response')
       }
 
+      // Check if server flagged this as a generation response
+      const isGenResponse = res.headers.get('X-Generation-Mode') === 'true' || wasGeneration
+
       const reader = res.body?.getReader()
       const decoder = new TextDecoder()
 
@@ -129,7 +150,7 @@ export function RoomRightPanel({ open, projectId, selectedBlueprintId }: RoomRig
 
       setMessages((prev) => [
         ...prev,
-        { id: assistantId, role: 'assistant', content: '', timestamp: new Date().toISOString() },
+        { id: assistantId, role: 'assistant', content: '', timestamp: new Date().toISOString(), isGeneration: isGenResponse },
       ])
 
       while (true) {
@@ -151,7 +172,7 @@ export function RoomRightPanel({ open, projectId, selectedBlueprintId }: RoomRig
 
       const finalMessages = [
         ...updatedMessages,
-        { id: assistantId, role: 'assistant' as const, content: assistantContent, timestamp: new Date().toISOString() },
+        { id: assistantId, role: 'assistant' as const, content: assistantContent, timestamp: new Date().toISOString(), isGeneration: isGenResponse },
       ]
       setMessages(finalMessages)
       saveMessages(finalMessages)
@@ -167,6 +188,56 @@ export function RoomRightPanel({ open, projectId, selectedBlueprintId }: RoomRig
     } finally {
       setIsStreaming(false)
     }
+  }
+
+  async function handleApplyDraft(markdownContent: string) {
+    if (!selectedBlueprintId || applyingDraft) return
+
+    setApplyingDraft(true)
+    try {
+      const res = await fetch('/api/agent/room/apply-draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          blueprintId: selectedBlueprintId,
+          projectId,
+          markdownContent,
+        }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Failed to apply draft')
+      }
+
+      // Notify parent to refresh editor
+      onApplyDraft?.(markdownContent)
+
+      // Add a confirmation message
+      const confirmMsg: Message = {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: 'Blueprint draft applied successfully. The editor has been updated with the generated content. Review and refine as needed.',
+        timestamp: new Date().toISOString(),
+      }
+      const updatedMessages = [...messages, confirmMsg]
+      setMessages(updatedMessages)
+      saveMessages(updatedMessages)
+    } catch (err) {
+      const errorMsg: Message = {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: `Failed to apply draft: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        timestamp: new Date().toISOString(),
+      }
+      setMessages((prev) => [...prev, errorMsg])
+    } finally {
+      setApplyingDraft(false)
+    }
+  }
+
+  function handleRegenerate() {
+    handleSend('Please regenerate the blueprint with more detail and additional context.')
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -218,33 +289,57 @@ export function RoomRightPanel({ open, projectId, selectedBlueprintId }: RoomRig
           {messages.map((msg) => {
             const isUser = msg.role === 'user'
             return (
-              <div key={msg.id} className={cn('flex gap-2', isUser ? 'justify-end' : 'justify-start')}>
-                {!isUser && (
-                  <div className="w-7 h-7 rounded-full bg-accent-purple/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Bot className="w-4 h-4 text-accent-purple" />
-                  </div>
-                )}
-                <div
-                  className={cn(
-                    'max-w-[80%] px-3 py-2 rounded-xl text-sm leading-relaxed',
-                    isUser
-                      ? 'bg-accent-cyan/15 text-text-primary rounded-br-sm'
-                      : 'bg-bg-tertiary text-text-primary rounded-bl-sm'
+              <div key={msg.id}>
+                <div className={cn('flex gap-2', isUser ? 'justify-end' : 'justify-start')}>
+                  {!isUser && (
+                    <div className="w-7 h-7 rounded-full bg-accent-purple/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Bot className="w-4 h-4 text-accent-purple" />
+                    </div>
                   )}
-                >
-                  <p className="whitespace-pre-wrap break-words">{msg.content}</p>
-                  <p
+                  <div
                     className={cn(
-                      'text-[10px] mt-1',
-                      isUser ? 'text-accent-cyan/50' : 'text-text-tertiary'
+                      'max-w-[80%] px-3 py-2 rounded-xl text-sm leading-relaxed',
+                      isUser
+                        ? 'bg-accent-cyan/15 text-text-primary rounded-br-sm'
+                        : 'bg-bg-tertiary text-text-primary rounded-bl-sm'
                     )}
                   >
-                    {timeAgo(msg.timestamp)}
-                  </p>
+                    <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                    <p
+                      className={cn(
+                        'text-[10px] mt-1',
+                        isUser ? 'text-accent-cyan/50' : 'text-text-tertiary'
+                      )}
+                    >
+                      {timeAgo(msg.timestamp)}
+                    </p>
+                  </div>
+                  {isUser && (
+                    <div className="w-7 h-7 rounded-full bg-accent-cyan/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <User className="w-4 h-4 text-accent-cyan" />
+                    </div>
+                  )}
                 </div>
-                {isUser && (
-                  <div className="w-7 h-7 rounded-full bg-accent-cyan/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <User className="w-4 h-4 text-accent-cyan" />
+
+                {/* Generation action buttons */}
+                {!isUser && msg.isGeneration && msg.content && !isStreaming && selectedBlueprintId && (
+                  <div className="flex gap-2 mt-2 ml-9">
+                    <button
+                      onClick={() => handleApplyDraft(msg.content)}
+                      disabled={applyingDraft}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-accent-success/10 text-accent-success rounded-lg text-xs font-medium hover:bg-accent-success/20 transition-colors disabled:opacity-50"
+                    >
+                      <FileDown className="w-3.5 h-3.5" />
+                      {applyingDraft ? 'Applying...' : 'Use This Draft'}
+                    </button>
+                    <button
+                      onClick={handleRegenerate}
+                      disabled={isStreaming}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-bg-tertiary text-text-secondary rounded-lg text-xs font-medium hover:bg-bg-tertiary/80 hover:text-text-primary transition-colors disabled:opacity-50"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      Regenerate
+                    </button>
                   </div>
                 )}
               </div>

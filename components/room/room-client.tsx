@@ -156,6 +156,12 @@ export function RoomClient({ projectId, initialStats }: RoomClientProps) {
     }
   }, [projectId])
 
+  // Handle agent applying a generated draft to the editor
+  const handleApplyDraft = useCallback(() => {
+    // Trigger a refetch so the editor reloads with new content
+    setFetchKey((k) => k + 1)
+  }, [])
+
   const selectedBlueprint = blueprints.find((bp) => bp.id === selectedBlueprintId) || null
 
   return (
@@ -199,7 +205,7 @@ export function RoomClient({ projectId, initialStats }: RoomClientProps) {
         />
 
         {/* Right panel: Agent chat */}
-        <RoomRightPanel open={rightPanelOpen} projectId={projectId} selectedBlueprintId={selectedBlueprintId} />
+        <RoomRightPanel open={rightPanelOpen} projectId={projectId} selectedBlueprintId={selectedBlueprintId} onApplyDraft={handleApplyDraft} />
       </div>
 
       {/* Create Blueprint Modal */}
