@@ -232,14 +232,14 @@ After this initial update, stay in this session. I will come back to you after e
 |-------|------|--------|--------|---------------|-------|------------|
 | 081 | Insights Lab Database Schema | `done` | — | 002 | Lab | `supabase/migrations/`, `types/database.ts` |
 | 082 | Feedback Collection API | `ready` | — | 001, 081 | Lab | `app/api/lab/` |
-| 083 | Insights Lab Page Layout | `ready` | — | 006, 010, 081 | Lab | `components/lab/`, `app/.../lab/` |
-| 084 | Feedback Inbox Display | `blocked` | — | 081, 083 | Lab | `components/lab/` |
+| 083 | Insights Lab Page Layout | `done` | — | 006, 010, 081 | Lab | `components/lab/`, `app/.../lab/` |
+| 084 | Feedback Inbox Display | `ready` | — | 081, 083 | Lab | `components/lab/` |
 | 085 | Feedback Detail View | `blocked` | — | 081, 083, 084 | Lab | `components/lab/` |
 | 086 | Feedback Categorization | `blocked` | — | 081, 084, 085 | Lab | `components/lab/` |
 | 087 | Feedback Search & Filter | `blocked` | — | 083, 084, 086 | Lab | `components/lab/` |
 | 088 | Convert Feedback → Work Order | `blocked` | — | 061, 081, 085 | Lab ⚠️ | `components/lab/`, `app/api/lab/` |
 | 089 | Convert Feedback → Feature | `blocked` | — | 026, 081, 085 | Lab ⚠️ | `components/lab/`, `app/api/lab/` |
-| 090 | Insights Lab Agent Infra | `blocked` | — | 081, 083 | Lab | `components/lab/`, `app/api/lab/agent/` |
+| 090 | Insights Lab Agent Infra | `ready` | — | 081, 083 | Lab | `components/lab/`, `app/api/lab/agent/` |
 | 091 | Agent: Auto-Categorization | `blocked` | — | 081, 086, 090 | Lab | `components/lab/` |
 | 092 | Agent: Feedback Enrichment | `blocked` | — | 026, 085, 090, 091 | Lab ⚠️ | `components/lab/` |
 | 093 | Agent: Conversion Suggestions | `blocked` | — | 088, 089, 090, 091 | Lab ⚠️ | `components/lab/` |
@@ -536,10 +536,10 @@ These phases require work from **multiple module tracks** to be complete before 
 | Pattern Shop (026–045) | 20 | 6 | 0 | 3 | 11 |
 | Control Room (046–060) | 15 | 2 | 0 | 1 | 12 |
 | Assembly Floor (061–080) | 20 | 2 | 0 | 3 | 15 |
-| Insights Lab (081–095) | 15 | 1 | 0 | 2 | 12 |
+| Insights Lab (081–095) | 15 | 2 | 0 | 3 | 10 |
 | Cross-Cutting (096–120) | 25 | 6 | 0 | 3 | 16 |
 | Advanced (121–135) | 15 | 0 | 0 | 2 | 13 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **39** | **0** | **18** | **93** |
+| **TOTAL** | **150** | **40** | **0** | **20** | **90** |
 
-**Currently ready to start**: 021, 022, 023, 031, 034, 037, 049, 063, 073, 080, 082, 083, 097, 110, 120, 131, 132
+**Currently ready to start**: 021, 022, 023, 031, 034, 037, 049, 063, 073, 080, 082, 084, 090, 097, 110, 120, 131, 132
