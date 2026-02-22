@@ -2,12 +2,21 @@
 
 import { Search, FileText, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { FeatureTree } from './feature-tree'
 
 interface ShopLeftPanelProps {
   open: boolean
+  projectId: string
+  selectedNodeId: string | null
+  onSelectNode: (nodeId: string) => void
 }
 
-export function ShopLeftPanel({ open }: ShopLeftPanelProps) {
+export function ShopLeftPanel({
+  open,
+  projectId,
+  selectedNodeId,
+  onSelectNode,
+}: ShopLeftPanelProps) {
   return (
     <div
       className={cn(
@@ -38,7 +47,7 @@ export function ShopLeftPanel({ open }: ShopLeftPanelProps) {
             </button>
           </div>
 
-          {/* Feature Tree placeholder */}
+          {/* Feature Tree */}
           <div className="p-3">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-medium text-text-tertiary uppercase tracking-wider">
@@ -46,13 +55,11 @@ export function ShopLeftPanel({ open }: ShopLeftPanelProps) {
               </span>
             </div>
 
-            {/* Empty tree state */}
-            <div className="py-6 text-center">
-              <p className="text-xs text-text-tertiary">
-                No features yet. Create an Epic to start building your feature
-                tree.
-              </p>
-            </div>
+            <FeatureTree
+              projectId={projectId}
+              selectedNodeId={selectedNodeId}
+              onSelectNode={onSelectNode}
+            />
           </div>
 
           {/* Technical Requirements section - collapsed */}

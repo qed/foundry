@@ -23,14 +23,14 @@ interface ShopClientProps {
 }
 
 export function ShopClient({
-  projectId: _projectId,
+  projectId,
   orgSlug: _orgSlug,
   initialStats,
   hasFeatureNodes,
 }: ShopClientProps) {
   const [leftPanelOpen, setLeftPanelOpen] = useState(true)
   const [rightPanelOpen, setRightPanelOpen] = useState(true)
-  const [selectedNodeId, _setSelectedNodeId] = useState<string | null>(null)
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
 
   // Auto-collapse right panel on narrow screens
   useEffect(() => {
@@ -76,7 +76,12 @@ export function ShopClient({
       {/* Three-panel layout */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left panel: Feature tree */}
-        <ShopLeftPanel open={leftPanelOpen} />
+        <ShopLeftPanel
+          open={leftPanelOpen}
+          projectId={projectId}
+          selectedNodeId={selectedNodeId}
+          onSelectNode={setSelectedNodeId}
+        />
 
         {/* Center panel: Document editor */}
         <ShopCenterPanel selectedNodeId={selectedNodeId} />
