@@ -10,6 +10,7 @@ import { IdeaDetailTags } from './idea-detail-tags'
 import { RelatedIdeasSection } from './related-ideas-section'
 import { IdeaInfoPanel } from './idea-info-panel'
 import { IdeaActionButtons } from './idea-action-buttons'
+import { IdeaEditForm } from './idea-edit-form'
 import type { IdeaWithDetails } from './types'
 
 interface IdeaDetailSlideOverProps {
@@ -17,6 +18,9 @@ interface IdeaDetailSlideOverProps {
   isOpen: boolean
   onClose: () => void
   onTagClick?: (tagId: string) => void
+  projectId: string
+  onIdeaUpdated?: (updatedIdea: IdeaWithDetails) => void
+  onIdeaArchived?: (ideaId: string) => Promise<void>
 }
 
 export function IdeaDetailSlideOver({
@@ -24,11 +28,15 @@ export function IdeaDetailSlideOver({
   isOpen,
   onClose,
   onTagClick,
+  projectId,
+  onIdeaUpdated,
+  onIdeaArchived,
 }: IdeaDetailSlideOverProps) {
   const [idea, setIdea] = useState<IdeaWithDetails | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isAnimating, setIsAnimating] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
 
   // Fetch idea detail
   const fetchIdea = useCallback(async (id: string) => {
@@ -51,12 +59,14 @@ export function IdeaDetailSlideOver({
   useEffect(() => {
     if (isOpen && ideaId) {
       fetchIdea(ideaId)
+      setIsEditing(false) // Reset edit mode when opening a new idea
     }
     if (!isOpen) {
       // Reset after close animation
       const timer = setTimeout(() => {
         setIdea(null)
         setError(null)
+        setIsEditing(false)
       }, 300)
       return () => clearTimeout(timer)
     }
@@ -68,13 +78,17 @@ export function IdeaDetailSlideOver({
 
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') {
+        if (isEditing) {
+          // Let the edit form handle Escape via its own cancel logic
+          return
+        }
         onClose()
       }
     }
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, onClose])
+  }, [isOpen, onClose, isEditing])
 
   // Lock body scroll when open
   useEffect(() => {
@@ -91,7 +105,6 @@ export function IdeaDetailSlideOver({
   // Handle animation
   useEffect(() => {
     if (isOpen) {
-      // Trigger animation on next frame
       requestAnimationFrame(() => setIsAnimating(true))
     } else {
       setIsAnimating(false)
@@ -100,6 +113,7 @@ export function IdeaDetailSlideOver({
 
   // Navigate to a connected idea
   const handleConnectedIdeaClick = useCallback((connectedIdeaId: string) => {
+    setIsEditing(false) // Exit edit mode when navigating
     fetchIdea(connectedIdeaId)
   }, [fetchIdea])
 
@@ -108,6 +122,19 @@ export function IdeaDetailSlideOver({
     onClose()
     onTagClick?.(tagId)
   }, [onClose, onTagClick])
+
+  // Handle edit save
+  const handleSaved = useCallback((updatedIdea: IdeaWithDetails) => {
+    setIdea(updatedIdea)
+    onIdeaUpdated?.(updatedIdea)
+  }, [onIdeaUpdated])
+
+  // Handle archive
+  const handleArchive = useCallback(async () => {
+    if (!idea || !onIdeaArchived) return
+    await onIdeaArchived(idea.id)
+    onClose()
+  }, [idea, onIdeaArchived, onClose])
 
   if (!isOpen) return null
 
@@ -119,7 +146,7 @@ export function IdeaDetailSlideOver({
           'fixed inset-0 bg-black/60 z-40 transition-opacity duration-300',
           isAnimating ? 'opacity-100' : 'opacity-0'
         )}
-        onClick={onClose}
+        onClick={isEditing ? undefined : onClose}
         aria-hidden="true"
       />
 
@@ -141,12 +168,12 @@ export function IdeaDetailSlideOver({
             id="idea-detail-title"
             className="text-lg font-bold text-text-primary truncate pr-4"
           >
-            {idea?.title || 'Idea Detail'}
+            {isEditing ? 'Edit Idea' : (idea?.title || 'Idea Detail')}
           </h2>
           <button
-            onClick={onClose}
+            onClick={isEditing ? () => setIsEditing(false) : onClose}
             className="p-1.5 hover:bg-bg-tertiary rounded-lg transition-colors text-text-secondary hover:text-text-primary shrink-0"
-            aria-label="Close"
+            aria-label={isEditing ? 'Exit edit mode' : 'Close'}
           >
             <X className="w-5 h-5" />
           </button>
@@ -175,31 +202,41 @@ export function IdeaDetailSlideOver({
 
         {idea && !isLoading && (
           <>
-            {/* Scrollable content */}
-            <div className="flex-1 overflow-y-auto">
-              <div className="p-6 space-y-6">
-                {/* Header — status, creator, timestamp */}
-                <IdeaDetailHeader idea={idea} />
-
-                {/* Full body */}
-                {idea.body && <IdeaDetailBody body={idea.body} />}
-
-                {/* Tags */}
-                <IdeaDetailTags tags={idea.tags} onTagClick={handleTagClick} />
-
-                {/* Related ideas */}
-                <RelatedIdeasSection
-                  ideaId={idea.id}
-                  onIdeaClick={handleConnectedIdeaClick}
+            {isEditing ? (
+              /* Edit mode */
+              <div className="flex-1 overflow-y-auto">
+                <IdeaEditForm
+                  idea={idea}
+                  projectId={projectId}
+                  onCancel={() => setIsEditing(false)}
+                  onSaved={handleSaved}
                 />
-
-                {/* Info panel */}
-                <IdeaInfoPanel idea={idea} />
               </div>
-            </div>
+            ) : (
+              <>
+                {/* Read-only view */}
+                <div className="flex-1 overflow-y-auto">
+                  <div className="p-6 space-y-6">
+                    <IdeaDetailHeader idea={idea} />
+                    {idea.body && <IdeaDetailBody body={idea.body} />}
+                    <IdeaDetailTags tags={idea.tags} onTagClick={handleTagClick} />
+                    <RelatedIdeasSection
+                      ideaId={idea.id}
+                      onIdeaClick={handleConnectedIdeaClick}
+                    />
+                    <IdeaInfoPanel idea={idea} />
+                  </div>
+                </div>
 
-            {/* Action buttons */}
-            <IdeaActionButtons idea={idea} />
+                {/* Action buttons */}
+                <IdeaActionButtons
+                  idea={idea}
+                  isEditing={isEditing}
+                  onEdit={() => setIsEditing(true)}
+                  onArchive={handleArchive}
+                />
+              </>
+            )}
           </>
         )}
       </div>
