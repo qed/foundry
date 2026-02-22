@@ -9,6 +9,7 @@ import { IdeaDetailBody } from './idea-detail-body'
 import { IdeaDetailTags } from './idea-detail-tags'
 import { RelatedIdeasSection } from './related-ideas-section'
 import { ConnectionSuggestions } from './connection-suggestions'
+import { LinkedArtifacts } from '@/components/artifacts/linked-artifacts'
 import { IdeaInfoPanel } from './idea-info-panel'
 import { IdeaActionButtons } from './idea-action-buttons'
 import { IdeaEditForm } from './idea-edit-form'
@@ -244,6 +245,12 @@ export function IdeaDetailSlideOver({
                       projectId={projectId}
                       onIdeaClick={handleConnectedIdeaClick}
                       onConnectionCreated={() => setConnectionsKey((k) => k + 1)}
+                    />
+                    <LinkedArtifacts
+                      entityType="idea"
+                      entityId={idea.id}
+                      projectId={projectId}
+                      editable
                     />
                     <IdeaInfoPanel idea={idea} />
                   </div>
