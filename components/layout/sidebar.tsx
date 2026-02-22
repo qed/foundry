@@ -14,6 +14,7 @@ import {
   Monitor,
   Hammer,
   FlaskConical,
+  FileBox,
   ChevronLeft,
   ChevronRight,
   LayoutDashboard,
@@ -188,6 +189,28 @@ export function Sidebar({ onClose }: SidebarProps) {
             </Link>
           )
         })}
+
+        <div className="border-t border-border-default my-2" />
+
+        {/* Artifacts link */}
+        <Link
+          href={`${baseUrl}/artifacts`}
+          onClick={onClose}
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+            pathname.includes('/artifacts')
+              ? 'bg-accent-cyan/10 text-accent-cyan'
+              : 'text-text-secondary hover:bg-bg-tertiary hover:text-text-primary'
+          }`}
+          title={isCollapsed ? 'Artifacts' : undefined}
+        >
+          <FileBox className="w-5 h-5 flex-shrink-0" />
+          {!isCollapsed && (
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium truncate">Artifacts</div>
+              <div className="text-xs text-text-tertiary truncate">Files & documents</div>
+            </div>
+          )}
+        </Link>
       </nav>
 
       {/* Presence widget */}
