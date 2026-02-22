@@ -103,6 +103,7 @@ export function ShopClient({
           selectedNodeId={selectedNodeId}
           onSelectNode={setSelectedNodeId}
           onTreeChange={refreshStats}
+          onTreeImported={handleTreeInserted}
           refreshTrigger={treeRefreshTrigger}
         />
 

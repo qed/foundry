@@ -37,12 +37,14 @@ interface RequirementsEditorProps {
   content: string
   onSave: (html: string) => Promise<void>
   readOnly?: boolean
+  toolbarExtra?: React.ReactNode
 }
 
 export function RequirementsEditor({
   content,
   onSave,
   readOnly = false,
+  toolbarExtra,
 }: RequirementsEditorProps) {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [wordCount, setWordCount] = useState(0)
@@ -282,6 +284,9 @@ export function RequirementsEditor({
         )}
 
         <div className="flex-1" />
+
+        {/* Extra toolbar buttons (import/export) */}
+        {toolbarExtra}
 
         {/* Outline toggle */}
         {headings.length > 0 && (
