@@ -6,6 +6,10 @@ import { Spinner } from '@/components/ui/spinner'
 import { RequirementsEditor } from './requirements-editor'
 import { ExportDocumentDialog } from './export-document-dialog'
 import { ImportDocumentDialog } from './import-document-dialog'
+import { VersionHistoryPanel } from './version-history-panel'
+import { VersionViewModal } from './version-view-modal'
+import { VersionCompareModal } from './version-compare-modal'
+import { RestoreVersionDialog } from './restore-version-dialog'
 
 interface RequirementsDocument {
   id: string
@@ -17,6 +21,14 @@ interface RequirementsDocument {
   created_by: string
   created_at: string
   updated_at: string
+}
+
+interface VersionInfo {
+  version_number: number
+  content: string
+  created_by: { name: string }
+  created_at: string
+  change_summary: string | null
 }
 
 interface FeatureRequirementEditorProps {
@@ -33,6 +45,16 @@ export function FeatureRequirementEditor({
   const [error, setError] = useState<string | null>(null)
   const [showExport, setShowExport] = useState(false)
   const [showImport, setShowImport] = useState(false)
+
+  // Versioning state
+  const [versionRefreshKey, setVersionRefreshKey] = useState(0)
+  const [viewVersion, setViewVersion] = useState<VersionInfo | null>(null)
+  const [restoreVersion, setRestoreVersion] = useState<VersionInfo | null>(null)
+  const [compareFrom, setCompareFrom] = useState(0)
+  const [compareTo, setCompareTo] = useState(0)
+  const [showCompare, setShowCompare] = useState(false)
+  // Track editor content key for force-remount on restore
+  const [editorKey, setEditorKey] = useState(0)
 
   useEffect(() => {
     let cancelled = false
@@ -66,7 +88,6 @@ export function FeatureRequirementEditor({
         )
 
         if (createRes.status === 409) {
-          // Already exists (race condition) — re-fetch
           const retryRes = await fetch(
             `/api/projects/${projectId}/requirements-documents?featureNodeId=${featureNodeId}&docType=feature_requirement`
           )
@@ -111,6 +132,38 @@ export function FeatureRequirementEditor({
   const handleImportSuccess = useCallback(() => {
     window.location.reload()
   }, [])
+
+  // Auto-version on significant content save
+  const handleContentSaved = useCallback(async (html: string, previousHtml: string) => {
+    if (!doc) return
+    try {
+      await fetch(
+        `/api/projects/${projectId}/requirements-documents/${doc.id}/versions`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: html, previousContent: previousHtml }),
+        }
+      )
+      setVersionRefreshKey((k) => k + 1)
+    } catch {
+      // Silently ignore version creation errors
+    }
+  }, [projectId, doc])
+
+  const handleCompare = useCallback((from: number, to: number) => {
+    setCompareFrom(from)
+    setCompareTo(to)
+    setShowCompare(true)
+  }, [])
+
+  const handleRestoreComplete = useCallback((restoredContent: string) => {
+    if (doc) {
+      setDoc({ ...doc, content: restoredContent })
+      setEditorKey((k) => k + 1)
+      setVersionRefreshKey((k) => k + 1)
+    }
+  }, [doc])
 
   if (isLoading) {
     return (
@@ -171,12 +224,48 @@ export function FeatureRequirementEditor({
     </>
   )
 
+  const versionPanel = (
+    <>
+      <VersionHistoryPanel
+        projectId={projectId}
+        docId={doc.id}
+        onView={setViewVersion}
+        onRestore={setRestoreVersion}
+        onCompare={handleCompare}
+        refreshKey={versionRefreshKey}
+      />
+      <VersionViewModal
+        open={!!viewVersion}
+        onOpenChange={(open) => { if (!open) setViewVersion(null) }}
+        version={viewVersion}
+      />
+      <RestoreVersionDialog
+        open={!!restoreVersion}
+        onOpenChange={(open) => { if (!open) setRestoreVersion(null) }}
+        projectId={projectId}
+        docId={doc.id}
+        version={restoreVersion}
+        onRestoreComplete={handleRestoreComplete}
+      />
+      <VersionCompareModal
+        open={showCompare}
+        onOpenChange={setShowCompare}
+        projectId={projectId}
+        docId={doc.id}
+        fromVersion={compareFrom}
+        toVersion={compareTo}
+      />
+    </>
+  )
+
   return (
     <RequirementsEditor
-      key={doc.id}
+      key={`${doc.id}-${editorKey}`}
       content={doc.content || ''}
       onSave={handleSave}
       toolbarExtra={toolbarExtra}
+      versionPanel={versionPanel}
+      onContentSaved={handleContentSaved}
     />
   )
 }

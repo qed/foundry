@@ -38,6 +38,8 @@ interface RequirementsEditorProps {
   onSave: (html: string) => Promise<void>
   readOnly?: boolean
   toolbarExtra?: React.ReactNode
+  versionPanel?: React.ReactNode
+  onContentSaved?: (html: string, previousHtml: string) => void
 }
 
 export function RequirementsEditor({
@@ -45,24 +47,30 @@ export function RequirementsEditor({
   onSave,
   readOnly = false,
   toolbarExtra,
+  versionPanel,
+  onContentSaved,
 }: RequirementsEditorProps) {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [wordCount, setWordCount] = useState(0)
   const [headings, setHeadings] = useState<Heading[]>([])
   const [showOutline, setShowOutline] = useState(false)
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const lastSavedContentRef = useRef<string>(content)
 
   const doSave = useCallback(async (html: string) => {
     setSaveStatus('saving')
     try {
+      const previousHtml = lastSavedContentRef.current
       await onSave(html)
+      lastSavedContentRef.current = html
+      onContentSaved?.(html, previousHtml)
       setSaveStatus('saved')
       setTimeout(() => setSaveStatus('idle'), 3000)
     } catch {
       setSaveStatus('error')
       setTimeout(() => setSaveStatus('idle'), 5000)
     }
-  }, [onSave])
+  }, [onSave, onContentSaved])
 
   const debouncedSave = useCallback((html: string) => {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
@@ -358,6 +366,9 @@ export function RequirementsEditor({
         <span className="text-xs text-text-tertiary">{wordCount.toLocaleString()} words</span>
         <span className="text-xs text-text-tertiary">{readingTime} min read</span>
       </div>
+
+      {/* Version History Panel */}
+      {versionPanel}
     </div>
   )
 }
