@@ -251,10 +251,10 @@ After this initial update, stay in this session. I will come back to you after e
 | Phase | Name | Status | Branch | Prerequisites | Track | File Areas |
 |-------|------|--------|--------|---------------|-------|------------|
 | 096 | Artifacts Database & Storage | `done` | — | 002 | Artifacts | `supabase/migrations/`, `types/database.ts` |
-| 097 | Artifact Upload UI | `ready` | — | 096 | Artifacts | `components/artifacts/` |
-| 098 | Artifact Browser & Management | `blocked` | — | 096, 097 | Artifacts | `components/artifacts/` |
-| 099 | Artifact Linking to Entities | `blocked` | — | 096, 097 | Artifacts | `components/artifacts/` |
-| 100 | Artifact Search & Indexing | `blocked` | — | 096, 097 | Artifacts | `components/artifacts/` |
+| 097 | Artifact Upload UI | `done` | — | 096 | Artifacts | `components/artifacts/` |
+| 098 | Artifact Browser & Management | `ready` | — | 096, 097 | Artifacts | `components/artifacts/` |
+| 099 | Artifact Linking to Entities | `ready` | — | 096, 097 | Artifacts | `components/artifacts/` |
+| 100 | Artifact Search & Indexing | `ready` | — | 096, 097 | Artifacts | `components/artifacts/` |
 | 101 | Artifact Folders & Organization | `blocked` | — | 096, 098 | Artifacts | `components/artifacts/` |
 | 102 | Document Version History | `ready` | — | 002, 034, 049 | Versioning ⚠️ | `components/versioning/`, `lib/` |
 | 103 | Version Diff & Comparison | `blocked` | — | 102 | Versioning | `components/versioning/` |
@@ -537,9 +537,9 @@ These phases require work from **multiple module tracks** to be complete before 
 | Control Room (046–060) | 15 | 3 | 0 | 3 | 9 |
 | Assembly Floor (061–080) | 20 | 7 | 0 | 9 | 4 |
 | Insights Lab (081–095) | 15 | 2 | 0 | 3 | 10 |
-| Cross-Cutting (096–120) | 25 | 6 | 0 | 5 | 14 |
+| Cross-Cutting (096–120) | 25 | 7 | 0 | 7 | 11 |
 | Advanced (121–135) | 15 | 0 | 0 | 3 | 12 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **49** | **0** | **36** | **65** |
+| **TOTAL** | **150** | **50** | **0** | **38** | **62** |
 
-**Currently ready to start**: 021, 022, 023, 032, 035, 038, 039, 040, 042, 043, 045, 048, 050, 051, 066, 068, 070, 071, 072, 073, 077, 078, 080, 082, 084, 090, 097, 102, 110, 118, 120, 122, 131, 132
+**Currently ready to start**: 021, 022, 023, 032, 035, 038, 039, 040, 042, 043, 045, 048, 050, 051, 066, 068, 070, 071, 072, 073, 077, 078, 080, 082, 084, 090, 098, 099, 100, 102, 110, 118, 120, 122, 131, 132
