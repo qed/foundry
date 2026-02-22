@@ -38,6 +38,8 @@ export type Database = {
           id: string;
           name: string;
           slug: string;
+          description: string | null;
+          avatar_url: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -45,6 +47,8 @@ export type Database = {
           id?: string;
           name: string;
           slug: string;
+          description?: string | null;
+          avatar_url?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -52,6 +56,8 @@ export type Database = {
           id?: string;
           name?: string;
           slug?: string;
+          description?: string | null;
+          avatar_url?: string | null;
           created_at?: string;
           updated_at?: string;
         };
