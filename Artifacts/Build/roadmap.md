@@ -9,7 +9,7 @@
 
 **Mode**: Sequential execution directly on `main` branch. No feature branches or worktrees.
 
-**Next phase to build**: **019 — Bulk Operations** (Hall)
+**Next phase to build**: **025 — Hall -> Shop Promotion** (Hall/Shop)
 
 | # | Phase | Name | Track | Why This Order |
 |---|-------|------|-------|----------------|
@@ -26,7 +26,7 @@
 | ~~11~~ | ~~119~~ | ~~Audit Trail & Activity Log~~ | ~~Admin~~ | done |
 | ~~12~~ | ~~020~~ | ~~Hall Agent Infrastructure~~ | ~~Hall~~ | done |
 | ~~13~~ | ~~024~~ | ~~Hall Real-Time Updates~~ | ~~Hall~~ | done |
-| 14 | **019** | Bulk Operations | Hall | Completes Hall CRUD |
+| ~~14~~ | ~~019~~ | ~~Bulk Operations~~ | ~~Hall~~ | done |
 | 15 | **025** | Hall -> Shop Promotion | Hall/Shop | Cross-module bridge |
 | 16 | **029** | Feature Tree Component | Shop | Core Shop component |
 | 17 | **028** | Product Overview Document | Shop | Shop document system |
@@ -148,7 +148,7 @@ After this initial update, stay in this session. I will come back to you after e
 | 016 | Idea Detail View | `done` | — | 014 | Hall | `components/hall/`, `app/api/hall/ideas/[ideaId]/` |
 | 017 | Edit & Delete Ideas | `done` | — | 011, 016 | Hall | `components/hall/`, `app/api/hall/ideas/[ideaId]/` |
 | 018 | Tagging & Tag Management | `done` | — | 011, 013, 014 | Hall | `components/hall/`, `app/api/hall/tags/` |
-| 019 | Bulk Operations | `ready` | — | 014, 017, 018 | Hall | `components/hall/` |
+| 019 | Bulk Operations | `done` | — | 014, 017, 018 | Hall | `components/hall/` |
 | 020 | Hall Agent Infrastructure | `done` | — | 002, 011, 012 | Hall | `components/hall/`, `app/api/hall/agent/` |
 | 021 | Agent: Auto-Tag Suggestions | `ready` | — | 013, 018, 020 | Hall | `components/hall/` |
 | 022 | Agent: Duplicate Detection | `ready` | — | 011, 013, 020 | Hall | `components/hall/` |
@@ -532,7 +532,7 @@ These phases require work from **multiple module tracks** to be complete before 
 | Section | Total | Done | In Progress | Ready | Blocked |
 |---------|-------|------|-------------|-------|---------|
 | Foundation (001–010) | 10 | 10 | 0 | 0 | 0 |
-| The Hall (011–025) | 15 | 10 | 0 | 5 | 0 |
+| The Hall (011–025) | 15 | 11 | 0 | 4 | 0 |
 | Pattern Shop (026–045) | 20 | 2 | 0 | 2 | 16 |
 | Control Room (046–060) | 15 | 1 | 0 | 1 | 13 |
 | Assembly Floor (061–080) | 20 | 1 | 0 | 2 | 17 |
@@ -540,6 +540,6 @@ These phases require work from **multiple module tracks** to be complete before 
 | Cross-Cutting (096–120) | 25 | 6 | 0 | 3 | 16 |
 | Advanced (121–135) | 15 | 0 | 0 | 2 | 13 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **31** | **0** | **17** | **102** |
+| **TOTAL** | **150** | **32** | **0** | **16** | **102** |
 
-**Currently ready to start**: 019, 021, 022, 023, 025, 028, 029, 047, 062, 080, 082, 083, 097, 110, 120, 131, 132
+**Currently ready to start**: 021, 022, 023, 025, 028, 029, 047, 062, 080, 082, 083, 097, 110, 120, 131, 132
