@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import { useRef } from 'react'
 import {
   Columns3,
   List,
@@ -8,6 +9,9 @@ import {
   PanelRightClose,
   PanelRightOpen,
   UserCheck,
+  Search,
+  SlidersHorizontal,
+  X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -22,6 +26,11 @@ interface FloorHeaderProps {
   myWorkOrdersActive?: boolean
   onToggleMyWorkOrders?: () => void
   myWorkOrdersCount?: number
+  searchQuery: string
+  onSearchChange: (query: string) => void
+  activeFilterCount: number
+  filterPanelOpen: boolean
+  onToggleFilterPanel: () => void
 }
 
 export function FloorHeader({
@@ -35,7 +44,13 @@ export function FloorHeader({
   myWorkOrdersActive,
   onToggleMyWorkOrders,
   myWorkOrdersCount,
+  searchQuery,
+  onSearchChange,
+  activeFilterCount,
+  filterPanelOpen,
+  onToggleFilterPanel,
 }: FloorHeaderProps) {
+  const searchInputRef = useRef<HTMLInputElement>(null)
   const completionPercent =
     totalWorkOrders > 0
       ? Math.round((doneWorkOrders / totalWorkOrders) * 100)
@@ -92,6 +107,52 @@ export function FloorHeader({
 
       {/* Spacer */}
       <div className="flex-1" />
+
+      {/* Search input */}
+      <div className="relative hidden sm:flex items-center">
+        <Search className="absolute left-2 w-3.5 h-3.5 text-text-tertiary pointer-events-none" />
+        <input
+          ref={searchInputRef}
+          type="text"
+          value={searchQuery}
+          onChange={(e) => onSearchChange(e.target.value)}
+          placeholder="Search work orders..."
+          className="w-40 lg:w-52 bg-bg-primary border border-border-default rounded-lg pl-7 pr-7 py-1.5 text-xs text-text-primary placeholder:text-text-tertiary outline-none focus:border-accent-cyan transition-colors"
+        />
+        {searchQuery && (
+          <button
+            onClick={() => {
+              onSearchChange('')
+              searchInputRef.current?.focus()
+            }}
+            className="absolute right-2 text-text-tertiary hover:text-text-primary transition-colors"
+          >
+            <X className="w-3 h-3" />
+          </button>
+        )}
+      </div>
+
+      {/* Filter button */}
+      <div className="relative">
+        <button
+          onClick={onToggleFilterPanel}
+          className={cn(
+            'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border',
+            filterPanelOpen || activeFilterCount > 0
+              ? 'bg-accent-cyan/10 text-accent-cyan border-accent-cyan/30'
+              : 'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary border-border-default'
+          )}
+          title="Filter work orders"
+        >
+          <SlidersHorizontal className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Filter</span>
+          {activeFilterCount > 0 && (
+            <span className="text-[10px] bg-accent-cyan/20 text-accent-cyan rounded-full px-1.5 py-0.5 ml-0.5">
+              {activeFilterCount}
+            </span>
+          )}
+        </button>
+      </div>
 
       {/* My Work Orders filter */}
       {onToggleMyWorkOrders && (

@@ -7,10 +7,13 @@ import { FloorContent } from './floor-content'
 import { FloorRightPanel } from './floor-right-panel'
 import { CreateWorkOrderModal } from './create-work-order-modal'
 import { WorkOrderDetail } from './work-order-detail'
+import { FilterPanel } from './filter-panel'
+import { FilterBadges } from './filter-badges'
 import { Spinner } from '@/components/ui/spinner'
 import { useAuth } from '@/lib/auth/context'
 import type { Phase, WorkOrder, WorkOrderStatus, WorkOrderPriority, PhaseStatus } from '@/types/database'
 import type { MemberInfo, FeatureInfo } from './work-order-table'
+import type { FilterState, FilterCounts } from './filter-panel'
 
 interface FloorStats {
   totalWorkOrders: number
@@ -37,6 +40,16 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
   const [tableSelectedIds, setTableSelectedIds] = useState<Set<string>>(new Set())
   const [isLoading, setIsLoading] = useState(true)
   const [fetchKey, setFetchKey] = useState(0)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [filterPanelOpen, setFilterPanelOpen] = useState(false)
+  const [filters, setFilters] = useState<FilterState>({
+    statuses: [],
+    priorities: [],
+    assignees: [],
+    phases: [],
+    features: [],
+  })
 
   // Restore view and phase from localStorage/URL
   useEffect(() => {
@@ -62,6 +75,30 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
     if (url.searchParams.get('filter') === 'my-work-orders') {
       setMyWorkOrdersFilter(true)
     }
+
+    // Restore search from URL
+    const urlSearch = url.searchParams.get('search')
+    if (urlSearch) {
+      setSearchQuery(urlSearch)
+      setDebouncedSearch(urlSearch)
+    }
+
+    // Restore filters from URL
+    const parseCSV = (key: string) => {
+      const val = url.searchParams.get(key)
+      return val ? val.split(',').filter(Boolean) : []
+    }
+    const restoredFilters: FilterState = {
+      statuses: parseCSV('status') as WorkOrderStatus[],
+      priorities: parseCSV('priority') as WorkOrderPriority[],
+      assignees: parseCSV('assignee'),
+      phases: parseCSV('phases'),
+      features: parseCSV('feature'),
+    }
+    const hasFilters = Object.values(restoredFilters).some((arr) => arr.length > 0)
+    if (hasFilters) {
+      setFilters(restoredFilters)
+    }
   }, [])
 
   // Persist view to localStorage + URL
@@ -82,6 +119,44 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
     } else {
       url.searchParams.delete('phase')
     }
+    window.history.replaceState({}, '', url.toString())
+  }, [])
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
+
+  // Persist search to URL
+  useEffect(() => {
+    const url = new URL(window.location.href)
+    if (debouncedSearch) {
+      url.searchParams.set('search', debouncedSearch)
+    } else {
+      url.searchParams.delete('search')
+    }
+    window.history.replaceState({}, '', url.toString())
+  }, [debouncedSearch])
+
+  // Persist filters to URL
+  const handleFiltersChange = useCallback((next: FilterState) => {
+    setFilters(next)
+    const url = new URL(window.location.href)
+    const setOrDelete = (key: string, arr: string[]) => {
+      if (arr.length > 0) {
+        url.searchParams.set(key, arr.join(','))
+      } else {
+        url.searchParams.delete(key)
+      }
+    }
+    setOrDelete('status', next.statuses)
+    setOrDelete('priority', next.priorities)
+    setOrDelete('assignee', next.assignees)
+    setOrDelete('phases', next.phases)
+    setOrDelete('feature', next.features)
     window.history.replaceState({}, '', url.toString())
   }, [])
 
@@ -181,16 +256,119 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
     })
   }, [])
 
-  // Apply "My Work Orders" filter to work orders
+  // Apply all filters: "My Work Orders" + search + filter panel
   const filteredWorkOrders = useMemo(() => {
-    if (!myWorkOrdersFilter || !user) return workOrders
-    return workOrders.filter((wo) => wo.assignee_id === user.id)
-  }, [workOrders, myWorkOrdersFilter, user])
+    let result = workOrders
+
+    // My Work Orders filter
+    if (myWorkOrdersFilter && user) {
+      result = result.filter((wo) => wo.assignee_id === user.id)
+    }
+
+    // Text search (debounced)
+    if (debouncedSearch) {
+      const q = debouncedSearch.toLowerCase()
+      result = result.filter(
+        (wo) =>
+          wo.title.toLowerCase().includes(q) ||
+          (wo.description && wo.description.toLowerCase().includes(q)) ||
+          (wo.acceptance_criteria && wo.acceptance_criteria.toLowerCase().includes(q))
+      )
+    }
+
+    // Status filter
+    if (filters.statuses.length > 0) {
+      result = result.filter((wo) => filters.statuses.includes(wo.status))
+    }
+
+    // Priority filter
+    if (filters.priorities.length > 0) {
+      result = result.filter((wo) => filters.priorities.includes(wo.priority))
+    }
+
+    // Assignee filter
+    if (filters.assignees.length > 0) {
+      result = result.filter((wo) => {
+        if (!wo.assignee_id) return filters.assignees.includes('unassigned')
+        return filters.assignees.includes(wo.assignee_id)
+      })
+    }
+
+    // Phase filter
+    if (filters.phases.length > 0) {
+      result = result.filter((wo) => {
+        if (!wo.phase_id) return filters.phases.includes('unphased')
+        return filters.phases.includes(wo.phase_id)
+      })
+    }
+
+    // Feature filter
+    if (filters.features.length > 0) {
+      result = result.filter((wo) => {
+        if (!wo.feature_node_id) return filters.features.includes('unlinked')
+        return filters.features.includes(wo.feature_node_id)
+      })
+    }
+
+    return result
+  }, [workOrders, myWorkOrdersFilter, user, debouncedSearch, filters])
 
   const myWorkOrdersCount = useMemo(() => {
     if (!user) return 0
     return workOrders.filter((wo) => wo.assignee_id === user.id).length
   }, [workOrders, user])
+
+  // Filter counts — computed from all work orders so users see totals
+  const filterCounts: FilterCounts = useMemo(() => {
+    const c: FilterCounts = {
+      statuses: {},
+      priorities: {},
+      assignees: {},
+      phases: {},
+      features: {},
+    }
+    for (const wo of workOrders) {
+      c.statuses[wo.status] = (c.statuses[wo.status] || 0) + 1
+      c.priorities[wo.priority] = (c.priorities[wo.priority] || 0) + 1
+      const aKey = wo.assignee_id || 'unassigned'
+      c.assignees[aKey] = (c.assignees[aKey] || 0) + 1
+      const pKey = wo.phase_id || 'unphased'
+      c.phases[pKey] = (c.phases[pKey] || 0) + 1
+      const fKey = wo.feature_node_id || 'unlinked'
+      c.features[fKey] = (c.features[fKey] || 0) + 1
+    }
+    return c
+  }, [workOrders])
+
+  const activeFilterCount = useMemo(
+    () =>
+      filters.statuses.length +
+      filters.priorities.length +
+      filters.assignees.length +
+      filters.phases.length +
+      filters.features.length,
+    [filters]
+  )
+
+  const handleRemoveFilter = useCallback(
+    (key: keyof FilterState, value: string) => {
+      const next = { ...filters, [key]: (filters[key] as string[]).filter((v) => v !== value) }
+      handleFiltersChange(next)
+    },
+    [filters, handleFiltersChange]
+  )
+
+  const handleClearAllFilters = useCallback(() => {
+    setSearchQuery('')
+    setDebouncedSearch('')
+    handleFiltersChange({
+      statuses: [],
+      priorities: [],
+      assignees: [],
+      phases: [],
+      features: [],
+    })
+  }, [handleFiltersChange])
 
   // Feature progress rollup: done/total for each feature that has linked work orders
   const featureProgress = useMemo(() => {
@@ -354,6 +532,38 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
         myWorkOrdersActive={myWorkOrdersFilter}
         onToggleMyWorkOrders={handleToggleMyWorkOrders}
         myWorkOrdersCount={myWorkOrdersCount}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        activeFilterCount={activeFilterCount}
+        filterPanelOpen={filterPanelOpen}
+        onToggleFilterPanel={() => setFilterPanelOpen((prev) => !prev)}
+      />
+
+      {/* Filter panel popover — positioned relative to header */}
+      {filterPanelOpen && (
+        <div className="relative flex-shrink-0">
+          <FilterPanel
+            filters={filters}
+            counts={filterCounts}
+            members={members}
+            phases={phases.map((p) => ({ id: p.id, name: p.name }))}
+            features={features}
+            onFiltersChange={handleFiltersChange}
+            onClose={() => setFilterPanelOpen(false)}
+          />
+        </div>
+      )}
+
+      {/* Active filter badges */}
+      <FilterBadges
+        filters={filters}
+        search={debouncedSearch}
+        members={members}
+        phases={phases.map((p) => ({ id: p.id, name: p.name }))}
+        features={features}
+        onRemoveFilter={handleRemoveFilter}
+        onClearSearch={() => { setSearchQuery(''); setDebouncedSearch('') }}
+        onClearAll={handleClearAllFilters}
       />
 
       {/* Phase navigation */}
