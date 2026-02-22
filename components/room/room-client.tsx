@@ -6,6 +6,7 @@ import { RoomLeftPanel } from './room-left-panel'
 import type { FeatureTreeNode } from './room-left-panel'
 import { RoomCenterPanel } from './room-center-panel'
 import { RoomRightPanel } from './room-right-panel'
+import { CreateBlueprintModal } from './create-blueprint-modal'
 import { Spinner } from '@/components/ui/spinner'
 import type { Blueprint, BlueprintStatus } from '@/types/database'
 
@@ -29,6 +30,7 @@ export function RoomClient({ projectId, initialStats }: RoomClientProps) {
   const [featureNodes, setFeatureNodes] = useState<FeatureTreeNode[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [fetchKey, setFetchKey] = useState(0)
+  const [createModalOpen, setCreateModalOpen] = useState(false)
 
   // Fetch blueprints and feature tree
   useEffect(() => {
@@ -125,6 +127,12 @@ export function RoomClient({ projectId, initialStats }: RoomClientProps) {
     }
   }, [projectId])
 
+  // Handle blueprint created from modal (foundation/system_diagram)
+  const handleBlueprintCreated = useCallback((blueprint: { id: string }) => {
+    setFetchKey((k) => k + 1)
+    setSelectedBlueprintId(blueprint.id)
+  }, [])
+
   // Update blueprint status
   const handleStatusChange = useCallback(async (blueprintId: string, status: BlueprintStatus) => {
     // Optimistic update
@@ -178,6 +186,7 @@ export function RoomClient({ projectId, initialStats }: RoomClientProps) {
             selectedBlueprintId={selectedBlueprintId}
             onSelectBlueprint={setSelectedBlueprintId}
             onCreateFeatureBlueprint={handleCreateFeatureBlueprint}
+            onNewBlueprint={() => setCreateModalOpen(true)}
           />
         )}
 
@@ -191,6 +200,14 @@ export function RoomClient({ projectId, initialStats }: RoomClientProps) {
         {/* Right panel: Agent chat */}
         <RoomRightPanel open={rightPanelOpen} projectId={projectId} selectedBlueprintId={selectedBlueprintId} />
       </div>
+
+      {/* Create Blueprint Modal */}
+      <CreateBlueprintModal
+        open={createModalOpen}
+        onOpenChange={setCreateModalOpen}
+        projectId={projectId}
+        onCreated={handleBlueprintCreated}
+      />
     </div>
   )
 }
