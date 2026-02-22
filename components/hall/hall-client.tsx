@@ -628,6 +628,7 @@ export function HallClient({
           updateParams({ tags: current.join(',') })
         }}
         projectId={projectId}
+        orgSlug={orgSlug}
         onIdeaUpdated={handleIdeaUpdated}
         onIdeaArchived={handleIdeaArchived}
       />
