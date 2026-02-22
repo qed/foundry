@@ -8,6 +8,7 @@ interface FloorContentProps {
   view: 'kanban' | 'table'
   workOrders: WorkOrder[]
   selectedPhaseId: string | null
+  onWorkOrderClick?: (workOrderId: string) => void
 }
 
 const KANBAN_COLUMNS: { key: WorkOrder['status']; label: string; color: string }[] = [
@@ -20,18 +21,18 @@ const KANBAN_COLUMNS: { key: WorkOrder['status']; label: string; color: string }
 
 const TABLE_COLUMNS = ['Title', 'Status', 'Priority', 'Assignee', 'Phase', 'Feature', 'Updated']
 
-export function FloorContent({ view, workOrders, selectedPhaseId }: FloorContentProps) {
+export function FloorContent({ view, workOrders, selectedPhaseId, onWorkOrderClick }: FloorContentProps) {
   const filtered = selectedPhaseId
     ? workOrders.filter((wo) => wo.phase_id === selectedPhaseId)
     : workOrders
 
   if (view === 'kanban') {
-    return <KanbanView workOrders={filtered} />
+    return <KanbanView workOrders={filtered} onWorkOrderClick={onWorkOrderClick} />
   }
-  return <TableView workOrders={filtered} />
+  return <TableView workOrders={filtered} onWorkOrderClick={onWorkOrderClick} />
 }
 
-function KanbanView({ workOrders }: { workOrders: WorkOrder[] }) {
+function KanbanView({ workOrders, onWorkOrderClick }: { workOrders: WorkOrder[]; onWorkOrderClick?: (id: string) => void }) {
   return (
     <div className="flex-1 flex gap-4 p-4 overflow-x-auto">
       {KANBAN_COLUMNS.map((col) => {
@@ -64,6 +65,7 @@ function KanbanView({ workOrders }: { workOrders: WorkOrder[] }) {
                     .map((wo) => (
                       <div
                         key={wo.id}
+                        onClick={() => onWorkOrderClick?.(wo.id)}
                         className="glass-panel rounded-lg p-3 cursor-pointer hover:border-accent-cyan/30 transition-colors"
                       >
                         <p className="text-sm text-text-primary font-medium truncate">
@@ -87,7 +89,7 @@ function KanbanView({ workOrders }: { workOrders: WorkOrder[] }) {
   )
 }
 
-function TableView({ workOrders }: { workOrders: WorkOrder[] }) {
+function TableView({ workOrders, onWorkOrderClick }: { workOrders: WorkOrder[]; onWorkOrderClick?: (id: string) => void }) {
   if (workOrders.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -118,6 +120,7 @@ function TableView({ workOrders }: { workOrders: WorkOrder[] }) {
           {workOrders.map((wo) => (
             <tr
               key={wo.id}
+              onClick={() => onWorkOrderClick?.(wo.id)}
               className="border-b border-border-default/50 hover:bg-bg-tertiary/30 transition-colors cursor-pointer"
             >
               <td className="px-3 py-2.5 text-sm text-text-primary">{wo.title}</td>
