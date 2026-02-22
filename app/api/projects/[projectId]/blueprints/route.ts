@@ -194,6 +194,14 @@ export async function POST(
       )
     }
 
+    // Log 'created' activity (fire-and-forget)
+    supabase.from('blueprint_activities').insert({
+      blueprint_id: blueprint.id,
+      user_id: user.id,
+      action: 'created' as const,
+      action_details: { blueprint_type },
+    }).then()
+
     return Response.json({ blueprint }, { status: 201 })
   } catch (err) {
     return handleAuthError(err)

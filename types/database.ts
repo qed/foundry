@@ -1127,6 +1127,48 @@ export type Database = {
           },
         ];
       };
+      blueprint_activities: {
+        Row: {
+          id: string;
+          blueprint_id: string;
+          user_id: string;
+          action: "created" | "status_changed" | "content_updated" | "reviewed" | "commented";
+          action_details: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          blueprint_id: string;
+          user_id: string;
+          action: "created" | "status_changed" | "content_updated" | "reviewed" | "commented";
+          action_details?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          blueprint_id?: string;
+          user_id?: string;
+          action?: "created" | "status_changed" | "content_updated" | "reviewed" | "commented";
+          action_details?: Json;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "blueprint_activities_blueprint_id_fkey";
+            columns: ["blueprint_id"];
+            isOneToOne: false;
+            referencedRelation: "blueprints";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "blueprint_activities_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       feedback_submissions: {
         Row: {
           id: string;
@@ -1411,6 +1453,7 @@ export type Artifact = Database["public"]["Tables"]["artifacts"]["Row"];
 export type Blueprint = Database["public"]["Tables"]["blueprints"]["Row"];
 export type BlueprintVersion = Database["public"]["Tables"]["blueprint_versions"]["Row"];
 export type BlueprintTemplate = Database["public"]["Tables"]["blueprint_templates"]["Row"];
+export type BlueprintActivity = Database["public"]["Tables"]["blueprint_activities"]["Row"];
 
 export type AppKey = Database["public"]["Tables"]["app_keys"]["Row"];
 export type FeedbackSubmission = Database["public"]["Tables"]["feedback_submissions"]["Row"];

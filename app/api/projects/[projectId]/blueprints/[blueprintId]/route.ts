@@ -78,7 +78,7 @@ export async function PATCH(
     // Verify blueprint exists
     const { data: existing } = await supabase
       .from('blueprints')
-      .select('id, blueprint_type')
+      .select('id, blueprint_type, status')
       .eq('id', blueprintId)
       .eq('project_id', projectId)
       .single()
@@ -138,6 +138,25 @@ export async function PATCH(
         { error: 'Failed to update blueprint' },
         { status: 500 }
       )
+    }
+
+    // Log activities (fire-and-forget)
+    if (updates.status && updates.status !== existing.status) {
+      const details = { from_status: String(existing.status), to_status: String(updates.status) }
+      supabase.from('blueprint_activities').insert({
+        blueprint_id: blueprintId,
+        user_id: user.id,
+        action: 'status_changed' as const,
+        action_details: details,
+      }).then()
+    }
+    if (updates.content !== undefined) {
+      supabase.from('blueprint_activities').insert({
+        blueprint_id: blueprintId,
+        user_id: user.id,
+        action: 'content_updated' as const,
+        action_details: {},
+      }).then()
     }
 
     return Response.json(updated)
