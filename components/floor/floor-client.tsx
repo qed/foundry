@@ -5,6 +5,7 @@ import { FloorHeader } from './floor-header'
 import { PhaseNavigation } from './phase-navigation'
 import { FloorContent } from './floor-content'
 import { FloorRightPanel } from './floor-right-panel'
+import { CreateWorkOrderModal } from './create-work-order-modal'
 import { Spinner } from '@/components/ui/spinner'
 import type { Phase, WorkOrder } from '@/types/database'
 
@@ -20,11 +21,13 @@ interface FloorClientProps {
 
 export function FloorClient({ projectId, initialStats }: FloorClientProps) {
   const [rightPanelOpen, setRightPanelOpen] = useState(false)
+  const [createModalOpen, setCreateModalOpen] = useState(false)
   const [view, setView] = useState<'kanban' | 'table'>('kanban')
   const [selectedPhaseId, setSelectedPhaseId] = useState<string | null>(null)
   const [phases, setPhases] = useState<Phase[]>([])
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [fetchKey, setFetchKey] = useState(0)
 
   // Restore view from localStorage
   useEffect(() => {
@@ -82,7 +85,7 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
 
     load()
     return () => { cancelled = true }
-  }, [projectId])
+  }, [projectId, fetchKey])
 
   // Auto-collapse right panel on narrow screens
   useEffect(() => {
@@ -109,6 +112,7 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
         onViewChange={handleViewChange}
         rightPanelOpen={rightPanelOpen}
         onToggleRightPanel={() => setRightPanelOpen((prev) => !prev)}
+        onNewWorkOrder={() => setCreateModalOpen(true)}
       />
 
       {/* Phase navigation */}
@@ -136,6 +140,15 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
         {/* Right panel: Agent chat */}
         <FloorRightPanel open={rightPanelOpen} />
       </div>
+
+      {/* Create Work Order Modal */}
+      <CreateWorkOrderModal
+        open={createModalOpen}
+        onOpenChange={setCreateModalOpen}
+        projectId={projectId}
+        phases={phases}
+        onCreated={() => setFetchKey((k) => k + 1)}
+      />
     </div>
   )
 }
