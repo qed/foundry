@@ -1207,6 +1207,60 @@ export type Database = {
           },
         ];
       };
+      activity_log: {
+        Row: {
+          id: string;
+          project_id: string;
+          user_id: string;
+          entity_type: string;
+          entity_id: string;
+          action: string;
+          details: Json;
+          ip_address: string | null;
+          user_agent: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          user_id: string;
+          entity_type: string;
+          entity_id: string;
+          action: string;
+          details?: Json;
+          ip_address?: string | null;
+          user_agent?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          user_id?: string;
+          entity_type?: string;
+          entity_id?: string;
+          action?: string;
+          details?: Json;
+          ip_address?: string | null;
+          user_agent?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "activity_log_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "activity_log_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       requirement_versions: {
         Row: {
           id: string;
@@ -1374,3 +1428,5 @@ export type BlueprintStatus = Blueprint["status"];
 export type AppKeyStatus = AppKey["status"];
 export type FeedbackCategory = FeedbackSubmission["category"];
 export type FeedbackStatus = FeedbackSubmission["status"];
+
+export type ActivityLog = Database["public"]["Tables"]["activity_log"]["Row"];
