@@ -87,7 +87,7 @@ export function ShopClient({
         <ShopCenterPanel selectedNodeId={selectedNodeId} projectId={projectId} />
 
         {/* Right panel: Agent chat */}
-        <ShopRightPanel open={rightPanelOpen} />
+        <ShopRightPanel open={rightPanelOpen} projectId={projectId} selectedNodeId={selectedNodeId} />
       </div>
     </div>
   )
