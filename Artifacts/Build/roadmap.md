@@ -171,10 +171,10 @@ After this initial update, stay in this session. I will come back to you after e
 | 034 | Requirements Document Editor | `done` | — | 027, 028, 033 | Shop | `components/shop/` |
 | 035 | Feature Tree Status Tracking | `ready` | — | 026, 029, 030, 031 | Shop | `components/shop/` |
 | 036 | Feature Tree Search & Filter | `blocked` | — | 027, 029, 035 | Shop | `components/shop/` |
-| 037 | Pattern Shop Agent Infra | `ready` | — | 002, 026, 027, 029 | Shop | `components/shop/`, `app/api/shop/agent/` |
-| 038 | Agent: Feature Tree Generation | `blocked` | — | 026, 029, 030, 037 | Shop | `components/shop/` |
-| 039 | Agent: Requirements Review | `blocked` | — | 033, 034, 037 | Shop | `components/shop/` |
-| 040 | Agent: Gap Detection | `blocked` | — | 028, 029, 037 | Shop | `components/shop/` |
+| 037 | Pattern Shop Agent Infra | `done` | — | 002, 026, 027, 029 | Shop | `components/shop/`, `app/api/shop/agent/` |
+| 038 | Agent: Feature Tree Generation | `ready` | — | 026, 029, 030, 037 | Shop | `components/shop/` |
+| 039 | Agent: Requirements Review | `ready` | — | 033, 034, 037 | Shop | `components/shop/` |
+| 040 | Agent: Gap Detection | `ready` | — | 028, 029, 037 | Shop | `components/shop/` |
 | 041 | Feature Tree Statistics | `blocked` | — | 027, 029, 035 | Shop | `components/shop/` |
 | 042 | Requirements Import/Export | `ready` | — | 029, 033, 034 | Shop | `components/shop/` |
 | 043 | Document Versioning | `ready` | — | 026, 028, 033, 034 | Shop | `components/shop/` |
@@ -281,7 +281,7 @@ After this initial update, stay in this session. I will come back to you after e
 | Phase | Name | Status | Branch | Prerequisites | Track | File Areas |
 |-------|------|--------|--------|---------------|-------|------------|
 | 121 | Idea Maturity Scoring | `blocked` | — | 011, 023 | Hall ⚠️ | `components/hall/` |
-| 122 | Agent Writing Instructions | `blocked` | — | 037, 113 | Shop ⚠️ | `components/shop/`, `components/admin/` |
+| 122 | Agent Writing Instructions | `ready` | — | 037, 113 | Shop ⚠️ | `components/shop/`, `components/admin/` |
 | 123 | Aggregate Export | `blocked` | — | 037, 042 | Shop | `components/shop/` |
 | 124 | Drift Detection | `blocked` | — | 026, 037, 046 | Room ⚠️ | `components/room/` |
 | 125 | Cross-Document Suggestions | `blocked` | — | 037, 046, 057, 124 | Room ⚠️ | `components/room/` |
@@ -533,13 +533,13 @@ These phases require work from **multiple module tracks** to be complete before 
 |---------|-------|------|-------------|-------|---------|
 | Foundation (001–010) | 10 | 10 | 0 | 0 | 0 |
 | The Hall (011–025) | 15 | 12 | 0 | 3 | 0 |
-| Pattern Shop (026–045) | 20 | 8 | 0 | 6 | 6 |
+| Pattern Shop (026–045) | 20 | 9 | 0 | 8 | 3 |
 | Control Room (046–060) | 15 | 3 | 0 | 3 | 9 |
 | Assembly Floor (061–080) | 20 | 7 | 0 | 9 | 4 |
 | Insights Lab (081–095) | 15 | 2 | 0 | 3 | 10 |
 | Cross-Cutting (096–120) | 25 | 6 | 0 | 5 | 14 |
-| Advanced (121–135) | 15 | 0 | 0 | 2 | 13 |
+| Advanced (121–135) | 15 | 0 | 0 | 3 | 12 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **48** | **0** | **33** | **69** |
+| **TOTAL** | **150** | **49** | **0** | **36** | **65** |
 
-**Currently ready to start**: 021, 022, 023, 032, 035, 037, 042, 043, 045, 048, 050, 051, 066, 068, 070, 071, 072, 073, 077, 078, 080, 082, 084, 090, 097, 102, 110, 118, 120, 131, 132
+**Currently ready to start**: 021, 022, 023, 032, 035, 038, 039, 040, 042, 043, 045, 048, 050, 051, 066, 068, 070, 071, 072, 073, 077, 078, 080, 082, 084, 090, 097, 102, 110, 118, 120, 122, 131, 132
