@@ -5,38 +5,206 @@
 
 ---
 
-## ⮕ START HERE: Sequential Execution Queue
+## ⮕ START HERE: Context-Optimized Build Queue
 
 **Mode**: Sequential execution directly on `main` branch. No feature branches or worktrees.
 
-**Next phase to build**: Check ready list below for next priority.
+**Strategy**: Phases grouped into **module clusters** — consecutive phases share the same files and patterns, minimizing context re-reading. Within each cluster, dependency order is respected. Between clusters, ordering maximizes downstream unblocking.
 
-| # | Phase | Name | Track | Why This Order |
-|---|-------|------|-------|----------------|
-| ~~1~~ | ~~018~~ | ~~Tagging & Tag Management~~ | ~~Hall~~ | done |
-| ~~2~~ | ~~027~~ | ~~Pattern Shop Page Layout~~ | ~~Shop~~ | done |
-| ~~3~~ | ~~061~~ | ~~Assembly Floor DB Schema~~ | ~~Floor~~ | done |
-| ~~4~~ | ~~081~~ | ~~Insights Lab DB Schema~~ | ~~Lab~~ | done |
-| ~~5~~ | ~~046~~ | ~~Control Room DB Schema~~ | ~~Room~~ | done |
-| ~~6~~ | ~~096~~ | ~~Artifacts DB & Storage~~ | ~~Cross~~ | done |
-| ~~7~~ | ~~105~~ | ~~Comments System Foundation~~ | ~~Cross~~ | done |
-| ~~8~~ | ~~109~~ | ~~Knowledge Graph Schema~~ | ~~Cross~~ | done |
-| ~~9~~ | ~~113~~ | ~~Organization Console~~ | ~~Admin~~ | done |
-| ~~10~~ | ~~117~~ | ~~Real-Time Presence~~ | ~~Realtime~~ | done |
-| ~~11~~ | ~~119~~ | ~~Audit Trail & Activity Log~~ | ~~Admin~~ | done |
-| ~~12~~ | ~~020~~ | ~~Hall Agent Infrastructure~~ | ~~Hall~~ | done |
-| ~~13~~ | ~~024~~ | ~~Hall Real-Time Updates~~ | ~~Hall~~ | done |
-| ~~14~~ | ~~019~~ | ~~Bulk Operations~~ | ~~Hall~~ | done |
-| ~~15~~ | ~~025~~ | ~~Hall -> Shop Promotion~~ | ~~Hall/Shop~~ | done |
-| ~~16~~ | ~~029~~ | ~~Feature Tree Component~~ | ~~Shop~~ | done |
-| ~~17~~ | ~~028~~ | ~~Product Overview Document~~ | ~~Shop~~ | done |
-| ~~18~~ | ~~030~~ | ~~Add Nodes to Feature Tree~~ | ~~Shop~~ | done |
-| ~~19~~ | ~~033~~ | ~~Feature Requirements Doc~~ | ~~Shop~~ | done |
-| ~~20~~ | ~~062~~ | ~~Assembly Floor Page Layout~~ | ~~Floor~~ | done |
+**Per-phase workflow**: Read spec -> Build on main -> `npm run build && npm run lint` -> Commit -> Push -> Update roadmap + nextsteps -> Next phase.
 
-**Strategy**: Schema phases early (#3-8) to maximize future flexibility. Then alternate between completing Hall and progressing Shop/Floor/Room layouts.
+---
 
-**Per-phase workflow**: Read spec -> Build on main -> `npm run build && npm run lint` -> Commit -> Manual testing checkpoint -> Push -> Update roadmap + nextsteps -> Next phase.
+### Completed Phases (58/150)
+
+001–010 (Foundation), 011–020 (Hall core), 024–031 (Hall realtime + Shop layout/tree), 033–034 (Shop docs), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 061–065 (Floor schema/layout/WO/kanban), 067 (WO list), 069 (WO phases), 073 (Floor agent), 081 (Lab schema), 083–085 (Lab layout/inbox/detail), 096–097 (Artifacts schema/upload), 105 (Comments schema), 109 (Knowledge schema), 113 (Org console), 117 (Realtime presence), 119 (Audit trail)
+
+---
+
+### Cluster 1: Hall Agents — 3 phases
+> Context: `components/hall/`, agent patterns from Phase 020
+> Unblocks: 121 (Idea Maturity Scoring)
+
+| # | Phase | Name |
+|---|-------|------|
+| 1 | 021 | Agent: Auto-Tag Suggestions |
+| 2 | 022 | Agent: Duplicate Detection |
+| 3 | 023 | Agent: Connection Discovery |
+
+### Cluster 2: Artifacts — 4 phases
+> Context: `components/artifacts/`
+> Unblocks: 106 (@Mentions — starts Comments chain)
+
+| # | Phase | Name |
+|---|-------|------|
+| 4 | 098 | Artifact Browser & Management |
+| 5 | 099 | Artifact Linking to Entities |
+| 6 | 100 | Artifact Search & Indexing |
+| 7 | 101 | Artifact Folders & Organization |
+
+### Cluster 3: Shop Deep Work — 13 phases
+> Context: `components/shop/`, feature tree, documents, agents
+> Unblocks: 126 (Org-Level Templates), 44 phases use Shop types
+
+| # | Phase | Name | Notes |
+|---|-------|------|-------|
+| 8 | 032 | Feature Tree Drag-and-Drop | |
+| 9 | 035 | Feature Tree Status Tracking | unblocks 036, 041 |
+| 10 | 036 | Feature Tree Search & Filter | needs 035 |
+| 11 | 041 | Feature Tree Statistics | needs 035 |
+| 12 | 038 | Agent: Feature Tree Generation | |
+| 13 | 039 | Agent: Requirements Review | needed for 044 |
+| 14 | 040 | Agent: Gap Detection | |
+| 15 | 042 | Requirements Import/Export | unblocks 123 |
+| 16 | 043 | Document Versioning | needed for 044 |
+| 17 | 045 | Technical Requirements | |
+| 18 | 044 | Pattern Shop Comments | needs 039 + 043 |
+| 19 | 122 | Agent Writing Instructions | Shop + Admin |
+| 20 | 123 | Aggregate Export | needs 042 |
+
+### Cluster 4: Control Room — 10 phases
+> Context: `components/room/`, blueprints, agents
+> Unblocks: 125 (Cross-Doc Suggestions), 130 (WO Sync Alerts)
+
+| # | Phase | Name | Notes |
+|---|-------|------|-------|
+| 21 | 053 | Blueprint Templates | unblocks 126 |
+| 22 | 052 | Feature-Blueprint Linking | cross-module |
+| 23 | 055 | Blueprint Search & Filter | |
+| 24 | 057 | Agent: Blueprint Generation | needed for 125 |
+| 25 | 058 | Agent: Blueprint Review | |
+| 26 | 059 | Blueprint Version History | unblocks 060 |
+| 27 | 060 | Blueprint Comments | needs 059 |
+| 28 | 124 | Drift Detection | was mis-tracked as blocked |
+| 29 | 126 | Org-Level Blueprint Templates | needs 053 |
+| 30 | 125 | Cross-Document Suggestions | needs 057 + 124 |
+
+### Cluster 5: Knowledge Graph (Part 1) — 2 phases
+> Context: `components/knowledge/`
+> Phase 111 deferred to after Comments cluster
+
+| # | Phase | Name |
+|---|-------|------|
+| 31 | 110 | Knowledge Graph Explorer |
+| 32 | 112 | Manual Entity Linking |
+
+### Cluster 6: Versioning — 3 phases
+> Context: `components/versioning/`, `lib/`
+
+| # | Phase | Name |
+|---|-------|------|
+| 33 | 102 | Document Version History |
+| 34 | 103 | Version Diff & Comparison |
+| 35 | 104 | Version Restore |
+
+### Cluster 7: Realtime — 1 phase
+> Context: `components/editor/`, collaborative editing
+
+| # | Phase | Name |
+|---|-------|------|
+| 36 | 118 | Collaborative Editing |
+
+### Cluster 8: Assembly Floor — 16 phases
+> Context: `components/floor/`, work orders, kanban, agents
+> Largest cluster — all Floor files stay warm throughout
+
+| # | Phase | Name | Notes |
+|---|-------|------|-------|
+| 37 | 066 | Kanban Card Display | |
+| 38 | 068 | Work Order Assignment | |
+| 39 | 070 | Priority & Sequencing | |
+| 40 | 071 | Progress Tracking & Rollup | unblocks 079, 128 |
+| 41 | 072 | Work Order Search & Filter | |
+| 42 | 074 | Agent: WO Extraction | unblocks 075 |
+| 43 | 076 | Implementation Plans | |
+| 44 | 077 | Bulk Operations | |
+| 45 | 078 | Floor Comments | |
+| 46 | 080 | MCP Connection Schema | unblocks 129 |
+| 47 | 127 | Extraction Strategy Config | was mis-tracked as blocked |
+| 48 | 075 | Agent: Phase Planning | needs 074 |
+| 49 | 079 | Leader Progress Dashboard | needs 071 |
+| 50 | 128 | Sprint/Phase Burndown | needs 071 |
+| 51 | 129 | MCP Implementation | needs 080 |
+| 52 | 130 | Work Order Sync Alerts | needs 124 (Cluster 4) |
+
+### Cluster 9: Insights Lab — 14 phases
+> Context: `components/lab/`, feedback, agents, integrations
+> Second-largest cluster — all Lab files stay warm throughout
+
+| # | Phase | Name | Notes |
+|---|-------|------|-------|
+| 53 | 082 | Feedback Collection API | unblocks 094 |
+| 54 | 090 | Insights Lab Agent Infra | unblocks 091, 133 |
+| 55 | 086 | Feedback Categorization | unblocks 087, 091 |
+| 56 | 087 | Feedback Search & Filter | needs 086 |
+| 57 | 088 | Convert Feedback → Work Order | cross-module |
+| 58 | 089 | Convert Feedback → Feature | cross-module |
+| 59 | 094 | App Key Management | needs 082 |
+| 60 | 091 | Agent: Auto-Categorization | needs 086 + 090 |
+| 61 | 095 | Feedback Bulk Operations | needs 086 + 088 |
+| 62 | 092 | Agent: Feedback Enrichment | needs 090 + 091 |
+| 63 | 093 | Agent: Conversion Suggestions | needs 088–091 |
+| 64 | 133 | Priority Scoring | needs 090 |
+| 65 | 131 | Slack Integration | standalone |
+| 66 | 132 | Feedback Analytics | standalone |
+
+### Cluster 10: Comments & Notifications — 3 phases
+> Context: `components/comments/`, `components/notifications/`
+> Needs 099 from Cluster 2 (Artifacts). Unblocks: 111, 114, 115, 116
+
+| # | Phase | Name |
+|---|-------|------|
+| 67 | 106 | @Mentions System |
+| 68 | 107 | Notification System |
+| 69 | 108 | Email Notifications |
+
+### Cluster 11: Knowledge Graph (Part 2) — 1 phase
+> Needs 106 from Cluster 10
+
+| # | Phase | Name |
+|---|-------|------|
+| 70 | 111 | Auto-Connection Detection |
+
+### Cluster 12: Admin — 4 phases
+> Context: `components/admin/`, `components/settings/`
+> Needs 107 + 108 from Cluster 10
+
+| # | Phase | Name | Notes |
+|---|-------|------|-------|
+| 71 | 120 | Project Archive & Cleanup | ready now |
+| 72 | 114 | Team Invitation System | needs 108 |
+| 73 | 116 | User Profile & Settings | needs 107 |
+| 74 | 115 | Seat Management & Billing | needs 114 |
+
+### Cluster 13: Advanced Remainders — 3 phases
+> Cross-module phases, context varies
+
+| # | Phase | Name | Notes |
+|---|-------|------|-------|
+| 75 | 121 | Idea Maturity Scoring | needs 023 (Cluster 1) |
+| 76 | 135 | Dark/Light Theme Toggle | needs 116 (Cluster 12) |
+| 77 | 134 | Global Search | needs all 001–133 |
+
+### Cluster 14: Polish & Deployment — 15 phases
+> Sequential, each needs all prior work complete
+
+| # | Phase | Name |
+|---|-------|------|
+| 78 | 136 | Error Boundaries & Fallback UI |
+| 79 | 137 | Loading States & Skeletons |
+| 80 | 138 | Form Validation (Zod) |
+| 81 | 139 | Responsive Design Audit |
+| 82 | 140 | Accessibility Audit |
+| 83 | 141 | Performance Optimization |
+| 84 | 142 | Database Indexing & Tuning |
+| 85 | 143 | Unit Tests: Foundation & Auth |
+| 86 | 144 | Unit Tests: All Modules |
+| 87 | 145 | E2E Tests: Critical Workflows |
+| 88 | 146 | API Documentation |
+| 89 | 147 | User Guide & Onboarding |
+| 90 | 148 | CI/CD Pipeline |
+| 91 | 149 | Security Audit & Hardening |
+| 92 | 150 | Production Launch Checklist |
 
 ---
 
@@ -283,10 +451,10 @@ After this initial update, stay in this session. I will come back to you after e
 | 121 | Idea Maturity Scoring | `blocked` | — | 011, 023 | Hall ⚠️ | `components/hall/` |
 | 122 | Agent Writing Instructions | `ready` | — | 037, 113 | Shop ⚠️ | `components/shop/`, `components/admin/` |
 | 123 | Aggregate Export | `blocked` | — | 037, 042 | Shop | `components/shop/` |
-| 124 | Drift Detection | `blocked` | — | 026, 037, 046 | Room ⚠️ | `components/room/` |
+| 124 | Drift Detection | `ready` | — | 026, 037, 046 | Room ⚠️ | `components/room/` |
 | 125 | Cross-Document Suggestions | `blocked` | — | 037, 046, 057, 124 | Room ⚠️ | `components/room/` |
 | 126 | Org-Level Blueprint Templates | `blocked` | — | 053, 113 | Room ⚠️ | `components/room/`, `components/admin/` |
-| 127 | Extraction Strategy Config | `blocked` | — | 073, 113 | Floor ⚠️ | `components/floor/`, `components/admin/` |
+| 127 | Extraction Strategy Config | `ready` | — | 073, 113 | Floor ⚠️ | `components/floor/`, `components/admin/` |
 | 128 | Sprint/Phase Burndown | `blocked` | — | 061, 071 | Floor | `components/floor/` |
 | 129 | MCP Implementation | `blocked` | — | 080 | Floor | `lib/mcp/`, `app/api/floor/mcp/` |
 | 130 | Work Order Sync Alerts | `blocked` | — | 046, 061, 124 | Floor ⚠️ | `components/floor/` |
@@ -538,8 +706,8 @@ These phases require work from **multiple module tracks** to be complete before 
 | Assembly Floor (061–080) | 20 | 8 | 0 | 10 | 2 |
 | Insights Lab (081–095) | 15 | 4 | 0 | 5 | 6 |
 | Cross-Cutting (096–120) | 25 | 7 | 0 | 7 | 11 |
-| Advanced (121–135) | 15 | 0 | 0 | 3 | 12 |
+| Advanced (121–135) | 15 | 0 | 0 | 5 | 10 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **58** | **0** | **44** | **48** |
+| **TOTAL** | **150** | **58** | **0** | **46** | **46** |
 
-**Currently ready to start**: 021, 022, 023, 032, 035, 038, 039, 040, 042, 043, 045, 052, 053, 055, 057, 058, 059, 066, 068, 070, 071, 072, 074, 076, 077, 078, 080, 082, 086, 088, 089, 090, 098, 099, 100, 102, 110, 118, 120, 122, 131, 132
+**Currently ready to start**: 021, 022, 023, 032, 035, 038, 039, 040, 042, 043, 045, 052, 053, 055, 057, 058, 059, 066, 068, 070, 071, 072, 074, 076, 077, 078, 080, 082, 086, 088, 089, 090, 098, 099, 100, 102, 110, 118, 120, 122, 124, 127, 131, 132
