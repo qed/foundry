@@ -8,6 +8,7 @@ import { IdeaDetailHeader } from './idea-detail-header'
 import { IdeaDetailBody } from './idea-detail-body'
 import { IdeaDetailTags } from './idea-detail-tags'
 import { RelatedIdeasSection } from './related-ideas-section'
+import { ConnectionSuggestions } from './connection-suggestions'
 import { IdeaInfoPanel } from './idea-info-panel'
 import { IdeaActionButtons } from './idea-action-buttons'
 import { IdeaEditForm } from './idea-edit-form'
@@ -41,6 +42,7 @@ export function IdeaDetailSlideOver({
   const [isAnimating, setIsAnimating] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [showPromotionWizard, setShowPromotionWizard] = useState(false)
+  const [connectionsKey, setConnectionsKey] = useState(0)
 
   // Fetch idea detail
   const fetchIdea = useCallback(async (id: string) => {
@@ -233,8 +235,15 @@ export function IdeaDetailSlideOver({
                     {idea.body && <IdeaDetailBody body={idea.body} />}
                     <IdeaDetailTags tags={idea.tags} onTagClick={handleTagClick} />
                     <RelatedIdeasSection
+                      key={connectionsKey}
                       ideaId={idea.id}
                       onIdeaClick={handleConnectedIdeaClick}
+                    />
+                    <ConnectionSuggestions
+                      ideaId={idea.id}
+                      projectId={projectId}
+                      onIdeaClick={handleConnectedIdeaClick}
+                      onConnectionCreated={() => setConnectionsKey((k) => k + 1)}
                     />
                     <IdeaInfoPanel idea={idea} />
                   </div>
