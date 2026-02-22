@@ -13,7 +13,8 @@ import { cn } from '@/lib/utils'
 import { timeAgo } from '@/lib/utils'
 import { Avatar } from '@/components/ui/avatar'
 import { AssigneeSelector } from './assignee-selector'
-import type { WorkOrder, Phase } from '@/types/database'
+import { PrioritySelector } from './priority-selector'
+import type { WorkOrder, WorkOrderPriority, Phase } from '@/types/database'
 
 export interface MemberInfo {
   user_id: string
@@ -39,6 +40,7 @@ interface WorkOrderTableProps {
   onSelectionChange: (ids: Set<string>) => void
   onWorkOrderClick?: (workOrderId: string) => void
   onAssignmentChange?: (workOrderId: string, assigneeId: string | null) => void
+  onPriorityChange?: (workOrderId: string, priority: WorkOrderPriority) => void
 }
 
 const STATUS_ORDER = ['backlog', 'ready', 'in_progress', 'in_review', 'done']
@@ -88,12 +90,14 @@ export function WorkOrderTable({
   onSelectionChange,
   onWorkOrderClick,
   onAssignmentChange,
+  onPriorityChange,
 }: WorkOrderTableProps) {
   const [sortField, setSortField] = useState<SortField | null>(null)
   const [sortDir, setSortDir] = useState<SortDir>(null)
   const [groupBy, setGroupBy] = useState<GroupBy>('none')
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
   const [assigneeOpenFor, setAssigneeOpenFor] = useState<string | null>(null)
+  const [priorityOpenFor, setPriorityOpenFor] = useState<string | null>(null)
 
   // Lookup maps
   const phaseMap = useMemo(() => {
@@ -310,6 +314,9 @@ export function WorkOrderTable({
                   assigneeOpenFor={assigneeOpenFor}
                   onAssigneeOpen={setAssigneeOpenFor}
                   onAssignmentChange={onAssignmentChange}
+                  priorityOpenFor={priorityOpenFor}
+                  onPriorityOpen={setPriorityOpenFor}
+                  onPriorityChange={onPriorityChange}
                 />
               )
             })}
@@ -371,6 +378,9 @@ function GroupRows({
   assigneeOpenFor,
   onAssigneeOpen,
   onAssignmentChange,
+  priorityOpenFor,
+  onPriorityOpen,
+  onPriorityChange,
 }: {
   groupKey: string
   label: string
@@ -388,6 +398,9 @@ function GroupRows({
   assigneeOpenFor: string | null
   onAssigneeOpen: (id: string | null) => void
   onAssignmentChange?: (workOrderId: string, assigneeId: string | null) => void
+  priorityOpenFor: string | null
+  onPriorityOpen: (id: string | null) => void
+  onPriorityChange?: (workOrderId: string, priority: WorkOrderPriority) => void
 }) {
   return (
     <>
@@ -442,11 +455,21 @@ function GroupRows({
                   {STATUS_LABELS[wo.status] || wo.status}
                 </span>
               </td>
-              <td className="px-3 py-2.5">
-                <span className="inline-flex items-center gap-1.5">
+              <td className="px-3 py-2.5 relative" onClick={(e) => e.stopPropagation()}>
+                <button
+                  onClick={() => onPriorityOpen(priorityOpenFor === wo.id ? null : wo.id)}
+                  className="inline-flex items-center gap-1.5 rounded-md px-1 -mx-1 py-0.5 hover:bg-bg-tertiary transition-colors"
+                >
                   <span className={cn('w-2 h-2 rounded-full flex-shrink-0', PRIORITY_COLORS[wo.priority] || 'bg-text-tertiary')} />
                   <span className="text-xs text-text-secondary capitalize">{wo.priority}</span>
-                </span>
+                </button>
+                {priorityOpenFor === wo.id && onPriorityChange && (
+                  <PrioritySelector
+                    currentPriority={wo.priority as WorkOrderPriority}
+                    onSelect={(p) => onPriorityChange(wo.id, p)}
+                    onClose={() => onPriorityOpen(null)}
+                  />
+                )}
               </td>
               <td className="px-3 py-2.5 relative" onClick={(e) => e.stopPropagation()}>
                 <button

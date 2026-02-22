@@ -9,7 +9,7 @@ import { CreateWorkOrderModal } from './create-work-order-modal'
 import { WorkOrderDetail } from './work-order-detail'
 import { Spinner } from '@/components/ui/spinner'
 import { useAuth } from '@/lib/auth/context'
-import type { Phase, WorkOrder, WorkOrderStatus, PhaseStatus } from '@/types/database'
+import type { Phase, WorkOrder, WorkOrderStatus, WorkOrderPriority, PhaseStatus } from '@/types/database'
 import type { MemberInfo, FeatureInfo } from './work-order-table'
 
 interface FloorStats {
@@ -214,6 +214,54 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
     }
   }, [projectId])
 
+  // Handle priority change from inline selectors
+  const handlePriorityChange = useCallback(async (workOrderId: string, priority: WorkOrderPriority) => {
+    // Optimistic update
+    setWorkOrders((prev) =>
+      prev.map((wo) => (wo.id === workOrderId ? { ...wo, priority } : wo))
+    )
+
+    try {
+      const res = await fetch(`/api/projects/${projectId}/work-orders/${workOrderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priority }),
+      })
+
+      if (!res.ok) {
+        setFetchKey((k) => k + 1)
+      }
+    } catch {
+      setFetchKey((k) => k + 1)
+    }
+  }, [projectId])
+
+  // Handle reorder from kanban drag-and-drop
+  const handleReorder = useCallback(async (items: { id: string; position: number }[]) => {
+    // Optimistic update
+    const posMap = new Map(items.map((i) => [i.id, i.position]))
+    setWorkOrders((prev) =>
+      prev.map((wo) => {
+        const newPos = posMap.get(wo.id)
+        return newPos !== undefined ? { ...wo, position: newPos } : wo
+      })
+    )
+
+    try {
+      const res = await fetch(`/api/projects/${projectId}/work-orders/reorder-batch`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items }),
+      })
+
+      if (!res.ok) {
+        setFetchKey((k) => k + 1)
+      }
+    } catch {
+      setFetchKey((k) => k + 1)
+    }
+  }, [projectId])
+
   // Phase CRUD operations
   const handleCreatePhase = useCallback(async (name: string, description: string | null) => {
     const res = await fetch(`/api/projects/${projectId}/phases`, {
@@ -326,6 +374,8 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
             onWorkOrderClick={(id) => setSelectedWorkOrderId(id)}
             onStatusChange={handleStatusChange}
             onAssignmentChange={handleAssignmentChange}
+            onPriorityChange={handlePriorityChange}
+            onReorder={handleReorder}
           />
         )}
 

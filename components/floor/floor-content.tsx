@@ -2,7 +2,7 @@
 
 import { KanbanBoard } from './kanban-board'
 import { WorkOrderTable } from './work-order-table'
-import type { WorkOrder, WorkOrderStatus, Phase } from '@/types/database'
+import type { WorkOrder, WorkOrderStatus, WorkOrderPriority, Phase } from '@/types/database'
 import type { MemberInfo, FeatureInfo } from './work-order-table'
 
 interface FloorContentProps {
@@ -17,6 +17,8 @@ interface FloorContentProps {
   onWorkOrderClick?: (workOrderId: string) => void
   onStatusChange?: (workOrderId: string, newStatus: WorkOrderStatus) => void
   onAssignmentChange?: (workOrderId: string, assigneeId: string | null) => void
+  onPriorityChange?: (workOrderId: string, priority: WorkOrderPriority) => void
+  onReorder?: (items: { id: string; position: number }[]) => void
 }
 
 export function FloorContent({
@@ -31,6 +33,8 @@ export function FloorContent({
   onWorkOrderClick,
   onStatusChange,
   onAssignmentChange,
+  onPriorityChange,
+  onReorder,
 }: FloorContentProps) {
   const filtered = selectedPhaseId
     ? workOrders.filter((wo) => wo.phase_id === selectedPhaseId)
@@ -45,6 +49,8 @@ export function FloorContent({
         onWorkOrderClick={onWorkOrderClick}
         onStatusChange={onStatusChange}
         onAssignmentChange={onAssignmentChange}
+        onPriorityChange={onPriorityChange}
+        onReorder={onReorder}
       />
     )
   }
@@ -59,6 +65,7 @@ export function FloorContent({
       onSelectionChange={onSelectionChange}
       onWorkOrderClick={onWorkOrderClick}
       onAssignmentChange={onAssignmentChange}
+      onPriorityChange={onPriorityChange}
     />
   )
 }
