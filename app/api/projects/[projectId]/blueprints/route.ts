@@ -4,7 +4,11 @@ import { createServiceClient } from '@/lib/supabase/server'
 import { handleAuthError } from '@/lib/auth/errors'
 import { buildFeatureBlueprintTemplate } from '@/lib/blueprints/feature-template'
 import { buildFoundationBlueprintTemplate } from '@/lib/blueprints/foundation-template'
+import { buildSystemDiagramContent } from '@/lib/blueprints/system-diagram-template'
+import type { DiagramType } from '@/lib/blueprints/system-diagram-template'
 import type { BlueprintType } from '@/types/database'
+
+const VALID_DIAGRAM_TYPES: DiagramType[] = ['flowchart', 'sequence', 'er', 'class']
 
 const VALID_TYPES: BlueprintType[] = ['foundation', 'system_diagram', 'feature']
 
@@ -76,7 +80,7 @@ export async function POST(
     const user = await requireAuth()
     const { projectId } = await params
     const body = await request.json()
-    const { blueprint_type, feature_node_id, title } = body
+    const { blueprint_type, feature_node_id, title, diagram_type } = body
 
     if (!blueprint_type || !VALID_TYPES.includes(blueprint_type)) {
       return Response.json(
@@ -111,6 +115,13 @@ export async function POST(
       }
       blueprintTitle = title.trim()
       content = buildFoundationBlueprintTemplate()
+    } else if (blueprint_type === 'system_diagram') {
+      if (!title?.trim()) {
+        return Response.json({ error: 'Title is required for system diagram blueprints' }, { status: 400 })
+      }
+      blueprintTitle = title.trim()
+      const dType: DiagramType = VALID_DIAGRAM_TYPES.includes(diagram_type) ? diagram_type : 'flowchart'
+      content = buildSystemDiagramContent(dType)
     } else if (blueprint_type === 'feature') {
       if (!feature_node_id) {
         return Response.json(

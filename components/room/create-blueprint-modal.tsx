@@ -5,6 +5,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { BlueprintType } from '@/types/database'
+import type { DiagramType } from '@/lib/blueprints/system-diagram-template'
+import { DIAGRAM_TYPE_OPTIONS } from '@/lib/blueprints/system-diagram-template'
 
 interface CreateBlueprintModalProps {
   open: boolean
@@ -34,12 +36,14 @@ export function CreateBlueprintModal({
 }: CreateBlueprintModalProps) {
   const [title, setTitle] = useState('')
   const [type, setType] = useState<BlueprintType>('foundation')
+  const [diagramType, setDiagramType] = useState<DiagramType>('flowchart')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const handleClose = useCallback(() => {
     setTitle('')
     setType('foundation')
+    setDiagramType('flowchart')
     setError(null)
     onOpenChange(false)
   }, [onOpenChange])
@@ -65,6 +69,7 @@ export function CreateBlueprintModal({
         body: JSON.stringify({
           blueprint_type: type,
           title: trimmedTitle,
+          ...(type === 'system_diagram' && { diagram_type: diagramType }),
         }),
       })
 
@@ -81,7 +86,7 @@ export function CreateBlueprintModal({
     } finally {
       setIsSubmitting(false)
     }
-  }, [title, type, projectId, onCreated, handleClose])
+  }, [title, type, diagramType, projectId, onCreated, handleClose])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -117,6 +122,35 @@ export function CreateBlueprintModal({
               ))}
             </div>
           </div>
+
+          {/* Diagram type selector (only for system diagrams) */}
+          {type === 'system_diagram' && (
+            <div>
+              <label className="text-xs font-medium text-text-secondary mb-2 block">Diagram Type</label>
+              <div className="grid grid-cols-2 gap-2">
+                {DIAGRAM_TYPE_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setDiagramType(opt.value)}
+                    className={cn(
+                      'p-2.5 rounded-lg border text-left transition-colors',
+                      diagramType === opt.value
+                        ? 'border-accent-purple bg-accent-purple/5'
+                        : 'border-border-default hover:border-border-default/80 hover:bg-bg-tertiary'
+                    )}
+                  >
+                    <p className={cn(
+                      'text-xs font-medium',
+                      diagramType === opt.value ? 'text-accent-purple' : 'text-text-primary'
+                    )}>
+                      {opt.label}
+                    </p>
+                    <p className="text-[10px] text-text-tertiary mt-0.5">{opt.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Title input */}
           <div>
