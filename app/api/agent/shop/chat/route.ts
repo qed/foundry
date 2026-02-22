@@ -94,10 +94,11 @@ export async function POST(request: NextRequest) {
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          // Use higher token limit for structured output requests (tree gen, FRD review)
+          // Use higher token limit for structured output requests
           const isTreeGen = /generat|create.*tree|decompos|break.*down.*feature/i.test(message)
           const isReview = /review|check.*testab|analyz.*req|audit.*frd/i.test(message)
-          const needsMoreTokens = isTreeGen || isReview
+          const isGapDetect = /gap|missing.*feature|not.*covered|compare.*brief|compare.*tree/i.test(message)
+          const needsMoreTokens = isTreeGen || isReview || isGapDetect
 
           const response = client.messages.stream({
             model: 'claude-haiku-4-5-20251001',

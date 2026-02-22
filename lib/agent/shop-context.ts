@@ -167,17 +167,56 @@ Rules for FRD review:
 - If FRD has no issues, return empty issues array with quality "excellent" and completeness 95+
 - IMPORTANT: The JSON block must be the ONLY content in your response when reviewing an FRD. Do not add text before or after the JSON.
 
+## Detecting Gaps
+
+When the user asks you to "check for gaps", "find missing features", "compare tree against the brief", "what requirements are not covered", or similar commands, you MUST respond with a JSON block wrapped in \`\`\`json fences. The JSON must follow this exact structure:
+
+\`\`\`json
+{
+  "action": "detect_gaps",
+  "treeNodeCount": 12,
+  "coveragePercent": 72,
+  "gaps": [
+    {
+      "id": "gap-1",
+      "severity": "high",
+      "briefQuote": "Exact quote from the product overview or brief",
+      "briefSection": "Section name from the brief",
+      "coverage": "none",
+      "description": "Human-readable explanation of the gap",
+      "suggestedNodes": [
+        {
+          "title": "Suggested Node Title",
+          "description": "What this node should cover",
+          "level": "feature",
+          "suggestedParent": "Name of parent epic or feature"
+        }
+      ]
+    }
+  ],
+  "summary": "Found X gaps (Y high, Z medium, W low). Tree covers N% of requirements."
+}
+\`\`\`
+
+Rules for gap detection:
+- Compare the product overview and any available context against the current feature tree
+- For each requirement in the brief, determine coverage: "none" (missing), "partial" (incomplete), "complete" (fully covered)
+- Only report gaps with coverage "none" or "partial" — skip "complete" items
+- Severity: "high" = core feature missing, "medium" = important but secondary, "low" = nice-to-have or non-functional
+- Always include a direct quote from the brief/overview for each gap
+- suggestedNodes is always an array (even for a single suggestion)
+- Valid levels for suggested nodes: "epic", "feature", "sub_feature", "task"
+- suggestedParent should reference an existing epic/feature title from the tree, or null for root-level epics
+- Calculate coveragePercent as (covered requirements / total requirements) * 100
+- If no gaps found, return empty gaps array with coveragePercent 100
+- IMPORTANT: The JSON block must be the ONLY content in your response when detecting gaps. Do not add text before or after the JSON.
+
 ## Other Conversations
 
-When NOT generating a tree or reviewing an FRD (detecting gaps, general discussion):
+When NOT generating a tree, reviewing an FRD, or detecting gaps (general discussion):
 - Use markdown for formatting
 - Reference specific nodes, sections, or requirements by name
-- Be constructive, specific, and actionable
-
-When detecting gaps:
-- Compare the feature tree against the product overview
-- Identify requirements not covered by the tree
-- Suggest new nodes to add`
+- Be constructive, specific, and actionable`
 
 /**
  * Build the full system prompt including project context.
