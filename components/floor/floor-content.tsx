@@ -2,91 +2,40 @@
 
 import { List } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { WorkOrder } from '@/types/database'
+import { KanbanBoard } from './kanban-board'
+import type { WorkOrder, WorkOrderStatus } from '@/types/database'
 
 interface FloorContentProps {
   view: 'kanban' | 'table'
   workOrders: WorkOrder[]
   selectedPhaseId: string | null
   onWorkOrderClick?: (workOrderId: string) => void
+  onStatusChange?: (workOrderId: string, newStatus: WorkOrderStatus) => void
 }
-
-const KANBAN_COLUMNS: { key: WorkOrder['status']; label: string; color: string }[] = [
-  { key: 'backlog', label: 'Backlog', color: 'text-text-tertiary' },
-  { key: 'ready', label: 'Ready', color: 'text-text-secondary' },
-  { key: 'in_progress', label: 'In Progress', color: 'text-accent-cyan' },
-  { key: 'in_review', label: 'In Review', color: 'text-accent-purple' },
-  { key: 'done', label: 'Done', color: 'text-accent-success' },
-]
 
 const TABLE_COLUMNS = ['Title', 'Status', 'Priority', 'Assignee', 'Phase', 'Feature', 'Updated']
 
-export function FloorContent({ view, workOrders, selectedPhaseId, onWorkOrderClick }: FloorContentProps) {
+export function FloorContent({
+  view,
+  workOrders,
+  selectedPhaseId,
+  onWorkOrderClick,
+  onStatusChange,
+}: FloorContentProps) {
   const filtered = selectedPhaseId
     ? workOrders.filter((wo) => wo.phase_id === selectedPhaseId)
     : workOrders
 
   if (view === 'kanban') {
-    return <KanbanView workOrders={filtered} onWorkOrderClick={onWorkOrderClick} />
+    return (
+      <KanbanBoard
+        workOrders={filtered}
+        onWorkOrderClick={onWorkOrderClick}
+        onStatusChange={onStatusChange}
+      />
+    )
   }
   return <TableView workOrders={filtered} onWorkOrderClick={onWorkOrderClick} />
-}
-
-function KanbanView({ workOrders, onWorkOrderClick }: { workOrders: WorkOrder[]; onWorkOrderClick?: (id: string) => void }) {
-  return (
-    <div className="flex-1 flex gap-4 p-4 overflow-x-auto">
-      {KANBAN_COLUMNS.map((col) => {
-        const count = workOrders.filter((wo) => wo.status === col.key).length
-        return (
-          <div
-            key={col.key}
-            className="flex-shrink-0 w-[260px] flex flex-col"
-          >
-            {/* Column header */}
-            <div className="flex items-center justify-between mb-3 px-1">
-              <span className={cn('text-xs font-semibold uppercase tracking-wide', col.color)}>
-                {col.label}
-              </span>
-              <span className="text-[10px] text-text-tertiary bg-bg-tertiary rounded-full px-1.5 py-0.5">
-                {count}
-              </span>
-            </div>
-
-            {/* Column body */}
-            <div className="flex-1 rounded-lg bg-bg-primary/50 border border-border-default/50 p-2 min-h-[200px]">
-              {count === 0 ? (
-                <div className="flex items-center justify-center h-full">
-                  <p className="text-xs text-text-tertiary">No work orders</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {workOrders
-                    .filter((wo) => wo.status === col.key)
-                    .map((wo) => (
-                      <div
-                        key={wo.id}
-                        onClick={() => onWorkOrderClick?.(wo.id)}
-                        className="glass-panel rounded-lg p-3 cursor-pointer hover:border-accent-cyan/30 transition-colors"
-                      >
-                        <p className="text-sm text-text-primary font-medium truncate">
-                          {wo.title}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1.5">
-                          <PriorityDot priority={wo.priority} />
-                          <span className="text-[10px] text-text-tertiary capitalize">
-                            {wo.priority}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )
-      })}
-    </div>
-  )
 }
 
 function TableView({ workOrders, onWorkOrderClick }: { workOrders: WorkOrder[]; onWorkOrderClick?: (id: string) => void }) {
@@ -178,4 +127,3 @@ function StatusBadge({ status }: { status: string }) {
     </span>
   )
 }
-

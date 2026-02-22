@@ -8,7 +8,7 @@ import { FloorRightPanel } from './floor-right-panel'
 import { CreateWorkOrderModal } from './create-work-order-modal'
 import { WorkOrderDetail } from './work-order-detail'
 import { Spinner } from '@/components/ui/spinner'
-import type { Phase, WorkOrder } from '@/types/database'
+import type { Phase, WorkOrder, WorkOrderStatus } from '@/types/database'
 
 interface FloorStats {
   totalWorkOrders: number
@@ -104,6 +104,30 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
 
   const doneCount = workOrders.filter((wo) => wo.status === 'done').length
 
+  // Handle drag-and-drop status change from kanban
+  const handleStatusChange = useCallback(async (workOrderId: string, newStatus: WorkOrderStatus) => {
+    // Optimistic update in local state
+    setWorkOrders((prev) =>
+      prev.map((wo) => (wo.id === workOrderId ? { ...wo, status: newStatus } : wo))
+    )
+
+    try {
+      const res = await fetch(`/api/projects/${projectId}/work-orders/${workOrderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      })
+
+      if (!res.ok) {
+        // Revert on failure — refetch
+        setFetchKey((k) => k + 1)
+      }
+    } catch {
+      // Revert on error — refetch
+      setFetchKey((k) => k + 1)
+    }
+  }, [projectId])
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -137,6 +161,7 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
             workOrders={workOrders}
             selectedPhaseId={selectedPhaseId}
             onWorkOrderClick={(id) => setSelectedWorkOrderId(id)}
+            onStatusChange={handleStatusChange}
           />
         )}
 
