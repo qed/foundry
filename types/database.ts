@@ -859,6 +859,48 @@ export type Database = {
           },
         ];
       };
+      artifact_entity_links: {
+        Row: {
+          id: string;
+          artifact_id: string;
+          entity_type: "idea" | "feature" | "blueprint" | "work_order" | "feedback";
+          entity_id: string;
+          created_by: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          artifact_id: string;
+          entity_type: "idea" | "feature" | "blueprint" | "work_order" | "feedback";
+          entity_id: string;
+          created_by: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          artifact_id?: string;
+          entity_type?: "idea" | "feature" | "blueprint" | "work_order" | "feedback";
+          entity_id?: string;
+          created_by?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "artifact_entity_links_artifact_id_fkey";
+            columns: ["artifact_id"];
+            isOneToOne: false;
+            referencedRelation: "artifacts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "artifact_entity_links_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       entity_connections: {
         Row: {
           id: string;
@@ -1449,6 +1491,8 @@ export type Comment = Database["public"]["Tables"]["comments"]["Row"];
 
 export type ArtifactFolder = Database["public"]["Tables"]["artifact_folders"]["Row"];
 export type Artifact = Database["public"]["Tables"]["artifacts"]["Row"];
+export type ArtifactEntityLink = Database["public"]["Tables"]["artifact_entity_links"]["Row"];
+export type ArtifactEntityType = ArtifactEntityLink["entity_type"];
 
 export type Blueprint = Database["public"]["Tables"]["blueprints"]["Row"];
 export type BlueprintVersion = Database["public"]["Tables"]["blueprint_versions"]["Row"];
