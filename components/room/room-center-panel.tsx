@@ -6,6 +6,9 @@ import { cn } from '@/lib/utils'
 import { EmptyState } from '@/components/ui/empty-state'
 import { BlueprintEditor } from './blueprint-editor'
 import { SystemDiagramEditor } from './system-diagram-editor'
+import { BlueprintActivityTimeline } from './blueprint-activity-timeline'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 import type { Blueprint, BlueprintStatus } from '@/types/database'
 import type { JSONContent } from '@tiptap/react'
 import type { MermaidContent } from '@/lib/blueprints/system-diagram-template'
@@ -16,11 +19,11 @@ interface RoomCenterPanelProps {
   onStatusChange?: (blueprintId: string, status: BlueprintStatus) => void
 }
 
-const STATUS_OPTIONS: { value: BlueprintStatus; label: string }[] = [
-  { value: 'draft', label: 'Draft' },
-  { value: 'in_review', label: 'In Review' },
-  { value: 'approved', label: 'Approved' },
-  { value: 'implemented', label: 'Implemented' },
+const STATUS_OPTIONS: { value: BlueprintStatus; label: string; description: string }[] = [
+  { value: 'draft', label: 'Draft', description: 'Blueprint is being written, not ready for review' },
+  { value: 'in_review', label: 'In Review', description: 'Ready for team review and feedback' },
+  { value: 'approved', label: 'Approved', description: 'Reviewed and approved, ready for implementation' },
+  { value: 'implemented', label: 'Implemented', description: 'Has been implemented in production' },
 ]
 
 const STATUS_STYLES: Record<string, string> = {
@@ -30,14 +33,25 @@ const STATUS_STYLES: Record<string, string> = {
   implemented: 'bg-accent-cyan/10 text-accent-cyan border-accent-cyan/20',
 }
 
+const STATUS_DOT_COLORS: Record<string, string> = {
+  draft: 'bg-text-tertiary',
+  in_review: 'bg-accent-warning',
+  approved: 'bg-accent-success',
+  implemented: 'bg-accent-cyan',
+}
+
 const TYPE_LABELS: Record<string, string> = {
   foundation: 'Foundation',
   system_diagram: 'System Diagram',
   feature: 'Feature',
 }
 
+// Confirmation is required for approved/implemented (final states)
+const CONFIRM_STATUSES: BlueprintStatus[] = ['approved', 'implemented']
+
 export function RoomCenterPanel({ projectId, blueprint, onStatusChange }: RoomCenterPanelProps) {
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false)
+  const [confirmDialog, setConfirmDialog] = useState<{ status: BlueprintStatus } | null>(null)
 
   const handleSave = useCallback(async (content: JSONContent) => {
     if (!blueprint) return
@@ -59,6 +73,23 @@ export function RoomCenterPanel({ projectId, blueprint, onStatusChange }: RoomCe
     if (!res.ok) throw new Error('Save failed')
   }, [projectId, blueprint])
 
+  const handleStatusSelect = useCallback((newStatus: BlueprintStatus) => {
+    if (!blueprint || newStatus === blueprint.status || !onStatusChange) return
+    setStatusDropdownOpen(false)
+
+    if (CONFIRM_STATUSES.includes(newStatus)) {
+      setConfirmDialog({ status: newStatus })
+    } else {
+      onStatusChange(blueprint.id, newStatus)
+    }
+  }, [blueprint, onStatusChange])
+
+  const handleConfirmStatus = useCallback(() => {
+    if (!blueprint || !confirmDialog || !onStatusChange) return
+    onStatusChange(blueprint.id, confirmDialog.status)
+    setConfirmDialog(null)
+  }, [blueprint, confirmDialog, onStatusChange])
+
   if (!blueprint) {
     return (
       <div className="flex-1 flex items-center justify-center min-w-0">
@@ -70,6 +101,10 @@ export function RoomCenterPanel({ projectId, blueprint, onStatusChange }: RoomCe
       </div>
     )
   }
+
+  const confirmOpt = confirmDialog
+    ? STATUS_OPTIONS.find((o) => o.value === confirmDialog.status)
+    : null
 
   return (
     <div className="flex-1 flex flex-col min-w-0">
@@ -115,24 +150,20 @@ export function RoomCenterPanel({ projectId, blueprint, onStatusChange }: RoomCe
                 className="fixed inset-0 z-10"
                 onClick={() => setStatusDropdownOpen(false)}
               />
-              <div className="absolute right-0 top-full mt-1 z-20 bg-bg-secondary border border-border-default rounded-lg shadow-lg py-1 min-w-[120px]">
+              <div className="absolute right-0 top-full mt-1 z-20 bg-bg-secondary border border-border-default rounded-lg shadow-lg py-1 min-w-[160px]">
                 {STATUS_OPTIONS.map((opt) => (
                   <button
                     key={opt.value}
-                    onClick={() => {
-                      setStatusDropdownOpen(false)
-                      if (opt.value !== blueprint.status && onStatusChange) {
-                        onStatusChange(blueprint.id, opt.value)
-                      }
-                    }}
+                    onClick={() => handleStatusSelect(opt.value)}
                     className={cn(
-                      'w-full text-left px-3 py-1.5 text-xs transition-colors',
+                      'w-full flex items-center gap-2 px-3 py-1.5 text-left transition-colors',
                       opt.value === blueprint.status
                         ? 'text-accent-cyan bg-accent-cyan/5'
                         : 'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary'
                     )}
                   >
-                    {opt.label}
+                    <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', STATUS_DOT_COLORS[opt.value])} />
+                    <span className="text-xs">{opt.label}</span>
                   </button>
                 ))}
               </div>
@@ -155,6 +186,38 @@ export function RoomCenterPanel({ projectId, blueprint, onStatusChange }: RoomCe
           onSave={handleSave}
         />
       )}
+
+      {/* Activity timeline */}
+      <BlueprintActivityTimeline
+        key={`activity-${blueprint.id}`}
+        projectId={projectId}
+        blueprintId={blueprint.id}
+      />
+
+      {/* Status change confirmation dialog */}
+      <Dialog open={!!confirmDialog} onOpenChange={(open) => { if (!open) setConfirmDialog(null) }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change Blueprint Status</DialogTitle>
+          </DialogHeader>
+          {confirmOpt && (
+            <div className="py-2">
+              <p className="text-sm text-text-secondary">
+                Change status to <span className="font-medium text-text-primary">{confirmOpt.label}</span>?
+              </p>
+              <p className="text-xs text-text-tertiary mt-2">{confirmOpt.description}</p>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="secondary" size="sm" onClick={() => setConfirmDialog(null)}>
+              Cancel
+            </Button>
+            <Button variant="primary" size="sm" onClick={handleConfirmStatus}>
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
