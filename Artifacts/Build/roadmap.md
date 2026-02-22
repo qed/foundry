@@ -234,11 +234,11 @@ After this initial update, stay in this session. I will come back to you after e
 | 082 | Feedback Collection API | `ready` | — | 001, 081 | Lab | `app/api/lab/` |
 | 083 | Insights Lab Page Layout | `done` | — | 006, 010, 081 | Lab | `components/lab/`, `app/.../lab/` |
 | 084 | Feedback Inbox Display | `done` | — | 081, 083 | Lab | `components/lab/` |
-| 085 | Feedback Detail View | `ready` | — | 081, 083, 084 | Lab | `components/lab/` |
-| 086 | Feedback Categorization | `blocked` | — | 081, 084, 085 | Lab | `components/lab/` |
+| 085 | Feedback Detail View | `done` | — | 081, 083, 084 | Lab | `components/lab/` |
+| 086 | Feedback Categorization | `ready` | — | 081, 084, 085 | Lab | `components/lab/` |
 | 087 | Feedback Search & Filter | `blocked` | — | 083, 084, 086 | Lab | `components/lab/` |
-| 088 | Convert Feedback → Work Order | `blocked` | — | 061, 081, 085 | Lab ⚠️ | `components/lab/`, `app/api/lab/` |
-| 089 | Convert Feedback → Feature | `blocked` | — | 026, 081, 085 | Lab ⚠️ | `components/lab/`, `app/api/lab/` |
+| 088 | Convert Feedback → Work Order | `ready` | — | 061, 081, 085 | Lab ⚠️ | `components/lab/`, `app/api/lab/` |
+| 089 | Convert Feedback → Feature | `ready` | — | 026, 081, 085 | Lab ⚠️ | `components/lab/`, `app/api/lab/` |
 | 090 | Insights Lab Agent Infra | `ready` | — | 081, 083 | Lab | `components/lab/`, `app/api/lab/agent/` |
 | 091 | Agent: Auto-Categorization | `blocked` | — | 081, 086, 090 | Lab | `components/lab/` |
 | 092 | Agent: Feedback Enrichment | `blocked` | — | 026, 085, 090, 091 | Lab ⚠️ | `components/lab/` |
@@ -536,10 +536,10 @@ These phases require work from **multiple module tracks** to be complete before 
 | Pattern Shop (026–045) | 20 | 9 | 0 | 8 | 3 |
 | Control Room (046–060) | 15 | 5 | 0 | 6 | 4 |
 | Assembly Floor (061–080) | 20 | 8 | 0 | 10 | 2 |
-| Insights Lab (081–095) | 15 | 3 | 0 | 3 | 9 |
+| Insights Lab (081–095) | 15 | 4 | 0 | 5 | 6 |
 | Cross-Cutting (096–120) | 25 | 7 | 0 | 7 | 11 |
 | Advanced (121–135) | 15 | 0 | 0 | 3 | 12 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **57** | **0** | **42** | **51** |
+| **TOTAL** | **150** | **58** | **0** | **44** | **48** |
 
-**Currently ready to start**: 021, 022, 023, 032, 035, 038, 039, 040, 042, 043, 045, 052, 053, 055, 057, 058, 059, 066, 068, 070, 071, 072, 074, 076, 077, 078, 080, 082, 085, 090, 098, 099, 100, 102, 110, 118, 120, 122, 131, 132
+**Currently ready to start**: 021, 022, 023, 032, 035, 038, 039, 040, 042, 043, 045, 052, 053, 055, 057, 058, 059, 066, 068, 070, 071, 072, 074, 076, 077, 078, 080, 082, 086, 088, 089, 090, 098, 099, 100, 102, 110, 118, 120, 122, 131, 132
