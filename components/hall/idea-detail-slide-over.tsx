@@ -11,6 +11,7 @@ import { RelatedIdeasSection } from './related-ideas-section'
 import { IdeaInfoPanel } from './idea-info-panel'
 import { IdeaActionButtons } from './idea-action-buttons'
 import { IdeaEditForm } from './idea-edit-form'
+import { PromotionWizard } from './promotion-wizard'
 import type { IdeaWithDetails } from './types'
 
 interface IdeaDetailSlideOverProps {
@@ -19,6 +20,7 @@ interface IdeaDetailSlideOverProps {
   onClose: () => void
   onTagClick?: (tagId: string) => void
   projectId: string
+  orgSlug: string
   onIdeaUpdated?: (updatedIdea: IdeaWithDetails) => void
   onIdeaArchived?: (ideaId: string) => Promise<void>
 }
@@ -29,6 +31,7 @@ export function IdeaDetailSlideOver({
   onClose,
   onTagClick,
   projectId,
+  orgSlug,
   onIdeaUpdated,
   onIdeaArchived,
 }: IdeaDetailSlideOverProps) {
@@ -37,6 +40,7 @@ export function IdeaDetailSlideOver({
   const [error, setError] = useState<string | null>(null)
   const [isAnimating, setIsAnimating] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
+  const [showPromotionWizard, setShowPromotionWizard] = useState(false)
 
   // Fetch idea detail
   const fetchIdea = useCallback(async (id: string) => {
@@ -136,6 +140,14 @@ export function IdeaDetailSlideOver({
     onClose()
   }, [idea, onIdeaArchived, onClose])
 
+  // Handle promotion success — refetch to get updated status
+  const handlePromoted = useCallback(
+    (_seedId: string) => {
+      if (ideaId) fetchIdea(ideaId)
+    },
+    [ideaId, fetchIdea]
+  )
+
   if (!isOpen) return null
 
   return (
@@ -234,12 +246,27 @@ export function IdeaDetailSlideOver({
                   isEditing={isEditing}
                   onEdit={() => setIsEditing(true)}
                   onArchive={handleArchive}
+                  onPromote={() => setShowPromotionWizard(true)}
+                  orgSlug={orgSlug}
+                  projectId={projectId}
                 />
               </>
             )}
           </>
         )}
       </div>
+
+      {/* Promotion Wizard */}
+      {idea && (
+        <PromotionWizard
+          idea={idea}
+          isOpen={showPromotionWizard}
+          onClose={() => setShowPromotionWizard(false)}
+          onPromoted={handlePromoted}
+          orgSlug={orgSlug}
+          projectId={projectId}
+        />
+      )}
     </>
   )
 }
