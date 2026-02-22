@@ -270,7 +270,7 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
         )}
 
         {/* Right panel: Agent chat */}
-        <FloorRightPanel open={rightPanelOpen} />
+        <FloorRightPanel open={rightPanelOpen} projectId={projectId} />
       </div>
 
       {/* Create Work Order Modal */}
