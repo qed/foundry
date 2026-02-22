@@ -386,6 +386,41 @@ export function FeatureTree({
     }
   }, [changeLevelDialog, projectId, fetchTree, addToast])
 
+  // ── Status Change ───────────────────────────────────────
+
+  const handleStatusChange = useCallback(async (nodeId: string, newStatus: TreeNode['status']) => {
+    // Optimistic: update status in local tree
+    const updateStatus = (nodes: TreeNode[]): TreeNode[] =>
+      nodes.map((n) => {
+        if (n.id === nodeId) return { ...n, status: newStatus }
+        return { ...n, children: updateStatus(n.children) }
+      })
+
+    const prevTree = [...tree]
+    setTree(updateStatus(tree))
+
+    try {
+      const res = await fetch(`/api/projects/${projectId}/feature-nodes/${nodeId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        addToast(data.error || 'Failed to update status', 'error')
+        setTree(prevTree)
+        return
+      }
+
+      // Refetch to pick up cascaded parent status changes
+      await fetchTree()
+    } catch {
+      setTree(prevTree)
+      addToast('Failed to update status', 'error')
+    }
+  }, [tree, projectId, fetchTree, addToast])
+
   // ── Drag-and-Drop ────────────────────────────────────────
 
   // Flatten tree into a lookup map for validation
@@ -707,6 +742,7 @@ export function FeatureTree({
             onTitleSave={handleTitleSave}
             onTitleCancel={handleTitleCancel}
             onDoubleClick={handleStartEdit}
+            onStatusChange={handleStatusChange}
           />
         ))}
 
