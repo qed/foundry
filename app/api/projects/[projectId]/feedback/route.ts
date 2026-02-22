@@ -6,7 +6,6 @@ import type { FeedbackStatus, FeedbackCategory } from '@/types/database'
 
 const VALID_STATUSES: FeedbackStatus[] = ['new', 'triaged', 'converted', 'archived']
 const VALID_CATEGORIES: FeedbackCategory[] = ['bug', 'feature_request', 'ux_issue', 'performance', 'other', 'uncategorized']
-
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ projectId: string }> }
@@ -18,6 +17,9 @@ export async function GET(
     const status = searchParams.get('status')
     const category = searchParams.get('category')
     const search = searchParams.get('search')
+    const sort = searchParams.get('sort') || 'newest'
+    const limit = Math.min(parseInt(searchParams.get('limit') || '20', 10), 100)
+    const offset = parseInt(searchParams.get('offset') || '0', 10)
     const supabase = createServiceClient()
 
     // Verify project membership
@@ -37,7 +39,7 @@ export async function GET(
 
     let query = supabase
       .from('feedback_submissions')
-      .select('*')
+      .select('*', { count: 'exact' })
       .eq('project_id', projectId)
 
     if (status && VALID_STATUSES.includes(status as FeedbackStatus)) {
@@ -50,7 +52,20 @@ export async function GET(
       query = query.ilike('content', `%${search}%`)
     }
 
-    const { data: feedback, error } = await query.order('created_at', { ascending: false })
+    // Apply sort
+    if (sort === 'oldest') {
+      query = query.order('created_at', { ascending: true })
+    } else if (sort === 'highest_score') {
+      query = query.order('score', { ascending: false, nullsFirst: false })
+        .order('created_at', { ascending: false })
+    } else {
+      query = query.order('created_at', { ascending: false })
+    }
+
+    // Apply pagination
+    query = query.range(offset, offset + limit - 1)
+
+    const { data: feedback, error, count } = await query
 
     if (error) {
       console.error('Error fetching feedback:', error)
@@ -60,7 +75,11 @@ export async function GET(
       )
     }
 
-    return Response.json({ feedback: feedback || [] })
+    return Response.json({
+      feedback: feedback || [],
+      total: count || 0,
+      hasMore: (count || 0) > offset + limit,
+    })
   } catch (err) {
     return handleAuthError(err)
   }
