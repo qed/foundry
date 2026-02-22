@@ -15,7 +15,7 @@
 
 ---
 
-### Completed Phases (58/150)
+### Completed Phases (61/150)
 
 001–010 (Foundation), 011–020 (Hall core), 024–031 (Hall realtime + Shop layout/tree), 033–034 (Shop docs), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 061–065 (Floor schema/layout/WO/kanban), 067 (WO list), 069 (WO phases), 073 (Floor agent), 081 (Lab schema), 083–085 (Lab layout/inbox/detail), 096–097 (Artifacts schema/upload), 105 (Comments schema), 109 (Knowledge schema), 113 (Org console), 117 (Realtime presence), 119 (Audit trail)
 
@@ -320,7 +320,7 @@ After this initial update, stay in this session. I will come back to you after e
 | 020 | Hall Agent Infrastructure | `done` | — | 002, 011, 012 | Hall | `components/hall/`, `app/api/hall/agent/` |
 | 021 | Agent: Auto-Tag Suggestions | `done` | — | 013, 018, 020 | Hall | `components/hall/` |
 | 022 | Agent: Duplicate Detection | `done` | — | 011, 013, 020 | Hall | `components/hall/` |
-| 023 | Agent: Connection Discovery | `ready` | — | 011, 016, 020 | Hall | `components/hall/` |
+| 023 | Agent: Connection Discovery | `done` | — | 011, 016, 020 | Hall | `components/hall/` |
 | 024 | Hall Real-Time Updates | `done` | — | 002, 011, 012, 014 | Hall | `components/hall/`, `lib/realtime/` |
 | 025 | Hall → Shop Promotion | `done` | — | 011, 016, 026 | Hall ⚠️ | `components/hall/`, `app/api/hall/` |
 
@@ -448,7 +448,7 @@ After this initial update, stay in this session. I will come back to you after e
 
 | Phase | Name | Status | Branch | Prerequisites | Track | File Areas |
 |-------|------|--------|--------|---------------|-------|------------|
-| 121 | Idea Maturity Scoring | `blocked` | — | 011, 023 | Hall ⚠️ | `components/hall/` |
+| 121 | Idea Maturity Scoring | `ready` | — | 011, 023 | Hall ⚠️ | `components/hall/` |
 | 122 | Agent Writing Instructions | `ready` | — | 037, 113 | Shop ⚠️ | `components/shop/`, `components/admin/` |
 | 123 | Aggregate Export | `blocked` | — | 037, 042 | Shop | `components/shop/` |
 | 124 | Drift Detection | `ready` | — | 026, 037, 046 | Room ⚠️ | `components/room/` |
@@ -700,14 +700,14 @@ These phases require work from **multiple module tracks** to be complete before 
 | Section | Total | Done | In Progress | Ready | Blocked |
 |---------|-------|------|-------------|-------|---------|
 | Foundation (001–010) | 10 | 10 | 0 | 0 | 0 |
-| The Hall (011–025) | 15 | 14 | 0 | 1 | 0 |
+| The Hall (011–025) | 15 | 15 | 0 | 0 | 0 |
 | Pattern Shop (026–045) | 20 | 9 | 0 | 8 | 3 |
 | Control Room (046–060) | 15 | 5 | 0 | 6 | 4 |
 | Assembly Floor (061–080) | 20 | 8 | 0 | 10 | 2 |
 | Insights Lab (081–095) | 15 | 4 | 0 | 5 | 6 |
 | Cross-Cutting (096–120) | 25 | 7 | 0 | 7 | 11 |
-| Advanced (121–135) | 15 | 0 | 0 | 5 | 10 |
+| Advanced (121–135) | 15 | 0 | 0 | 6 | 9 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **60** | **0** | **44** | **46** |
+| **TOTAL** | **150** | **61** | **0** | **44** | **45** |
 
-**Currently ready to start**: 023, 032, 035, 038, 039, 040, 042, 043, 045, 052, 053, 055, 057, 058, 059, 066, 068, 070, 071, 072, 074, 076, 077, 078, 080, 082, 086, 088, 089, 090, 098, 099, 100, 102, 110, 118, 120, 122, 124, 127, 131, 132
+**Currently ready to start**: 032, 035, 038, 039, 040, 042, 043, 045, 052, 053, 055, 057, 058, 059, 066, 068, 070, 071, 072, 074, 076, 077, 078, 080, 082, 086, 088, 089, 090, 098, 099, 100, 102, 110, 118, 120, 121, 122, 124, 127, 131, 132
