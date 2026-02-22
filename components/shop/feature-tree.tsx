@@ -46,6 +46,7 @@ interface FeatureTreeProps {
   selectedStatuses?: FeatureStatus[]
   selectedLevels?: FeatureLevel[]
   onFilterInfo?: (info: FilterInfo) => void
+  onTreeChange?: () => void
 }
 
 interface ContextMenuState {
@@ -120,6 +121,7 @@ export function FeatureTree({
   selectedStatuses = ALL_STATUSES,
   selectedLevels = ALL_LEVELS,
   onFilterInfo,
+  onTreeChange,
 }: FeatureTreeProps) {
   const [tree, setTree] = useState<TreeNode[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -238,6 +240,11 @@ export function FeatureTree({
     })
   }, [displayNodeIds, matchingNodeIds, isFiltering])
 
+  const onTreeChangeRef = useRef(onTreeChange)
+  useEffect(() => {
+    onTreeChangeRef.current = onTreeChange
+  }, [onTreeChange])
+
   const fetchTree = useCallback(async () => {
     try {
       setIsLoading(true)
@@ -246,6 +253,7 @@ export function FeatureTree({
       if (!res.ok) throw new Error('Failed to fetch feature tree')
       const data = await res.json()
       setTree(data.nodes)
+      onTreeChangeRef.current?.()
     } catch (err) {
       console.error('Error fetching feature tree:', err)
       setError('Failed to load feature tree')

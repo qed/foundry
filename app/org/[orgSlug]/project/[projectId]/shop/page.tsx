@@ -20,19 +20,24 @@ export default async function ShopPage({ params }: ShopPageProps) {
 
   const nodeList = nodes || []
 
+  const statusBreakdown = {
+    not_started: nodeList.filter((n) => n.status === 'not_started').length,
+    in_progress: nodeList.filter((n) => n.status === 'in_progress').length,
+    complete: nodeList.filter((n) => n.status === 'complete').length,
+    blocked: nodeList.filter((n) => n.status === 'blocked').length,
+  }
+
+  const total = nodeList.length
+
   const stats = {
     epics: nodeList.filter((n) => n.level === 'epic').length,
     features: nodeList.filter((n) => n.level === 'feature').length,
     subFeatures: nodeList.filter((n) => n.level === 'sub_feature').length,
     tasks: nodeList.filter((n) => n.level === 'task').length,
-    completionPercent:
-      nodeList.length > 0
-        ? Math.round(
-            (nodeList.filter((n) => n.status === 'complete').length /
-              nodeList.length) *
-              100
-          )
-        : 0,
+    completionPercent: total > 0 ? Math.round((statusBreakdown.complete / total) * 100) : 0,
+    inProgressPercent: total > 0 ? Math.round((statusBreakdown.in_progress / total) * 100) : 0,
+    blockedNodeCount: statusBreakdown.blocked,
+    statusBreakdown,
   }
 
   return (

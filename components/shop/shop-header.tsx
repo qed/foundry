@@ -9,12 +9,20 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-interface ShopStats {
+export interface ShopStats {
   epics: number
   features: number
   subFeatures: number
   tasks: number
   completionPercent: number
+  inProgressPercent: number
+  blockedNodeCount: number
+  statusBreakdown: {
+    not_started: number
+    in_progress: number
+    complete: number
+    blocked: number
+  }
 }
 
 interface ShopHeaderProps {
@@ -90,19 +98,38 @@ export function ShopHeader({
             <span className="font-medium text-text-primary">{stats.tasks}</span>{' '}
             {stats.tasks === 1 ? 'Task' : 'Tasks'}
           </span>
+
+          {/* Progress indicator */}
           <span className="text-border-default">|</span>
-          <span
-            className={cn(
-              'font-medium',
-              stats.completionPercent >= 100
-                ? 'text-accent-success'
-                : stats.completionPercent > 0
-                  ? 'text-accent-cyan'
-                  : 'text-text-tertiary'
+          <div className="flex items-center gap-2">
+            <DonutChart
+              completionPercent={stats.completionPercent}
+              inProgressPercent={stats.inProgressPercent}
+              hasBlocked={stats.blockedNodeCount > 0}
+            />
+            <div className="flex flex-col">
+              <span
+                className={cn(
+                  'font-medium leading-tight',
+                  stats.completionPercent >= 100
+                    ? 'text-accent-success'
+                    : stats.completionPercent > 0
+                      ? 'text-accent-cyan'
+                      : 'text-text-tertiary'
+                )}
+              >
+                {stats.completionPercent}% complete
+              </span>
+              <span className="text-[10px] text-text-tertiary leading-tight">
+                {stats.statusBreakdown.complete} of {totalNodes} nodes
+              </span>
+            </div>
+            {stats.blockedNodeCount > 0 && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-accent-error/15 text-accent-error text-[10px] font-medium">
+                {stats.blockedNodeCount} blocked
+              </span>
             )}
-          >
-            {stats.completionPercent}% complete
-          </span>
+          </div>
         </div>
       )}
 
@@ -121,6 +148,73 @@ export function ShopHeader({
           <PanelRightOpen className="w-4 h-4" />
         )}
       </button>
+    </div>
+  )
+}
+
+function DonutChart({
+  completionPercent,
+  inProgressPercent,
+  hasBlocked,
+}: {
+  completionPercent: number
+  inProgressPercent: number
+  hasBlocked: boolean
+}) {
+  const r = 12
+  const circumference = 2 * Math.PI * r
+  const completeOffset = circumference - (completionPercent / 100) * circumference
+  const inProgressArc = (inProgressPercent / 100) * circumference
+  const completeArc = (completionPercent / 100) * circumference
+
+  return (
+    <div className="relative w-8 h-8 flex-shrink-0">
+      <svg width="32" height="32" viewBox="0 0 32 32">
+        {/* Background ring */}
+        <circle
+          cx="16"
+          cy="16"
+          r={r}
+          fill="none"
+          stroke="var(--color-bg-primary)"
+          strokeWidth="3"
+        />
+        {/* In-progress arc (drawn first, behind complete) */}
+        {inProgressPercent > 0 && (
+          <circle
+            cx="16"
+            cy="16"
+            r={r}
+            fill="none"
+            stroke="var(--color-accent-cyan)"
+            strokeWidth="3"
+            strokeDasharray={circumference}
+            strokeDashoffset={circumference - completeArc - inProgressArc}
+            strokeLinecap="round"
+            transform="rotate(-90 16 16)"
+            opacity={0.4}
+            style={{ transition: 'stroke-dashoffset 0.3s ease' }}
+          />
+        )}
+        {/* Complete arc */}
+        <circle
+          cx="16"
+          cy="16"
+          r={r}
+          fill="none"
+          stroke={hasBlocked ? 'var(--color-accent-error)' : 'var(--color-accent-success)'}
+          strokeWidth="3"
+          strokeDasharray={circumference}
+          strokeDashoffset={completeOffset}
+          strokeLinecap="round"
+          transform="rotate(-90 16 16)"
+          style={{ transition: 'stroke-dashoffset 0.3s ease' }}
+        />
+      </svg>
+      {/* Center text */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-[8px] font-bold text-text-primary">{completionPercent}%</span>
+      </div>
     </div>
   )
 }
