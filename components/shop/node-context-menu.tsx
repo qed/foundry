@@ -14,6 +14,9 @@ interface NodeContextMenuProps {
   canAddChild: boolean
   onAddChild: () => void
   onAddSibling: () => void
+  onEdit: () => void
+  onDelete: () => void
+  onChangeLevel: () => void
   onClose: () => void
 }
 
@@ -22,6 +25,9 @@ export function NodeContextMenu({
   canAddChild,
   onAddChild,
   onAddSibling,
+  onEdit,
+  onDelete,
+  onChangeLevel,
   onClose,
 }: NodeContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null)
@@ -82,17 +88,16 @@ export function NodeContextMenu({
 
       <div className="border-t border-border-default my-1" />
 
-      {/* Phase 031 placeholders */}
       <button
-        disabled
-        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-text-tertiary cursor-not-allowed text-left"
+        onClick={() => { onEdit(); onClose() }}
+        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-text-secondary hover:bg-bg-tertiary hover:text-text-primary text-left transition-colors"
       >
         <Pencil className="w-3.5 h-3.5" />
         Edit
       </button>
       <button
-        disabled
-        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-text-tertiary cursor-not-allowed text-left"
+        onClick={() => { onChangeLevel(); onClose() }}
+        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-text-secondary hover:bg-bg-tertiary hover:text-text-primary text-left transition-colors"
       >
         <ArrowUpDown className="w-3.5 h-3.5" />
         Change Level
@@ -101,8 +106,8 @@ export function NodeContextMenu({
       <div className="border-t border-border-default my-1" />
 
       <button
-        disabled
-        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-text-tertiary cursor-not-allowed text-left"
+        onClick={() => { onDelete(); onClose() }}
+        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-accent-error hover:bg-accent-error/10 text-left transition-colors"
       >
         <Trash2 className="w-3.5 h-3.5" />
         Delete
