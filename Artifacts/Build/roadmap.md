@@ -378,7 +378,7 @@ After this initial update, stay in this session. I will come back to you after e
 | 063 | Create Work Order (Manual) | `done` | — | 010, 061, 062 | Floor | `components/floor/`, `app/api/floor/` |
 | 064 | Work Order Detail View | `done` | — | 061, 062, 063 | Floor | `components/floor/` |
 | 065 | Kanban Board View | `done` | — | 061, 062, 063, 064 | Floor | `components/floor/` |
-| 066 | Kanban Card Display | `ready` | — | 062, 065 | Floor | `components/floor/` |
+| 066 | Kanban Card Display | `done` | — | 062, 065 | Floor | `components/floor/` |
 | 067 | Work Order List/Table View | `done` | — | 061, 062, 064 | Floor | `components/floor/` |
 | 068 | Work Order Assignment | `ready` | — | 010, 061, 064, 065, 067 | Floor | `components/floor/` |
 | 069 | Work Order Phases | `done` | — | 061, 062, 065 | Floor | `components/floor/` |
@@ -708,6 +708,6 @@ These phases require work from **multiple module tracks** to be complete before 
 | Cross-Cutting (096–120) | 25 | 10 | 0 | 6 | 9 |
 | Advanced (121–135) | 15 | 0 | 0 | 6 | 9 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **83** | **0** | **32** | **35** |
+| **TOTAL** | **150** | **84** | **0** | **31** | **35** |
 
-**Currently ready to start**: 060, 066, 068, 070, 071, 072, 074, 076, 077, 078, 080, 082, 086, 088, 089, 090, 102, 106, 110, 118, 120, 121, 122, 123, 124, 127, 131, 132
+**Currently ready to start**: 060, 068, 070, 071, 072, 074, 076, 077, 078, 080, 082, 086, 088, 089, 090, 102, 106, 110, 118, 120, 121, 122, 123, 124, 127, 131, 132
