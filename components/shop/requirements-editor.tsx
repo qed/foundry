@@ -23,6 +23,7 @@ import {
   CheckCircle2,
   AlertCircle,
   ListTree,
+  MessageSquare,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -40,6 +41,7 @@ interface RequirementsEditorProps {
   toolbarExtra?: React.ReactNode
   versionPanel?: React.ReactNode
   onContentSaved?: (html: string, previousHtml: string) => void
+  commentsPanel?: (props: { selectedText?: string; onClearSelection: () => void }) => React.ReactNode
 }
 
 export function RequirementsEditor({
@@ -49,11 +51,14 @@ export function RequirementsEditor({
   toolbarExtra,
   versionPanel,
   onContentSaved,
+  commentsPanel,
 }: RequirementsEditorProps) {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [wordCount, setWordCount] = useState(0)
   const [headings, setHeadings] = useState<Heading[]>([])
   const [showOutline, setShowOutline] = useState(false)
+  const [showComments, setShowComments] = useState(false)
+  const [commentSelectedText, setCommentSelectedText] = useState<string | undefined>(undefined)
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastSavedContentRef = useRef<string>(content)
 
@@ -187,6 +192,23 @@ export function RequirementsEditor({
     }
   }, [editor])
 
+  const handleToggleComments = useCallback(() => {
+    if (!showComments && editor) {
+      // Capture selected text when opening comments
+      const { from, to } = editor.state.selection
+      if (from !== to) {
+        setCommentSelectedText(editor.state.doc.textBetween(from, to, ' '))
+      } else {
+        setCommentSelectedText(undefined)
+      }
+    }
+    setShowComments((prev) => !prev)
+  }, [showComments, editor])
+
+  const handleClearSelection = useCallback(() => {
+    setCommentSelectedText(undefined)
+  }, [])
+
   if (!editor) return null
 
   return (
@@ -296,6 +318,16 @@ export function RequirementsEditor({
         {/* Extra toolbar buttons (import/export) */}
         {toolbarExtra}
 
+        {/* Comments toggle */}
+        {commentsPanel && (
+          <ToolbarButton
+            icon={<MessageSquare className="w-4 h-4" />}
+            onClick={handleToggleComments}
+            isActive={showComments}
+            tooltip="Comments"
+          />
+        )}
+
         {/* Outline toggle */}
         {headings.length > 0 && (
           <ToolbarButton
@@ -357,6 +389,13 @@ export function RequirementsEditor({
                 </button>
               ))}
             </nav>
+          </div>
+        )}
+
+        {/* Comments panel */}
+        {showComments && commentsPanel && (
+          <div className="w-80 border-l border-border-default bg-bg-primary flex-shrink-0 overflow-hidden">
+            {commentsPanel({ selectedText: commentSelectedText, onClearSelection: handleClearSelection })}
           </div>
         )}
       </div>
