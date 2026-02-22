@@ -1,52 +1,57 @@
-# Helix Foundry — Parallel Build Roadmap
+# Helix Foundry — Sequential Build Roadmap
 
-> **Single source of truth** for multi-session parallel builds.
+> **Single source of truth** for sequential phase execution on main.
 > Last updated: 2026-02-21
 
 ---
 
-## ⮕ START HERE: Recommended Next Actions
+## ⮕ START HERE: Sequential Execution Queue
 
-**Wave 1 — 4 parallel sessions (conflict-free file areas):**
+**Mode**: Sequential execution directly on `main` branch. No feature branches or worktrees.
 
-| Priority | Phase | Name | Track | File Areas |
-|----------|-------|------|-------|------------|
-| 1 | **017** | Edit & Delete Ideas | Hall | `components/hall/`, `app/api/hall/ideas/[ideaId]/` |
-| 2 | **026** | Pattern Shop Database Schema | Shop | `supabase/migrations/`, `types/database.ts` |
-| 3 | **113** | Organization Console | Admin | `components/admin/`, `app/.../admin/` |
-| 4 | **117** | Real-Time Presence | Realtime | `lib/realtime/`, `components/layout/` |
+**Next phase to build**: **018 — Tagging & Tag Management** (Hall)
 
-**Setup**: Each session runs in its own **git worktree** (isolated directory + branch). Prompts are in `Input Artifacts/Build/Wave-1-Phase-XXX-Prompt.md`.
+| # | Phase | Name | Track | Why This Order |
+|---|-------|------|-------|----------------|
+| 1 | **018** | Tagging & Tag Management | Hall | Unblocks 019, 021. Completes Hall core |
+| 2 | **027** | Pattern Shop Page Layout | Shop | Unblocks entire Shop UI chain |
+| 3 | **061** | Assembly Floor DB Schema | Floor | Schema -- unblocks 20 Floor phases |
+| 4 | **081** | Insights Lab DB Schema | Lab | Schema -- unblocks 15 Lab phases |
+| 5 | **046** | Control Room DB Schema | Room | Schema -- unblocks 15 Room phases |
+| 6 | **096** | Artifacts DB & Storage | Cross | Schema -- unblocks Artifacts track |
+| 7 | **105** | Comments System Foundation | Cross | Schema -- unblocks Comments chain |
+| 8 | **109** | Knowledge Graph Schema | Cross | Schema -- unblocks Knowledge track |
+| 9 | **113** | Organization Console | Admin | Key admin feature |
+| 10 | **117** | Real-Time Presence | Realtime | Standalone feature |
+| 11 | **119** | Audit Trail & Activity Log | Admin | Standalone cross-cutting |
+| 12 | **020** | Hall Agent Infrastructure | Hall | Unblocks AI features (021-023) |
+| 13 | **024** | Hall Real-Time Updates | Hall | Adds real-time to Hall |
+| 14 | **019** | Bulk Operations | Hall | Completes Hall CRUD |
+| 15 | **025** | Hall -> Shop Promotion | Hall/Shop | Cross-module bridge |
+| 16 | **029** | Feature Tree Component | Shop | Core Shop component |
+| 17 | **028** | Product Overview Document | Shop | Shop document system |
+| 18 | **030** | Add Nodes to Feature Tree | Shop | Core tree interaction |
+| 19 | **033** | Feature Requirements Doc | Shop | Links features to requirements |
+| 20 | **062** | Assembly Floor Page Layout | Floor | Opens Floor UI work |
 
-**Merge order when done**: 017 first (no schema conflicts), then 026 (schema), then 113 and 117 in any order.
+**Strategy**: Schema phases early (#3-8) to maximize future flexibility. Then alternate between completing Hall and progressing Shop/Floor/Room layouts.
 
-**Wave 2 (after Wave 1 merges):**
-
-| Priority | Phase | Name | Track | File Areas |
-|----------|-------|------|-------|------------|
-| 1 | **061** | Assembly Floor Database Schema | Floor | `supabase/migrations/`, `types/database.ts` |
-| 2 | **018** | Tagging & Tag Management | Hall | `components/hall/`, `app/api/hall/tags/` |
-| 3 | **027** | Pattern Shop Page Layout | Shop | `components/shop/`, `app/.../shop/` |
-| 4 | **120** | Project Archive & Cleanup | Admin | `components/admin/` |
-
-**After each wave, return to the Conductor session** and say "update the roadmap".
+**Per-phase workflow**: Read spec -> Build on main -> `npm run build && npm run lint` -> Commit -> Manual testing checkpoint -> Push -> Update roadmap + nextsteps -> Next phase.
 
 ---
 
-## 🚀 Kick-Off Prompt for a New Session
+## Per-Phase Workflow (Repeatable)
 
-Copy-paste this **exact prompt** into a brand new Claude Code session to start building a phase:
-
-```
-Read the file Input Artifacts/Build/roadmap.md — specifically the "⮕ START HERE" section and the Phase Status Table. Pick a phase marked "ready" that is listed in the recommended next actions (or the lowest-numbered "ready" phase if recommendations are exhausted). Then:
-
-1. Read the phase spec at Input Artifacts/Build/Phases/Phase-XXX-*.md (where XXX is the phase number you picked)
-2. Read the "Phase Session Instructions" section in roadmap.md and follow those instructions exactly
-3. Set this session's title to "Build Foundry Phase XXX"
-4. Build the phase
-```
-
-That's it. The session will self-discover the correct phase and build it.
+For each phase:
+1. Read spec at `Artifacts/Build/Phases/Phase-XXX-*.md`
+2. Build directly on `main` (no feature branches)
+3. Run `npm run build && npm run lint`
+4. Commit with descriptive message
+5. Manual testing checkpoint: provide user with testing instructions
+6. Push to origin (after user confirms)
+7. Update `roadmap.md` (mark done, update ready/blocked)
+8. Update `nextsteps.md` (append to phase history)
+9. Proceed to next phase
 
 ---
 
@@ -141,7 +146,7 @@ After this initial update, stay in this session. I will come back to you after e
 | 014 | Idea List View | `done` | — | 012, 013 | Hall | `components/hall/`, `app/api/hall/` |
 | 015 | Hall Search & Filter | `done` | — | 014 | Hall | `components/hall/`, `app/api/hall/` |
 | 016 | Idea Detail View | `done` | — | 014 | Hall | `components/hall/`, `app/api/hall/ideas/[ideaId]/` |
-| 017 | Edit & Delete Ideas | `ready` | — | 011, 016 | Hall | `components/hall/`, `app/api/hall/ideas/[ideaId]/` |
+| 017 | Edit & Delete Ideas | `done` | — | 011, 016 | Hall | `components/hall/`, `app/api/hall/ideas/[ideaId]/` |
 | 018 | Tagging & Tag Management | `ready` | — | 011, 013, 014 | Hall | `components/hall/`, `app/api/hall/tags/` |
 | 019 | Bulk Operations | `blocked` | — | 014, 017, 018 | Hall | `components/hall/` |
 | 020 | Hall Agent Infrastructure | `ready` | — | 002, 011, 012 | Hall | `components/hall/`, `app/api/hall/agent/` |
@@ -149,14 +154,14 @@ After this initial update, stay in this session. I will come back to you after e
 | 022 | Agent: Duplicate Detection | `blocked` | — | 011, 013, 020 | Hall | `components/hall/` |
 | 023 | Agent: Connection Discovery | `blocked` | — | 011, 016, 020 | Hall | `components/hall/` |
 | 024 | Hall Real-Time Updates | `ready` | — | 002, 011, 012, 014 | Hall | `components/hall/`, `lib/realtime/` |
-| 025 | Hall → Shop Promotion | `blocked` | — | 011, 016, 026 | Hall ⚠️ | `components/hall/`, `app/api/hall/` |
+| 025 | Hall → Shop Promotion | `ready` | — | 011, 016, 026 | Hall ⚠️ | `components/hall/`, `app/api/hall/` |
 
 ### Section 3: The Pattern Shop MVP (026–045)
 
 | Phase | Name | Status | Branch | Prerequisites | Track | File Areas |
 |-------|------|--------|--------|---------------|-------|------------|
-| 026 | Pattern Shop Database Schema | `ready` | — | 001, 002 | Shop | `supabase/migrations/`, `types/database.ts` |
-| 027 | Pattern Shop Page Layout | `blocked` | — | 006, 010, 026 | Shop | `components/shop/`, `app/.../shop/` |
+| 026 | Pattern Shop Database Schema | `done` | — | 001, 002 | Shop | `supabase/migrations/`, `types/database.ts` |
+| 027 | Pattern Shop Page Layout | `ready` | — | 006, 010, 026 | Shop | `components/shop/`, `app/.../shop/` |
 | 028 | Product Overview Document | `blocked` | — | 026, 027 | Shop | `components/shop/` |
 | 029 | Feature Tree Component | `blocked` | — | 026, 027 | Shop | `components/shop/` |
 | 030 | Add Nodes to Feature Tree | `blocked` | — | 026, 029 | Shop | `components/shop/` |
@@ -180,7 +185,7 @@ After this initial update, stay in this session. I will come back to you after e
 
 | Phase | Name | Status | Branch | Prerequisites | Track | File Areas |
 |-------|------|--------|--------|---------------|-------|------------|
-| 046 | Control Room Database Schema | `blocked` | — | 002, 026 | Room | `supabase/migrations/`, `types/database.ts` |
+| 046 | Control Room Database Schema | `ready` | — | 002, 026 | Room | `supabase/migrations/`, `types/database.ts` |
 | 047 | Control Room Page Layout | `blocked` | — | 006, 010, 046 | Room | `components/room/`, `app/.../room/` |
 | 048 | Foundation Blueprints | `blocked` | — | 046, 047, 049 | Room | `components/room/` |
 | 049 | Blueprint Rich Text Editor | `blocked` | — | 047 | Room | `components/room/` |
@@ -443,7 +448,7 @@ If all three: **it's ready to pull.**
 
 ### Step 2: Read the Phase Spec
 
-- Read the file: `Input Artifacts/Build/Phases/Phase-XXX-*.md` (where XXX is the phase number).
+- Read the file: `Artifacts/Build/Phases/Phase-XXX-*.md` (where XXX is the phase number).
 - This is your primary build specification.
 
 ### Step 3: Read Existing Code Context
@@ -527,14 +532,14 @@ These phases require work from **multiple module tracks** to be complete before 
 | Section | Total | Done | In Progress | Ready | Blocked |
 |---------|-------|------|-------------|-------|---------|
 | Foundation (001–010) | 10 | 10 | 0 | 0 | 0 |
-| The Hall (011–025) | 15 | 6 | 0 | 4 | 5 |
-| Pattern Shop (026–045) | 20 | 0 | 0 | 1 | 19 |
-| Control Room (046–060) | 15 | 0 | 0 | 0 | 15 |
+| The Hall (011–025) | 15 | 7 | 0 | 4 | 4 |
+| Pattern Shop (026–045) | 20 | 1 | 0 | 1 | 18 |
+| Control Room (046–060) | 15 | 0 | 0 | 1 | 14 |
 | Assembly Floor (061–080) | 20 | 0 | 0 | 1 | 19 |
 | Insights Lab (081–095) | 15 | 0 | 0 | 1 | 14 |
 | Cross-Cutting (096–120) | 25 | 0 | 0 | 6 | 19 |
 | Advanced (121–135) | 15 | 0 | 0 | 0 | 15 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **16** | **0** | **13** | **121** |
+| **TOTAL** | **150** | **18** | **0** | **14** | **118** |
 
-**Currently ready to start**: 017, 018, 020, 024, 026, 061, 081, 096, 105, 109, 113, 117, 119
+**Currently ready to start**: 018, 020, 024, 025, 027, 046, 061, 081, 096, 105, 109, 113, 117, 119
