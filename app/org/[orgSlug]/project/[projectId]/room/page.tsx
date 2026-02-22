@@ -1,21 +1,37 @@
-import Image from 'next/image'
+import { requireAuth } from '@/lib/auth/server'
+import { createServiceClient } from '@/lib/supabase/server'
+import { RoomClient } from '@/components/room/room-client'
 
-export default function RoomPage() {
-  return (
-    <div className="p-6 md:p-8">
-      <div className="flex items-center gap-3 mb-4">
-        <Image src="/icon-room.png" alt="Control Room" width={48} height={48} />
-        <h1 className="text-2xl font-bold text-text-primary">Control Room</h1>
-      </div>
-      <p className="text-text-secondary mb-8">
-        Blueprints & management workspace. Coming soon.
-      </p>
+interface RoomPageProps {
+  params: Promise<{ orgSlug: string; projectId: string }>
+}
 
-      <div className="glass-panel rounded-lg p-12 text-center">
-        <p className="text-text-tertiary">
-          This module will be built in a future phase.
-        </p>
-      </div>
-    </div>
-  )
+export default async function RoomPage({ params }: RoomPageProps) {
+  const { projectId } = await params
+  await requireAuth()
+  const supabase = createServiceClient()
+
+  // Fetch blueprint stats for initial render
+  const { data: blueprints } = await supabase
+    .from('blueprints')
+    .select('blueprint_type, status')
+    .eq('project_id', projectId)
+
+  const bpList = blueprints || []
+
+  const stats = {
+    foundations: bpList.filter((bp) => bp.blueprint_type === 'foundation').length,
+    systemDiagrams: bpList.filter((bp) => bp.blueprint_type === 'system_diagram').length,
+    featureBlueprints: bpList.filter((bp) => bp.blueprint_type === 'feature').length,
+    completionPercent:
+      bpList.length > 0
+        ? Math.round(
+            (bpList.filter((bp) => bp.status === 'approved' || bp.status === 'implemented').length /
+              bpList.length) *
+              100
+          )
+        : 0,
+  }
+
+  return <RoomClient projectId={projectId} initialStats={stats} />
 }
