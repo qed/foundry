@@ -472,6 +472,7 @@ export type Database = {
           created_by: string;
           created_at: string;
           updated_at: string;
+          category: "auth_security" | "api_integrations" | "performance_scalability" | "data_storage" | null;
         };
         Insert: {
           id?: string;
@@ -483,6 +484,7 @@ export type Database = {
           created_by: string;
           created_at?: string;
           updated_at?: string;
+          category?: "auth_security" | "api_integrations" | "performance_scalability" | "data_storage" | null;
         };
         Update: {
           id?: string;
@@ -494,6 +496,7 @@ export type Database = {
           created_by?: string;
           created_at?: string;
           updated_at?: string;
+          category?: "auth_security" | "api_integrations" | "performance_scalability" | "data_storage" | null;
         };
         Relationships: [
           {
@@ -1510,6 +1513,7 @@ export type IdeaStatus = Idea["status"];
 export type FeatureLevel = FeatureNode["level"];
 export type FeatureStatus = FeatureNode["status"];
 export type DocType = RequirementsDocument["doc_type"];
+export type TechReqCategory = NonNullable<RequirementsDocument["category"]>;
 export type WorkOrderStatus = WorkOrder["status"];
 export type WorkOrderPriority = WorkOrder["priority"];
 export type PhaseStatus = Phase["status"];

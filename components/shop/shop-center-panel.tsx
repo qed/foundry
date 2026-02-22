@@ -4,6 +4,7 @@ import { FileText } from 'lucide-react'
 import { EmptyState } from '@/components/ui/empty-state'
 import { ProductOverviewEditor } from './product-overview-editor'
 import { FeatureRequirementEditor } from './feature-requirement-editor'
+import { TechnicalRequirementEditor } from './technical-requirement-editor'
 
 interface ShopCenterPanelProps {
   selectedNodeId: string | null
@@ -26,6 +27,18 @@ export function ShopCenterPanel({ selectedNodeId, projectId }: ShopCenterPanelPr
   // Product Overview
   if (selectedNodeId === 'product-overview') {
     return <ProductOverviewEditor projectId={projectId} />
+  }
+
+  // Technical Requirement selected
+  if (selectedNodeId.startsWith('tech-req:')) {
+    const docId = selectedNodeId.slice(9)
+    return (
+      <TechnicalRequirementEditor
+        key={docId}
+        projectId={projectId}
+        docId={docId}
+      />
+    )
   }
 
   // Feature node selected — show Feature Requirements Document
