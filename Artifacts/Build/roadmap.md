@@ -365,7 +365,7 @@ After this initial update, stay in this session. I will come back to you after e
 | 055 | Blueprint Search & Filter | `done` | — | 046, 047, 054 | Room | `components/room/` |
 | 056 | Control Room Agent Infra | `done` | — | 002, 046, 047, 051 | Room | `components/room/`, `app/api/room/agent/` |
 | 057 | Agent: Blueprint Generation | `done` | — | 048, 051, 056 | Room | `components/room/` |
-| 058 | Agent: Blueprint Review | `ready` | — | 048, 051, 054, 056 | Room | `components/room/` |
+| 058 | Agent: Blueprint Review | `done` | — | 048, 051, 054, 056 | Room | `components/room/` |
 | 059 | Blueprint Version History | `ready` | — | 046, 049, 054 | Room | `components/room/` |
 | 060 | Blueprint Comments | `blocked` | — | 046, 049, 054, 059 | Room | `components/room/` |
 
@@ -708,6 +708,6 @@ These phases require work from **multiple module tracks** to be complete before 
 | Cross-Cutting (096–120) | 25 | 10 | 0 | 6 | 9 |
 | Advanced (121–135) | 15 | 0 | 0 | 6 | 9 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **81** | **0** | **33** | **36** |
+| **TOTAL** | **150** | **82** | **0** | **32** | **36** |
 
-**Currently ready to start**: 058, 059, 066, 068, 070, 071, 072, 074, 076, 077, 078, 080, 082, 086, 088, 089, 090, 102, 106, 110, 118, 120, 121, 122, 123, 124, 127, 131, 132
+**Currently ready to start**: 059, 066, 068, 070, 071, 072, 074, 076, 077, 078, 080, 082, 086, 088, 089, 090, 102, 106, 110, 118, 120, 121, 122, 123, 124, 127, 131, 132
