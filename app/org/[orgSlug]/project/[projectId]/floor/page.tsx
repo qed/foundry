@@ -1,21 +1,28 @@
-import Image from 'next/image'
+import { requireAuth } from '@/lib/auth/server'
+import { createServiceClient } from '@/lib/supabase/server'
+import { FloorClient } from '@/components/floor/floor-client'
 
-export default function FloorPage() {
-  return (
-    <div className="p-6 md:p-8">
-      <div className="flex items-center gap-3 mb-4">
-        <Image src="/icon-floor.png" alt="Assembly Floor" width={48} height={48} />
-        <h1 className="text-2xl font-bold text-text-primary">Assembly Floor</h1>
-      </div>
-      <p className="text-text-secondary mb-8">
-        Execution & building workspace. Coming soon.
-      </p>
+interface FloorPageProps {
+  params: Promise<{ orgSlug: string; projectId: string }>
+}
 
-      <div className="glass-panel rounded-lg p-12 text-center">
-        <p className="text-text-tertiary">
-          This module will be built in a future phase.
-        </p>
-      </div>
-    </div>
-  )
+export default async function FloorPage({ params }: FloorPageProps) {
+  const { projectId } = await params
+  await requireAuth()
+  const supabase = createServiceClient()
+
+  // Fetch work order stats for initial render
+  const { data: workOrders } = await supabase
+    .from('work_orders')
+    .select('status')
+    .eq('project_id', projectId)
+
+  const woList = workOrders || []
+
+  const initialStats = {
+    totalWorkOrders: woList.length,
+    doneWorkOrders: woList.filter((wo) => wo.status === 'done').length,
+  }
+
+  return <FloorClient projectId={projectId} initialStats={initialStats} />
 }
