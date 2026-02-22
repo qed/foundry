@@ -1106,6 +1106,8 @@ export type Database = {
           content: Json;
           created_by: string;
           created_at: string;
+          change_note: string | null;
+          trigger_type: string | null;
         };
         Insert: {
           id?: string;
@@ -1114,6 +1116,8 @@ export type Database = {
           content: Json;
           created_by: string;
           created_at?: string;
+          change_note?: string | null;
+          trigger_type?: string | null;
         };
         Update: {
           id?: string;
@@ -1122,6 +1126,8 @@ export type Database = {
           content?: Json;
           created_by?: string;
           created_at?: string;
+          change_note?: string | null;
+          trigger_type?: string | null;
         };
         Relationships: [
           {

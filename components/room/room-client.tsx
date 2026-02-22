@@ -202,6 +202,7 @@ export function RoomClient({ projectId, initialStats }: RoomClientProps) {
           projectId={projectId}
           blueprint={selectedBlueprint}
           onStatusChange={handleStatusChange}
+          onContentRefresh={handleApplyDraft}
         />
 
         {/* Right panel: Agent chat */}

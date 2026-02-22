@@ -2,6 +2,12 @@ import { NextRequest } from 'next/server'
 import { requireAuth } from '@/lib/auth/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { handleAuthError } from '@/lib/auth/errors'
+import {
+  calculateBlueprintChangeSize,
+  generateBlueprintChangeSummary,
+  BLUEPRINT_VERSION_THRESHOLD,
+  VERSION_DEBOUNCE_SECONDS,
+} from '@/lib/blueprints/version-utils'
 import type { BlueprintStatus, Json } from '@/types/database'
 
 const VALID_STATUSES: BlueprintStatus[] = ['draft', 'in_review', 'approved', 'implemented']
@@ -75,10 +81,10 @@ export async function PATCH(
       )
     }
 
-    // Verify blueprint exists
+    // Verify blueprint exists (include content for versioning comparison)
     const { data: existing } = await supabase
       .from('blueprints')
-      .select('id, blueprint_type, status')
+      .select('id, blueprint_type, status, content')
       .eq('id', blueprintId)
       .eq('project_id', projectId)
       .single()
@@ -157,6 +163,73 @@ export async function PATCH(
         action: 'content_updated' as const,
         action_details: {},
       }).then()
+    }
+
+    // Auto-versioning on content change
+    if (updates.content !== undefined) {
+      // Fire-and-forget: create version if change is significant and enough time has passed
+      ;(async () => {
+        try {
+          const changeSize = calculateBlueprintChangeSize(existing.content, updates.content)
+          if (changeSize < BLUEPRINT_VERSION_THRESHOLD) return
+
+          // Check debounce: was last version created within the last 2 minutes?
+          const { data: lastVersion } = await supabase
+            .from('blueprint_versions')
+            .select('created_at, version_number')
+            .eq('blueprint_id', blueprintId)
+            .order('version_number', { ascending: false })
+            .limit(1)
+            .single()
+
+          if (lastVersion) {
+            const elapsed = (Date.now() - new Date(lastVersion.created_at).getTime()) / 1000
+            if (elapsed < VERSION_DEBOUNCE_SECONDS) return
+          }
+
+          const nextVersionNumber = (lastVersion?.version_number || 0) + 1
+          const changeSummary = generateBlueprintChangeSummary(existing.content, updates.content)
+
+          await supabase.from('blueprint_versions').insert({
+            blueprint_id: blueprintId,
+            version_number: nextVersionNumber,
+            content: updates.content as Json,
+            created_by: user.id,
+            trigger_type: 'edit',
+            change_note: changeSummary,
+          })
+        } catch (vErr) {
+          console.error('Error creating auto-version:', vErr)
+        }
+      })()
+    }
+
+    // Auto-versioning on status change
+    if (updates.status && updates.status !== existing.status) {
+      ;(async () => {
+        try {
+          const { data: lastVersion } = await supabase
+            .from('blueprint_versions')
+            .select('version_number')
+            .eq('blueprint_id', blueprintId)
+            .order('version_number', { ascending: false })
+            .limit(1)
+            .single()
+
+          const nextVersionNumber = (lastVersion?.version_number || 0) + 1
+
+          await supabase.from('blueprint_versions').insert({
+            blueprint_id: blueprintId,
+            version_number: nextVersionNumber,
+            content: (updates.content || existing.content) as Json,
+            created_by: user.id,
+            trigger_type: 'status_change',
+            change_note: `Status changed to ${updates.status}`,
+          })
+        } catch (vErr) {
+          console.error('Error creating status version:', vErr)
+        }
+      })()
     }
 
     return Response.json(updated)

@@ -7,6 +7,10 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { BlueprintEditor } from './blueprint-editor'
 import { SystemDiagramEditor } from './system-diagram-editor'
 import { BlueprintActivityTimeline } from './blueprint-activity-timeline'
+import { BlueprintVersionHistory } from './blueprint-version-history'
+import type { BlueprintVersionEntry } from './blueprint-version-history'
+import { BlueprintVersionDiff } from './blueprint-version-diff'
+import { BlueprintVersionView } from './blueprint-version-view'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import type { Blueprint, BlueprintStatus } from '@/types/database'
@@ -17,6 +21,7 @@ interface RoomCenterPanelProps {
   projectId: string
   blueprint: Blueprint | null
   onStatusChange?: (blueprintId: string, status: BlueprintStatus) => void
+  onContentRefresh?: () => void
 }
 
 const STATUS_OPTIONS: { value: BlueprintStatus; label: string; description: string }[] = [
@@ -49,9 +54,16 @@ const TYPE_LABELS: Record<string, string> = {
 // Confirmation is required for approved/implemented (final states)
 const CONFIRM_STATUSES: BlueprintStatus[] = ['approved', 'implemented']
 
-export function RoomCenterPanel({ projectId, blueprint, onStatusChange }: RoomCenterPanelProps) {
+export function RoomCenterPanel({ projectId, blueprint, onStatusChange, onContentRefresh }: RoomCenterPanelProps) {
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false)
   const [confirmDialog, setConfirmDialog] = useState<{ status: BlueprintStatus } | null>(null)
+  const [versionRefreshKey, setVersionRefreshKey] = useState(0)
+
+  // Version modals
+  const [diffModal, setDiffModal] = useState<{ from: number; to: number | 'current' } | null>(null)
+  const [viewModal, setViewModal] = useState<{ versionNumber: number } | null>(null)
+  const [restoreDialog, setRestoreDialog] = useState<BlueprintVersionEntry | null>(null)
+  const [restoring, setRestoring] = useState(false)
 
   const handleSave = useCallback(async (content: JSONContent) => {
     if (!blueprint) return
@@ -61,6 +73,8 @@ export function RoomCenterPanel({ projectId, blueprint, onStatusChange }: RoomCe
       body: JSON.stringify({ content }),
     })
     if (!res.ok) throw new Error('Save failed')
+    // Bump version refresh so history panel picks up new versions
+    setVersionRefreshKey((k) => k + 1)
   }, [projectId, blueprint])
 
   const handleDiagramSave = useCallback(async (content: MermaidContent) => {
@@ -71,6 +85,7 @@ export function RoomCenterPanel({ projectId, blueprint, onStatusChange }: RoomCe
       body: JSON.stringify({ content }),
     })
     if (!res.ok) throw new Error('Save failed')
+    setVersionRefreshKey((k) => k + 1)
   }, [projectId, blueprint])
 
   const handleStatusSelect = useCallback((newStatus: BlueprintStatus) => {
@@ -88,7 +103,45 @@ export function RoomCenterPanel({ projectId, blueprint, onStatusChange }: RoomCe
     if (!blueprint || !confirmDialog || !onStatusChange) return
     onStatusChange(blueprint.id, confirmDialog.status)
     setConfirmDialog(null)
+    // Bump version refresh for status change version
+    setVersionRefreshKey((k) => k + 1)
   }, [blueprint, confirmDialog, onStatusChange])
+
+  // Version history callbacks
+  const handleVersionView = useCallback((version: BlueprintVersionEntry) => {
+    setViewModal({ versionNumber: version.version_number })
+  }, [])
+
+  const handleVersionRestore = useCallback((version: BlueprintVersionEntry) => {
+    setRestoreDialog(version)
+  }, [])
+
+  const handleVersionCompare = useCallback((fromVersion: number, toVersion: number) => {
+    setDiffModal({ from: fromVersion, to: toVersion })
+  }, [])
+
+  const handleConfirmRestore = useCallback(async () => {
+    if (!blueprint || !restoreDialog) return
+    setRestoring(true)
+    try {
+      const res = await fetch(
+        `/api/projects/${projectId}/blueprints/${blueprint.id}/versions/${restoreDialog.version_number}/restore`,
+        { method: 'POST' }
+      )
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Failed to restore')
+      }
+      setRestoreDialog(null)
+      setVersionRefreshKey((k) => k + 1)
+      // Refresh editor content
+      onContentRefresh?.()
+    } catch (err) {
+      console.error('Restore failed:', err)
+    } finally {
+      setRestoring(false)
+    }
+  }, [blueprint, restoreDialog, projectId, onContentRefresh])
 
   if (!blueprint) {
     return (
@@ -187,12 +240,71 @@ export function RoomCenterPanel({ projectId, blueprint, onStatusChange }: RoomCe
         />
       )}
 
+      {/* Version history */}
+      <BlueprintVersionHistory
+        key={`versions-${blueprint.id}`}
+        projectId={projectId}
+        blueprintId={blueprint.id}
+        onView={handleVersionView}
+        onRestore={handleVersionRestore}
+        onCompare={handleVersionCompare}
+        refreshKey={versionRefreshKey}
+      />
+
       {/* Activity timeline */}
       <BlueprintActivityTimeline
         key={`activity-${blueprint.id}`}
         projectId={projectId}
         blueprintId={blueprint.id}
       />
+
+      {/* Version view modal */}
+      {viewModal && (
+        <BlueprintVersionView
+          open={!!viewModal}
+          onClose={() => setViewModal(null)}
+          projectId={projectId}
+          blueprintId={blueprint.id}
+          versionNumber={viewModal.versionNumber}
+        />
+      )}
+
+      {/* Version diff modal */}
+      {diffModal && (
+        <BlueprintVersionDiff
+          open={!!diffModal}
+          onClose={() => setDiffModal(null)}
+          projectId={projectId}
+          blueprintId={blueprint.id}
+          fromVersion={diffModal.from}
+          toVersion={diffModal.to}
+        />
+      )}
+
+      {/* Restore confirmation dialog */}
+      <Dialog open={!!restoreDialog} onOpenChange={(open) => { if (!open) setRestoreDialog(null) }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Restore to Version {restoreDialog?.version_number}</DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            <p className="text-sm text-text-secondary">
+              This will replace the current blueprint content with version {restoreDialog?.version_number}.
+            </p>
+            <p className="text-xs text-text-tertiary mt-2">
+              A backup of the current content will be saved as a new version before restoring.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="secondary" size="sm" onClick={() => setRestoreDialog(null)} disabled={restoring}>
+              Cancel
+            </Button>
+            <Button variant="primary" size="sm" onClick={handleConfirmRestore} isLoading={restoring}>
+              Restore
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Status change confirmation dialog */}
       <Dialog open={!!confirmDialog} onOpenChange={(open) => { if (!open) setConfirmDialog(null) }}>
