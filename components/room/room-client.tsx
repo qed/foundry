@@ -187,6 +187,7 @@ export function RoomClient({ projectId, initialStats }: RoomClientProps) {
             onSelectBlueprint={setSelectedBlueprintId}
             onCreateFeatureBlueprint={handleCreateFeatureBlueprint}
             onNewBlueprint={() => setCreateModalOpen(true)}
+            projectId={projectId}
           />
         )}
 
