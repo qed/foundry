@@ -17,6 +17,8 @@ export function ShopLeftPanel({
   selectedNodeId,
   onSelectNode,
 }: ShopLeftPanelProps) {
+  const isOverviewSelected = selectedNodeId === 'product-overview'
+
   return (
     <div
       className={cn(
@@ -41,8 +43,21 @@ export function ShopLeftPanel({
         <div className="flex-1 overflow-y-auto">
           {/* Product Overview - pinned */}
           <div className="p-3 border-b border-border-default">
-            <button className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm text-text-secondary hover:bg-bg-tertiary hover:text-text-primary transition-colors">
-              <FileText className="w-4 h-4 text-accent-cyan flex-shrink-0" />
+            <button
+              onClick={() => onSelectNode('product-overview')}
+              className={cn(
+                'w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm transition-colors',
+                isOverviewSelected
+                  ? 'bg-accent-cyan/10 text-text-primary font-semibold'
+                  : 'text-text-secondary hover:bg-bg-tertiary hover:text-text-primary'
+              )}
+            >
+              <FileText
+                className={cn(
+                  'w-4 h-4 flex-shrink-0',
+                  isOverviewSelected ? 'text-accent-cyan' : 'text-accent-cyan'
+                )}
+              />
               <span className="truncate">Product Overview</span>
             </button>
           </div>
@@ -57,7 +72,7 @@ export function ShopLeftPanel({
 
             <FeatureTree
               projectId={projectId}
-              selectedNodeId={selectedNodeId}
+              selectedNodeId={isOverviewSelected ? null : selectedNodeId}
               onSelectNode={onSelectNode}
             />
           </div>

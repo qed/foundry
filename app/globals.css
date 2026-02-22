@@ -116,3 +116,47 @@ body {
 .animate-slide-in {
   animation: slide-in 0.3s ease-out;
 }
+
+/* Product Overview / Requirements Document prose styles */
+.prose-foundry {
+  color: var(--color-text-primary);
+  line-height: 1.7;
+  font-size: 0.9375rem;
+}
+.prose-foundry h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  color: var(--color-text-primary);
+}
+.prose-foundry h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+  color: var(--color-accent-cyan);
+  border-bottom: 1px solid var(--color-border-default);
+  padding-bottom: 0.375rem;
+}
+.prose-foundry p {
+  margin-bottom: 0.75rem;
+}
+.prose-foundry em {
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
+.prose-foundry ul, .prose-foundry ol {
+  margin-bottom: 0.75rem;
+  padding-left: 1.5rem;
+}
+.prose-foundry li {
+  margin-bottom: 0.25rem;
+}
+.prose-foundry a {
+  color: var(--color-accent-cyan);
+  text-decoration: underline;
+}
+.prose-foundry strong {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}

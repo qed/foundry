@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { requireAuth } from '@/lib/auth/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { handleAuthError } from '@/lib/auth/errors'
+import { PRODUCT_OVERVIEW_TEMPLATE } from '@/lib/shop/product-overview-template'
 
 export async function POST(request: NextRequest) {
   try {
@@ -67,6 +68,16 @@ export async function POST(request: NextRequest) {
       await supabase.from('projects').delete().eq('id', project.id)
       return Response.json({ error: memberError.message }, { status: 500 })
     }
+
+    // Auto-create product overview document
+    await supabase.from('requirements_documents').insert({
+      project_id: project.id,
+      feature_node_id: null,
+      doc_type: 'product_overview' as const,
+      title: 'Product Overview',
+      content: PRODUCT_OVERVIEW_TEMPLATE,
+      created_by: user.id,
+    })
 
     return Response.json(project, { status: 201 })
   } catch (error) {
