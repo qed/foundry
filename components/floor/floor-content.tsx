@@ -38,6 +38,8 @@ export function FloorContent({
     return (
       <KanbanBoard
         workOrders={filtered}
+        members={members}
+        features={features}
         onWorkOrderClick={onWorkOrderClick}
         onStatusChange={onStatusChange}
       />

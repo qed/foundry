@@ -17,9 +17,12 @@ import { CSS } from '@dnd-kit/utilities'
 import { cn } from '@/lib/utils'
 import { Avatar } from '@/components/ui/avatar'
 import type { WorkOrder, WorkOrderStatus } from '@/types/database'
+import type { MemberInfo, FeatureInfo } from './work-order-table'
 
 interface KanbanBoardProps {
   workOrders: WorkOrder[]
+  members?: MemberInfo[]
+  features?: FeatureInfo[]
   onWorkOrderClick?: (id: string) => void
   onStatusChange?: (workOrderId: string, newStatus: WorkOrderStatus) => void
 }
@@ -39,8 +42,23 @@ const PRIORITY_COLORS: Record<string, string> = {
   low: 'bg-text-tertiary',
 }
 
+const PRIORITY_LABELS: Record<string, string> = {
+  critical: 'Critical',
+  high: 'High',
+  medium: 'Medium',
+  low: 'Low',
+}
+
+const STATUS_BORDER: Record<string, string> = {
+  in_progress: 'border-l-accent-cyan',
+  in_review: 'border-l-accent-purple',
+  done: 'border-l-accent-success',
+}
+
 export function KanbanBoard({
   workOrders,
+  members = [],
+  features = [],
   onWorkOrderClick,
   onStatusChange,
 }: KanbanBoardProps) {
@@ -53,6 +71,16 @@ export function KanbanBoard({
         distance: 5,
       },
     })
+  )
+
+  // Build lookup maps
+  const memberMap = useMemo(
+    () => new Map(members.map((m) => [m.user_id, m])),
+    [members]
+  )
+  const featureMap = useMemo(
+    () => new Map(features.map((f) => [f.id, f])),
+    [features]
   )
 
   const effectiveOrders = useMemo(
@@ -116,13 +144,22 @@ export function KanbanBoard({
             column={col}
             workOrders={effectiveOrders.filter((wo) => wo.status === col.key)}
             isDragging={activeId !== null}
+            memberMap={memberMap}
+            featureMap={featureMap}
             onCardClick={onWorkOrderClick}
           />
         ))}
       </div>
 
       <DragOverlay dropAnimation={null}>
-        {activeCard ? <CardContent workOrder={activeCard} isDragOverlay /> : null}
+        {activeCard ? (
+          <CardContent
+            workOrder={activeCard}
+            isDragOverlay
+            memberMap={memberMap}
+            featureMap={featureMap}
+          />
+        ) : null}
       </DragOverlay>
     </DndContext>
   )
@@ -134,11 +171,15 @@ function KanbanColumn({
   column,
   workOrders,
   isDragging,
+  memberMap,
+  featureMap,
   onCardClick,
 }: {
   column: (typeof COLUMNS)[number]
   workOrders: WorkOrder[]
   isDragging: boolean
+  memberMap: Map<string, MemberInfo>
+  featureMap: Map<string, FeatureInfo>
   onCardClick?: (id: string) => void
 }) {
   const { isOver, setNodeRef } = useDroppable({ id: column.key })
@@ -184,6 +225,8 @@ function KanbanColumn({
               <DraggableCard
                 key={wo.id}
                 workOrder={wo}
+                memberMap={memberMap}
+                featureMap={featureMap}
                 onClick={() => onCardClick?.(wo.id)}
               />
             ))}
@@ -198,9 +241,13 @@ function KanbanColumn({
 
 function DraggableCard({
   workOrder,
+  memberMap,
+  featureMap,
   onClick,
 }: {
   workOrder: WorkOrder
+  memberMap: Map<string, MemberInfo>
+  featureMap: Map<string, FeatureInfo>
   onClick: () => void
 }) {
   const {
@@ -233,7 +280,11 @@ function DraggableCard({
         isDragging && 'opacity-30'
       )}
     >
-      <CardContent workOrder={workOrder} />
+      <CardContent
+        workOrder={workOrder}
+        memberMap={memberMap}
+        featureMap={featureMap}
+      />
     </div>
   )
 }
@@ -243,9 +294,13 @@ function DraggableCard({
 function CardContent({
   workOrder,
   isDragOverlay,
+  memberMap,
+  featureMap,
 }: {
   workOrder: WorkOrder
   isDragOverlay?: boolean
+  memberMap: Map<string, MemberInfo>
+  featureMap: Map<string, FeatureInfo>
 }) {
   const acLines = workOrder.acceptance_criteria
     ? workOrder.acceptance_criteria
@@ -253,43 +308,91 @@ function CardContent({
         .filter((l) => l.trim()).length
     : 0
 
+  const assignee = workOrder.assignee_id
+    ? memberMap.get(workOrder.assignee_id)
+    : null
+
+  const feature = workOrder.feature_node_id
+    ? featureMap.get(workOrder.feature_node_id)
+    : null
+
+  const isDone = workOrder.status === 'done'
+  const statusBorder = STATUS_BORDER[workOrder.status]
+
+  // Build initials from display name
+  const initials = assignee
+    ? assignee.display_name
+        .split(' ')
+        .map((w) => w[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase()
+    : '?'
+
   return (
     <div
       className={cn(
-        'glass-panel rounded-lg p-3 cursor-pointer hover:border-accent-cyan/30 transition-colors',
-        isDragOverlay && 'shadow-lg shadow-black/30 border-accent-cyan/40 rotate-1'
+        'glass-panel rounded-lg p-3 cursor-pointer transition-all duration-150',
+        'hover:border-accent-cyan/30 hover:shadow-md hover:shadow-black/10',
+        'focus-visible:outline-2 focus-visible:outline-accent-cyan focus-visible:outline-offset-1',
+        isDragOverlay && 'shadow-lg shadow-black/30 border-accent-cyan/40 rotate-1',
+        isDone && 'opacity-80',
+        statusBorder && `border-l-2 ${statusBorder}`
       )}
+      tabIndex={0}
+      role="button"
+      aria-label={`Work order: ${workOrder.title}`}
     >
-      <p className="text-sm text-text-primary font-medium line-clamp-2 leading-snug">
-        {workOrder.title}
-      </p>
+      {/* Header: title + priority badge */}
+      <div className="flex gap-2">
+        <p className="text-sm text-text-primary font-medium line-clamp-2 leading-snug flex-1 min-w-0">
+          {workOrder.title}
+        </p>
+        <span
+          className={cn(
+            'w-2 h-2 rounded-full flex-shrink-0 mt-1',
+            PRIORITY_COLORS[workOrder.priority] || 'bg-text-tertiary'
+          )}
+          title={PRIORITY_LABELS[workOrder.priority] || workOrder.priority}
+        />
+      </div>
+
+      {/* Feature tag */}
+      {feature && (
+        <span className="inline-block text-[10px] text-accent-purple bg-accent-purple/10 px-1.5 py-0.5 rounded mt-1.5 max-w-full truncate">
+          {feature.title}
+        </span>
+      )}
+
+      {/* Footer: priority label, AC count, assignee */}
       <div className="flex items-center justify-between mt-2">
-        <div className="flex items-center gap-2">
-          <span
-            className={cn(
-              'w-2 h-2 rounded-full flex-shrink-0',
-              PRIORITY_COLORS[workOrder.priority] || 'bg-text-tertiary'
-            )}
-          />
-          <span className="text-[10px] text-text-tertiary capitalize">
-            {workOrder.priority}
-          </span>
-        </div>
+        <span className="text-[10px] text-text-tertiary capitalize">
+          {workOrder.priority}
+        </span>
         <div className="flex items-center gap-2">
           {acLines > 0 && (
             <span className="text-[10px] text-text-tertiary">
               {acLines} AC
             </span>
           )}
-          {workOrder.assignee_id && (
+          {assignee ? (
+            <div title={assignee.display_name}>
+              <Avatar
+                src={assignee.avatar_url || undefined}
+                alt={assignee.display_name}
+                initials={initials}
+                size="sm"
+                className="!w-5 !h-5 !text-[8px]"
+              />
+            </div>
+          ) : workOrder.assignee_id ? (
             <Avatar
-              src={undefined}
               alt="Assignee"
               initials="?"
               size="sm"
               className="!w-5 !h-5 !text-[8px]"
             />
-          )}
+          ) : null}
         </div>
       </div>
     </div>
