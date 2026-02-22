@@ -19,7 +19,7 @@ import { TreeNodeRow } from './tree-node-row'
 import { NodeContextMenu } from './node-context-menu'
 import { DeleteNodeDialog } from './delete-node-dialog'
 import { ChangeLevelDialog } from './change-level-dialog'
-import type { FeatureLevel, FeatureStatus } from '@/types/database'
+import type { BlueprintStatus, FeatureLevel, FeatureStatus } from '@/types/database'
 import type { FilterInfo } from './tree-search-filter'
 
 export interface TreeNode {
@@ -37,6 +37,8 @@ export interface TreeNode {
   children: TreeNode[]
 }
 
+export type BlueprintStatusMap = Record<string, BlueprintStatus>
+
 interface FeatureTreeProps {
   projectId: string
   selectedNodeId: string | null
@@ -49,6 +51,8 @@ interface FeatureTreeProps {
   onTreeChange?: () => void
   /** Increment to trigger an external refetch (e.g., after agent inserts nodes) */
   refreshTrigger?: number
+  /** Callback when "View Blueprint" or "Create Blueprint" is triggered from context menu */
+  onBlueprintAction?: (featureNodeId: string, action: 'view' | 'create') => void
 }
 
 interface ContextMenuState {
@@ -125,6 +129,7 @@ export function FeatureTree({
   onFilterInfo,
   onTreeChange,
   refreshTrigger = 0,
+  onBlueprintAction,
 }: FeatureTreeProps) {
   const [tree, setTree] = useState<TreeNode[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -136,6 +141,9 @@ export function FeatureTree({
   const [isDeleting, setIsDeleting] = useState(false)
   const [changeLevelDialog, setChangeLevelDialog] = useState<ChangeLevelState | null>(null)
   const [isChangingLevel, setIsChangingLevel] = useState(false)
+
+  // Blueprint status map: featureNodeId -> BlueprintStatus
+  const [blueprintStatusMap, setBlueprintStatusMap] = useState<BlueprintStatusMap>({})
 
   // Drag-and-drop state
   const [draggedNodeId, setDraggedNodeId] = useState<string | null>(null)
@@ -248,6 +256,24 @@ export function FeatureTree({
     onTreeChangeRef.current = onTreeChange
   }, [onTreeChange])
 
+  // Fetch blueprint statuses for all feature-type blueprints
+  const fetchBlueprintStatuses = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/projects/${projectId}/blueprints?type=feature`)
+      if (!res.ok) return
+      const data = await res.json()
+      const map: BlueprintStatusMap = {}
+      for (const bp of data.blueprints || []) {
+        if (bp.feature_node_id) {
+          map[bp.feature_node_id] = bp.status
+        }
+      }
+      setBlueprintStatusMap(map)
+    } catch {
+      // Non-critical — silently ignore
+    }
+  }, [projectId])
+
   const fetchTree = useCallback(async () => {
     try {
       setIsLoading(true)
@@ -267,7 +293,8 @@ export function FeatureTree({
 
   useEffect(() => {
     fetchTree()
-  }, [fetchTree])
+    fetchBlueprintStatuses()
+  }, [fetchTree, fetchBlueprintStatuses])
 
   // Refetch when externally triggered (e.g., agent inserts nodes)
   const prevTriggerRef = useRef(refreshTrigger)
@@ -275,8 +302,9 @@ export function FeatureTree({
     if (refreshTrigger !== prevTriggerRef.current) {
       prevTriggerRef.current = refreshTrigger
       fetchTree()
+      fetchBlueprintStatuses()
     }
-  }, [refreshTrigger, fetchTree])
+  }, [refreshTrigger, fetchTree, fetchBlueprintStatuses])
 
   const handleToggleExpand = useCallback((nodeId: string) => {
     setExpandedIds((prev) => {
@@ -468,6 +496,12 @@ export function FeatureTree({
       setIsDeleting(false)
     }
   }, [deleteDialog, projectId, fetchTree, addToast])
+
+  // Handle blueprint action from context menu
+  const handleBlueprintAction = useCallback((nodeId: string) => {
+    const hasBlueprint = nodeId in blueprintStatusMap
+    onBlueprintAction?.(nodeId, hasBlueprint ? 'view' : 'create')
+  }, [blueprintStatusMap, onBlueprintAction])
 
   // Open change level dialog
   const handleOpenChangeLevelDialog = useCallback((nodeId: string) => {
@@ -879,6 +913,7 @@ export function FeatureTree({
             matchingNodeIds={matchingNodeIds}
             displayNodeIds={displayNodeIds}
             searchQuery={searchQuery}
+            blueprintStatusMap={blueprintStatusMap}
           />
         ))}
 
@@ -902,6 +937,8 @@ export function FeatureTree({
             onDelete={() => handleOpenDeleteDialog(contextMenu.nodeId)}
             onChangeLevel={() => handleOpenChangeLevelDialog(contextMenu.nodeId)}
             onClose={() => setContextMenu(null)}
+            blueprintStatus={blueprintStatusMap[contextMenu.nodeId] ?? null}
+            onBlueprintAction={onBlueprintAction ? () => handleBlueprintAction(contextMenu.nodeId) : undefined}
           />
         )}
 

@@ -22,6 +22,7 @@ interface ShopLeftPanelProps {
   onTreeChange?: () => void
   onTreeImported?: () => void
   refreshTrigger?: number
+  onBlueprintAction?: (featureNodeId: string, action: 'view' | 'create') => void
 }
 
 export function ShopLeftPanel({
@@ -32,6 +33,7 @@ export function ShopLeftPanel({
   onTreeChange,
   onTreeImported,
   refreshTrigger,
+  onBlueprintAction,
 }: ShopLeftPanelProps) {
   const isOverviewSelected = selectedNodeId === 'product-overview'
   const techReqDocId = selectedNodeId?.startsWith('tech-req:') ? selectedNodeId.slice(9) : null
@@ -137,6 +139,7 @@ export function ShopLeftPanel({
               onFilterInfo={handleFilterInfo}
               onTreeChange={onTreeChange}
               refreshTrigger={refreshTrigger}
+              onBlueprintAction={onBlueprintAction}
             />
           </div>
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useToast } from '@/components/ui/toast-container'
 import { ShopHeader, type ShopStats } from './shop-header'
 import { ShopLeftPanel } from './shop-left-panel'
 import { ShopCenterPanel } from './shop-center-panel'
@@ -16,7 +17,7 @@ interface ShopClientProps {
 
 export function ShopClient({
   projectId,
-  orgSlug: _orgSlug,
+  orgSlug,
   initialStats,
   hasFeatureNodes,
 }: ShopClientProps) {
@@ -74,11 +75,57 @@ export function ShopClient({
     }
   }, [projectId])
 
+  const { addToast } = useToast()
+
   // Called when agent inserts a feature tree — refresh both stats and tree
   const handleTreeInserted = useCallback(() => {
     setTreeRefreshTrigger((prev) => prev + 1)
     refreshStats()
   }, [refreshStats])
+
+  // Handle blueprint actions from context menu
+  const handleBlueprintAction = useCallback(async (featureNodeId: string, action: 'view' | 'create') => {
+    if (action === 'view') {
+      // Navigate to Control Room with the blueprint
+      try {
+        const res = await fetch(`/api/projects/${projectId}/blueprints/for-feature/${featureNodeId}`)
+        if (res.ok) {
+          const data = await res.json()
+          window.open(`/org/${orgSlug}/project/${projectId}/room?blueprint=${data.blueprint.id}`, '_blank')
+        }
+      } catch {
+        addToast('Failed to find blueprint', 'error')
+      }
+    } else {
+      // Create blueprint
+      try {
+        const res = await fetch(`/api/projects/${projectId}/blueprints`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            blueprint_type: 'feature',
+            feature_node_id: featureNodeId,
+          }),
+        })
+
+        if (res.status === 409) {
+          addToast('Blueprint already exists for this feature', 'info')
+          setTreeRefreshTrigger((prev) => prev + 1)
+          return
+        }
+
+        if (!res.ok) {
+          addToast('Failed to create blueprint', 'error')
+          return
+        }
+
+        addToast('Blueprint created', 'success')
+        setTreeRefreshTrigger((prev) => prev + 1)
+      } catch {
+        addToast('Failed to create blueprint', 'error')
+      }
+    }
+  }, [projectId, orgSlug, addToast])
 
   return (
     <div className="flex flex-col h-full">
@@ -105,10 +152,11 @@ export function ShopClient({
           onTreeChange={refreshStats}
           onTreeImported={handleTreeInserted}
           refreshTrigger={treeRefreshTrigger}
+          onBlueprintAction={handleBlueprintAction}
         />
 
         {/* Center panel: Document editor */}
-        <ShopCenterPanel selectedNodeId={selectedNodeId} projectId={projectId} />
+        <ShopCenterPanel selectedNodeId={selectedNodeId} projectId={projectId} orgSlug={orgSlug} />
 
         {/* Right panel: Agent chat */}
         <ShopRightPanel open={rightPanelOpen} projectId={projectId} selectedNodeId={selectedNodeId} onTreeInserted={handleTreeInserted} />

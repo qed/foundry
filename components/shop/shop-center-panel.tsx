@@ -9,9 +9,10 @@ import { TechnicalRequirementEditor } from './technical-requirement-editor'
 interface ShopCenterPanelProps {
   selectedNodeId: string | null
   projectId: string
+  orgSlug?: string
 }
 
-export function ShopCenterPanel({ selectedNodeId, projectId }: ShopCenterPanelProps) {
+export function ShopCenterPanel({ selectedNodeId, projectId, orgSlug }: ShopCenterPanelProps) {
   if (!selectedNodeId) {
     return (
       <div className="flex-1 flex items-center justify-center min-w-0">
@@ -47,6 +48,7 @@ export function ShopCenterPanel({ selectedNodeId, projectId }: ShopCenterPanelPr
       key={selectedNodeId}
       projectId={projectId}
       featureNodeId={selectedNodeId}
+      orgSlug={orgSlug}
     />
   )
 }
