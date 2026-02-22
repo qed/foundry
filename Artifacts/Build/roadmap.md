@@ -9,19 +9,19 @@
 
 **Mode**: Sequential execution directly on `main` branch. No feature branches or worktrees.
 
-**Next phase to build**: **018 — Tagging & Tag Management** (Hall)
+**Next phase to build**: **117 — Real-Time Presence** (Realtime)
 
 | # | Phase | Name | Track | Why This Order |
 |---|-------|------|-------|----------------|
-| 1 | **018** | Tagging & Tag Management | Hall | Unblocks 019, 021. Completes Hall core |
-| 2 | **027** | Pattern Shop Page Layout | Shop | Unblocks entire Shop UI chain |
-| 3 | **061** | Assembly Floor DB Schema | Floor | Schema -- unblocks 20 Floor phases |
-| 4 | **081** | Insights Lab DB Schema | Lab | Schema -- unblocks 15 Lab phases |
-| 5 | **046** | Control Room DB Schema | Room | Schema -- unblocks 15 Room phases |
-| 6 | **096** | Artifacts DB & Storage | Cross | Schema -- unblocks Artifacts track |
-| 7 | **105** | Comments System Foundation | Cross | Schema -- unblocks Comments chain |
-| 8 | **109** | Knowledge Graph Schema | Cross | Schema -- unblocks Knowledge track |
-| 9 | **113** | Organization Console | Admin | Key admin feature |
+| ~~1~~ | ~~018~~ | ~~Tagging & Tag Management~~ | ~~Hall~~ | done |
+| ~~2~~ | ~~027~~ | ~~Pattern Shop Page Layout~~ | ~~Shop~~ | done |
+| ~~3~~ | ~~061~~ | ~~Assembly Floor DB Schema~~ | ~~Floor~~ | done |
+| ~~4~~ | ~~081~~ | ~~Insights Lab DB Schema~~ | ~~Lab~~ | done |
+| ~~5~~ | ~~046~~ | ~~Control Room DB Schema~~ | ~~Room~~ | done |
+| ~~6~~ | ~~096~~ | ~~Artifacts DB & Storage~~ | ~~Cross~~ | done |
+| ~~7~~ | ~~105~~ | ~~Comments System Foundation~~ | ~~Cross~~ | done |
+| ~~8~~ | ~~109~~ | ~~Knowledge Graph Schema~~ | ~~Cross~~ | done |
+| ~~9~~ | ~~113~~ | ~~Organization Console~~ | ~~Admin~~ | done |
 | 10 | **117** | Real-Time Presence | Realtime | Standalone feature |
 | 11 | **119** | Audit Trail & Activity Log | Admin | Standalone cross-cutting |
 | 12 | **020** | Hall Agent Infrastructure | Hall | Unblocks AI features (021-023) |
@@ -185,8 +185,8 @@ After this initial update, stay in this session. I will come back to you after e
 
 | Phase | Name | Status | Branch | Prerequisites | Track | File Areas |
 |-------|------|--------|--------|---------------|-------|------------|
-| 046 | Control Room Database Schema | `ready` | — | 002, 026 | Room | `supabase/migrations/`, `types/database.ts` |
-| 047 | Control Room Page Layout | `blocked` | — | 006, 010, 046 | Room | `components/room/`, `app/.../room/` |
+| 046 | Control Room Database Schema | `done` | — | 002, 026 | Room | `supabase/migrations/`, `types/database.ts` |
+| 047 | Control Room Page Layout | `ready` | — | 006, 010, 046 | Room | `components/room/`, `app/.../room/` |
 | 048 | Foundation Blueprints | `blocked` | — | 046, 047, 049 | Room | `components/room/` |
 | 049 | Blueprint Rich Text Editor | `blocked` | — | 047 | Room | `components/room/` |
 | 050 | System Diagram Blueprints | `blocked` | — | 046, 047, 049 | Room | `components/room/` |
@@ -205,8 +205,8 @@ After this initial update, stay in this session. I will come back to you after e
 
 | Phase | Name | Status | Branch | Prerequisites | Track | File Areas |
 |-------|------|--------|--------|---------------|-------|------------|
-| 061 | Assembly Floor Database Schema | `ready` | — | 002 | Floor | `supabase/migrations/`, `types/database.ts` |
-| 062 | Assembly Floor Page Layout | `blocked` | — | 006, 010, 061 | Floor | `components/floor/`, `app/.../floor/` |
+| 061 | Assembly Floor Database Schema | `done` | — | 002 | Floor | `supabase/migrations/`, `types/database.ts` |
+| 062 | Assembly Floor Page Layout | `ready` | — | 006, 010, 061 | Floor | `components/floor/`, `app/.../floor/` |
 | 063 | Create Work Order (Manual) | `blocked` | — | 010, 061, 062 | Floor | `components/floor/`, `app/api/floor/` |
 | 064 | Work Order Detail View | `blocked` | — | 061, 062, 063 | Floor | `components/floor/` |
 | 065 | Kanban Board View | `blocked` | — | 061, 062, 063, 064 | Floor | `components/floor/` |
@@ -224,15 +224,15 @@ After this initial update, stay in this session. I will come back to you after e
 | 077 | Bulk Operations | `blocked` | — | 061, 065, 067 | Floor | `components/floor/` |
 | 078 | Floor Comments | `blocked` | — | 010, 061, 064 | Floor | `components/floor/` |
 | 079 | Leader Progress Dashboard | `blocked` | — | 009, 061, 069, 071 | Floor | `components/floor/` |
-| 080 | MCP Connection Schema | `blocked` | — | 010, 061 | Floor | `supabase/migrations/`, `app/api/floor/mcp/` |
+| 080 | MCP Connection Schema | `ready` | — | 010, 061 | Floor | `supabase/migrations/`, `app/api/floor/mcp/` |
 
 ### Section 6: The Insights Lab MVP (081–095)
 
 | Phase | Name | Status | Branch | Prerequisites | Track | File Areas |
 |-------|------|--------|--------|---------------|-------|------------|
-| 081 | Insights Lab Database Schema | `ready` | — | 002 | Lab | `supabase/migrations/`, `types/database.ts` |
-| 082 | Feedback Collection API | `blocked` | — | 001, 081 | Lab | `app/api/lab/` |
-| 083 | Insights Lab Page Layout | `blocked` | — | 006, 010, 081 | Lab | `components/lab/`, `app/.../lab/` |
+| 081 | Insights Lab Database Schema | `done` | — | 002 | Lab | `supabase/migrations/`, `types/database.ts` |
+| 082 | Feedback Collection API | `ready` | — | 001, 081 | Lab | `app/api/lab/` |
+| 083 | Insights Lab Page Layout | `ready` | — | 006, 010, 081 | Lab | `components/lab/`, `app/.../lab/` |
 | 084 | Feedback Inbox Display | `blocked` | — | 081, 083 | Lab | `components/lab/` |
 | 085 | Feedback Detail View | `blocked` | — | 081, 083, 084 | Lab | `components/lab/` |
 | 086 | Feedback Categorization | `blocked` | — | 081, 084, 085 | Lab | `components/lab/` |
@@ -250,8 +250,8 @@ After this initial update, stay in this session. I will come back to you after e
 
 | Phase | Name | Status | Branch | Prerequisites | Track | File Areas |
 |-------|------|--------|--------|---------------|-------|------------|
-| 096 | Artifacts Database & Storage | `ready` | — | 002 | Artifacts | `supabase/migrations/`, `types/database.ts` |
-| 097 | Artifact Upload UI | `blocked` | — | 096 | Artifacts | `components/artifacts/` |
+| 096 | Artifacts Database & Storage | `done` | — | 002 | Artifacts | `supabase/migrations/`, `types/database.ts` |
+| 097 | Artifact Upload UI | `ready` | — | 096 | Artifacts | `components/artifacts/` |
 | 098 | Artifact Browser & Management | `blocked` | — | 096, 097 | Artifacts | `components/artifacts/` |
 | 099 | Artifact Linking to Entities | `blocked` | — | 096, 097 | Artifacts | `components/artifacts/` |
 | 100 | Artifact Search & Indexing | `blocked` | — | 096, 097 | Artifacts | `components/artifacts/` |
@@ -259,22 +259,22 @@ After this initial update, stay in this session. I will come back to you after e
 | 102 | Document Version History | `blocked` | — | 002, 034, 049 | Versioning ⚠️ | `components/versioning/`, `lib/` |
 | 103 | Version Diff & Comparison | `blocked` | — | 102 | Versioning | `components/versioning/` |
 | 104 | Version Restore | `blocked` | — | 102, 103 | Versioning | `components/versioning/` |
-| 105 | Comments System Foundation | `ready` | — | 002 | Comments | `supabase/migrations/`, `components/comments/` |
+| 105 | Comments System Foundation | `done` | — | 002 | Comments | `supabase/migrations/`, `components/comments/` |
 | 106 | @Mentions System | `blocked` | — | 099, 105 | Comments ⚠️ | `components/comments/` |
 | 107 | Notification System | `blocked` | — | 105, 106 | Notifications | `components/notifications/`, `app/api/notifications/` |
 | 108 | Email Notifications | `blocked` | — | 107 | Notifications | `lib/email/`, `app/api/notifications/` |
-| 109 | Knowledge Graph Schema | `ready` | — | 002 | Knowledge | `supabase/migrations/`, `types/database.ts` |
-| 110 | Knowledge Graph Explorer | `blocked` | — | 002, 109 | Knowledge | `components/knowledge/` |
+| 109 | Knowledge Graph Schema | `done` | — | 002 | Knowledge | `supabase/migrations/`, `types/database.ts` |
+| 110 | Knowledge Graph Explorer | `ready` | — | 002, 109 | Knowledge | `components/knowledge/` |
 | 111 | Auto-Connection Detection | `blocked` | — | 106, 109, 110 | Knowledge ⚠️ | `components/knowledge/` |
 | 112 | Manual Entity Linking | `blocked` | — | 109, 110 | Knowledge | `components/knowledge/` |
-| 113 | Organization Console | `ready` | — | 005, 009 | Admin | `components/admin/`, `app/.../admin/` |
+| 113 | Organization Console | `done` | — | 005, 009 | Admin | `components/admin/`, `app/.../admin/` |
 | 114 | Team Invitation System | `blocked` | — | 108, 113 | Admin ⚠️ | `components/admin/` |
 | 115 | Seat Management & Billing | `blocked` | — | 005, 113, 114 | Admin | `components/admin/` |
 | 116 | User Profile & Settings | `blocked` | — | 004, 107 | Admin | `components/settings/`, `app/.../settings/` |
 | 117 | Real-Time Presence | `ready` | — | 002 | Realtime | `lib/realtime/`, `components/layout/` |
 | 118 | Collaborative Editing | `blocked` | — | 034, 049, 117 | Realtime ⚠️ | `components/editor/` |
 | 119 | Audit Trail & Activity Log | `ready` | — | 002 | Admin | `supabase/migrations/`, `components/admin/` |
-| 120 | Project Archive & Cleanup | `blocked` | — | 002, 005, 113 | Admin | `components/admin/` |
+| 120 | Project Archive & Cleanup | `ready` | — | 002, 005, 113 | Admin | `components/admin/` |
 
 ### Section 8: Advanced Features (121–135)
 
@@ -290,8 +290,8 @@ After this initial update, stay in this session. I will come back to you after e
 | 128 | Sprint/Phase Burndown | `blocked` | — | 061, 071 | Floor | `components/floor/` |
 | 129 | MCP Implementation | `blocked` | — | 080 | Floor | `lib/mcp/`, `app/api/floor/mcp/` |
 | 130 | Work Order Sync Alerts | `blocked` | — | 046, 061, 124 | Floor ⚠️ | `components/floor/` |
-| 131 | Slack Integration | `blocked` | — | 081 | Lab | `lib/integrations/`, `app/api/lab/` |
-| 132 | Feedback Analytics | `blocked` | — | 081 | Lab | `components/lab/` |
+| 131 | Slack Integration | `ready` | — | 081 | Lab | `lib/integrations/`, `app/api/lab/` |
+| 132 | Feedback Analytics | `ready` | — | 081 | Lab | `components/lab/` |
 | 133 | Priority Scoring | `blocked` | — | 081, 090 | Lab | `components/lab/` |
 | 134 | Global Search | `blocked` | — | all 001–133 | Cross ⚠️ | `components/search/`, `app/api/search/` |
 | 135 | Dark/Light Theme Toggle | `blocked` | — | 001, 116 | Cross | `app/globals.css`, `lib/theme/` |
@@ -534,12 +534,12 @@ These phases require work from **multiple module tracks** to be complete before 
 | Foundation (001–010) | 10 | 10 | 0 | 0 | 0 |
 | The Hall (011–025) | 15 | 8 | 0 | 4 | 3 |
 | Pattern Shop (026–045) | 20 | 2 | 0 | 2 | 16 |
-| Control Room (046–060) | 15 | 0 | 0 | 1 | 14 |
-| Assembly Floor (061–080) | 20 | 0 | 0 | 1 | 19 |
-| Insights Lab (081–095) | 15 | 0 | 0 | 1 | 14 |
-| Cross-Cutting (096–120) | 25 | 0 | 0 | 6 | 19 |
-| Advanced (121–135) | 15 | 0 | 0 | 0 | 15 |
+| Control Room (046–060) | 15 | 1 | 0 | 1 | 13 |
+| Assembly Floor (061–080) | 20 | 1 | 0 | 2 | 17 |
+| Insights Lab (081–095) | 15 | 1 | 0 | 2 | 12 |
+| Cross-Cutting (096–120) | 25 | 4 | 0 | 5 | 16 |
+| Advanced (121–135) | 15 | 0 | 0 | 2 | 13 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **20** | **0** | **15** | **115** |
+| **TOTAL** | **150** | **27** | **0** | **18** | **105** |
 
-**Currently ready to start**: 019, 020, 024, 025, 028, 029, 046, 061, 081, 096, 105, 109, 113, 117, 119
+**Currently ready to start**: 019, 020, 024, 025, 028, 029, 047, 062, 080, 082, 083, 097, 110, 117, 119, 120, 131, 132
