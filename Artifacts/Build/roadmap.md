@@ -15,9 +15,9 @@
 
 ---
 
-### Completed Phases (67/150)
+### Completed Phases (68/150)
 
-001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 061–065 (Floor schema/layout/WO/kanban), 067 (WO list), 069 (WO phases), 073 (Floor agent), 081 (Lab schema), 083–085 (Lab layout/inbox/detail), 096–101 (Artifacts full stack), 105 (Comments schema), 109 (Knowledge schema), 113 (Org console), 117 (Realtime presence), 119 (Audit trail)
+001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 061–069 (Floor schema/layout/WO/kanban/table/assignment/phases), 073 (Floor agent), 081 (Lab schema), 083–085 (Lab layout/inbox/detail), 096–101 (Artifacts full stack), 105 (Comments schema), 109 (Knowledge schema), 113 (Org console), 117 (Realtime presence), 119 (Audit trail)
 
 ---
 
@@ -380,7 +380,7 @@ After this initial update, stay in this session. I will come back to you after e
 | 065 | Kanban Board View | `done` | — | 061, 062, 063, 064 | Floor | `components/floor/` |
 | 066 | Kanban Card Display | `done` | — | 062, 065 | Floor | `components/floor/` |
 | 067 | Work Order List/Table View | `done` | — | 061, 062, 064 | Floor | `components/floor/` |
-| 068 | Work Order Assignment | `ready` | — | 010, 061, 064, 065, 067 | Floor | `components/floor/` |
+| 068 | Work Order Assignment | `done` | — | 010, 061, 064, 065, 067 | Floor | `components/floor/` |
 | 069 | Work Order Phases | `done` | — | 061, 062, 065 | Floor | `components/floor/` |
 | 070 | Priority & Sequencing | `ready` | — | 061, 065, 067, 069 | Floor | `components/floor/` |
 | 071 | Progress Tracking & Rollup | `ready` | — | 026, 061, 069 | Floor ⚠️ | `components/floor/` |
@@ -703,11 +703,11 @@ These phases require work from **multiple module tracks** to be complete before 
 | The Hall (011–025) | 15 | 15 | 0 | 0 | 0 |
 | Pattern Shop (026–045) | 20 | 12 | 0 | 6 | 2 |
 | Control Room (046–060) | 15 | 5 | 0 | 6 | 4 |
-| Assembly Floor (061–080) | 20 | 8 | 0 | 10 | 2 |
+| Assembly Floor (061–080) | 20 | 9 | 0 | 9 | 2 |
 | Insights Lab (081–095) | 15 | 4 | 0 | 5 | 6 |
 | Cross-Cutting (096–120) | 25 | 10 | 0 | 6 | 9 |
 | Advanced (121–135) | 15 | 0 | 0 | 6 | 9 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **84** | **0** | **31** | **35** |
+| **TOTAL** | **150** | **85** | **0** | **30** | **35** |
 
-**Currently ready to start**: 060, 068, 070, 071, 072, 074, 076, 077, 078, 080, 082, 086, 088, 089, 090, 102, 106, 110, 118, 120, 121, 122, 123, 124, 127, 131, 132
+**Currently ready to start**: 060, 070, 071, 072, 074, 076, 077, 078, 080, 082, 086, 088, 089, 090, 102, 106, 110, 118, 120, 121, 122, 123, 124, 127, 131, 132
