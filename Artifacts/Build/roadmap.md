@@ -15,9 +15,9 @@
 
 ---
 
-### Completed Phases (112/150)
+### Completed Phases (113/150)
 
-001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 059–060 (Blueprint versioning + comments), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–086 + 088–090 (Lab schema/API/categorization/convert-to-WO/convert-to-feature/agent), 083–085 (Lab layout/inbox/detail), 096–103 (Artifacts full stack + folders + version history + diff), 105 (Comments schema), 106 (@Mentions), 109–110 (Knowledge schema + explorer), 112 (Manual entity linking), 113 (Org console), 117 (Realtime presence), 118 (Collaborative editing), 119 (Audit trail), 120 (Project archive), 124 (Drift detection), 125 (Cross-doc suggestions), 126 (Org templates), 128 (Phase burndown)
+001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 059–060 (Blueprint versioning + comments), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–086 + 088–090 (Lab schema/API/categorization/convert-to-WO/convert-to-feature/agent), 083–085 (Lab layout/inbox/detail), 096–104 (Artifacts full stack + folders + versioning complete), 105 (Comments schema), 106 (@Mentions), 109–110 (Knowledge schema + explorer), 112 (Manual entity linking), 113 (Org console), 117 (Realtime presence), 118 (Collaborative editing), 119 (Audit trail), 120 (Project archive), 124 (Drift detection), 125 (Cross-doc suggestions), 126 (Org templates), 128 (Phase burndown)
 
 ---
 
@@ -426,7 +426,7 @@ After this initial update, stay in this session. I will come back to you after e
 | 101 | Artifact Folders & Organization | `ready` | — | 096, 098 | Artifacts | `components/artifacts/` |
 | 102 | Document Version History | `done` | — | 002, 034, 049 | Versioning ⚠️ | `components/versioning/`, `lib/` |
 | 103 | Version Diff & Comparison | `done` | — | 102 | Versioning | `components/versioning/` |
-| 104 | Version Restore | `ready` | — | 102, 103 | Versioning | `components/versioning/` |
+| 104 | Version Restore | `done` | — | 102, 103 | Versioning | `components/versioning/` |
 | 105 | Comments System Foundation | `done` | — | 002 | Comments | `supabase/migrations/`, `components/comments/` |
 | 106 | @Mentions System | `done` | — | 099, 105 | Comments ⚠️ | `components/mentions/` |
 | 107 | Notification System | `blocked` | — | 105, 106 | Notifications | `components/notifications/`, `app/api/notifications/` |

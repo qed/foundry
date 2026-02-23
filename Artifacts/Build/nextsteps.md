@@ -240,6 +240,7 @@ After building, run `npm run build` and `npm run lint` to verify zero errors. Th
 - Phase 101: Artifact Folders & Organization (Artifacts) -- done
 - Phase 102: Document Version History (Versioning) -- done (parity: trigger_type, change_note, download, UI badges)
 - Phase 103: Version Diff & Comparison (Versioning) -- done (word diff, side-by-side, version selectors, synced scroll)
+- Phase 104: Version Restore (Versioning) -- done (diff stats preview, toast notifications, activity logging)
 - Phase 106: @Mentions System (Cross) -- done
 - Phase 110: Knowledge Graph Explorer Panel (Cross) -- done
 - Phase 118: Real-Time Collaborative Editing (Realtime) -- done
