@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import type { JSONContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -8,6 +8,8 @@ import LinkExtension from '@tiptap/extension-link'
 import Underline from '@tiptap/extension-underline'
 import { Table, TableRow, TableHeader, TableCell } from '@tiptap/extension-table'
 import Placeholder from '@tiptap/extension-placeholder'
+import Collaboration from '@tiptap/extension-collaboration'
+import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
 import {
   Bold,
   Italic,
@@ -30,6 +32,9 @@ import {
   Minus,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { RemoteUsersIndicator } from '@/components/editors/remote-users-indicator'
+import type { AwarenessState } from '@/lib/collaboration/supabase-yjs-provider'
+import type { Doc as YDoc } from 'yjs'
 
 interface Heading {
   id: string
@@ -42,12 +47,21 @@ interface BlueprintEditorProps {
   content: JSONContent | null
   onSave: (content: JSONContent) => Promise<void>
   readOnly?: boolean
+  // Collaboration props
+  ydoc?: YDoc | null
+  provider?: { awareness: Map<string, AwarenessState>; getRemoteStates: () => AwarenessState[] } | null
+  remoteUsers?: AwarenessState[]
+  isCollaborative?: boolean
 }
 
 export function BlueprintEditor({
   content,
   onSave,
   readOnly = false,
+  ydoc,
+  provider: _provider,
+  remoteUsers = [],
+  isCollaborative = false,
 }: BlueprintEditorProps) {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [wordCount, setWordCount] = useState(0)
@@ -92,26 +106,33 @@ export function BlueprintEditor({
     setHeadings(newHeadings)
   }, [])
 
-  const editor = useEditor({
-    extensions: [
+  // Build extensions list — add collaboration if ydoc provided
+  const extensions = useMemo(() => {
+    const exts = [
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
+        ...(ydoc ? { history: false } : {}),
       }),
-      LinkExtension.configure({
-        openOnClick: false,
-      }),
+      LinkExtension.configure({ openOnClick: false }),
       Underline,
-      Table.configure({
-        resizable: true,
-      }),
+      Table.configure({ resizable: true }),
       TableRow,
       TableHeader,
       TableCell,
-      Placeholder.configure({
-        placeholder: 'Start typing your blueprint...',
-      }),
-    ],
-    content: content || undefined,
+      Placeholder.configure({ placeholder: 'Start typing your blueprint...' }),
+    ]
+    if (ydoc) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      exts.push(Collaboration.configure({ document: ydoc }) as any)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      exts.push(CollaborationCursor.configure({ provider: _provider }) as any)
+    }
+    return exts
+  }, [ydoc, _provider])
+
+  const editor = useEditor({
+    extensions,
+    content: ydoc ? undefined : (content || undefined), // Yjs manages content when collaborative
     editable: !readOnly,
     editorProps: {
       attributes: {
@@ -334,6 +355,11 @@ export function BlueprintEditor({
         )}
 
         <div className="flex-1" />
+
+        {/* Collaborative users */}
+        {isCollaborative && (
+          <RemoteUsersIndicator remoteUsers={remoteUsers} isConnected={!!ydoc} />
+        )}
 
         {/* Outline toggle */}
         {headings.length > 0 && (

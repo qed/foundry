@@ -252,3 +252,27 @@ body {
   float: left;
   height: 0;
 }
+
+/* Collaborative editing cursors */
+.collaboration-cursor__caret {
+  position: relative;
+  margin-left: -1px;
+  margin-right: -1px;
+  border-left: 2px solid currentColor;
+  word-break: normal;
+  pointer-events: none;
+}
+.collaboration-cursor__label {
+  position: absolute;
+  top: -1.4em;
+  left: -1px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: 0.15em 0.35em;
+  border-radius: 3px 3px 3px 0;
+  white-space: nowrap;
+  color: #fff;
+  user-select: none;
+  pointer-events: none;
+}

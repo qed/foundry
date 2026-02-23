@@ -1,10 +1,12 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import LinkExtension from '@tiptap/extension-link'
 import Underline from '@tiptap/extension-underline'
+import Collaboration from '@tiptap/extension-collaboration'
+import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
 import {
   Bold,
   Italic,
@@ -26,6 +28,9 @@ import {
   MessageSquare,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { RemoteUsersIndicator } from '@/components/editors/remote-users-indicator'
+import type { AwarenessState } from '@/lib/collaboration/supabase-yjs-provider'
+import type { Doc as YDoc } from 'yjs'
 
 interface Heading {
   id: string
@@ -42,6 +47,11 @@ interface RequirementsEditorProps {
   versionPanel?: React.ReactNode
   onContentSaved?: (html: string, previousHtml: string) => void
   commentsPanel?: (props: { selectedText?: string; onClearSelection: () => void }) => React.ReactNode
+  // Collaboration props
+  ydoc?: YDoc | null
+  provider?: { awareness: Map<string, AwarenessState>; getRemoteStates: () => AwarenessState[] } | null
+  remoteUsers?: AwarenessState[]
+  isCollaborative?: boolean
 }
 
 export function RequirementsEditor({
@@ -52,6 +62,10 @@ export function RequirementsEditor({
   versionPanel,
   onContentSaved,
   commentsPanel,
+  ydoc,
+  provider: _provider,
+  remoteUsers = [],
+  isCollaborative = false,
 }: RequirementsEditorProps) {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [wordCount, setWordCount] = useState(0)
@@ -100,17 +114,29 @@ export function RequirementsEditor({
     setHeadings(newHeadings)
   }, [])
 
-  const editor = useEditor({
-    extensions: [
+  // Build extensions list — add collaboration if ydoc provided
+  const extensions = useMemo(() => {
+    const exts = [
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
+        // When collaborative, disable built-in history (Yjs handles undo/redo)
+        ...(ydoc ? { history: false } : {}),
       }),
-      LinkExtension.configure({
-        openOnClick: false,
-      }),
+      LinkExtension.configure({ openOnClick: false }),
       Underline,
-    ],
-    content,
+    ]
+    if (ydoc) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      exts.push(Collaboration.configure({ document: ydoc }) as any)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      exts.push(CollaborationCursor.configure({ provider: _provider }) as any)
+    }
+    return exts
+  }, [ydoc, _provider])
+
+  const editor = useEditor({
+    extensions,
+    content: ydoc ? undefined : content, // Yjs manages content when collaborative
     editable: !readOnly,
     editorProps: {
       attributes: {
@@ -314,6 +340,11 @@ export function RequirementsEditor({
         )}
 
         <div className="flex-1" />
+
+        {/* Collaborative users */}
+        {isCollaborative && (
+          <RemoteUsersIndicator remoteUsers={remoteUsers} isConnected={!!ydoc} />
+        )}
 
         {/* Extra toolbar buttons (import/export) */}
         {toolbarExtra}
