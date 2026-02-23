@@ -15,9 +15,9 @@
 
 ---
 
-### Completed Phases (116/150)
+### Completed Phases (117/150)
 
-001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 059–060 (Blueprint versioning + comments), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–090 (Lab full stack), 094 (App key management), 096–104 (Artifacts full stack + folders + versioning complete), 105 (Comments schema), 106 (@Mentions), 109–110 (Knowledge schema + explorer), 112 (Manual entity linking), 113 (Org console), 117 (Realtime presence), 118 (Collaborative editing), 119 (Audit trail), 120 (Project archive), 124 (Drift detection), 125 (Cross-doc suggestions), 126 (Org templates), 127 (Extraction strategy), 128 (Phase burndown), 129 (MCP implementation), 130 (WO sync alerts)
+001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 059–060 (Blueprint versioning + comments), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–091 (Lab full stack + auto-categorization), 094 (App key management), 096–104 (Artifacts full stack + folders + versioning complete), 105 (Comments schema), 106 (@Mentions), 109–110 (Knowledge schema + explorer), 112 (Manual entity linking), 113 (Org console), 117 (Realtime presence), 118 (Collaborative editing), 119 (Audit trail), 120 (Project archive), 124 (Drift detection), 125 (Cross-doc suggestions), 126 (Org templates), 127 (Extraction strategy), 128 (Phase burndown), 129 (MCP implementation), 130 (WO sync alerts)
 
 ---
 
@@ -408,9 +408,9 @@ After this initial update, stay in this session. I will come back to you after e
 | 088 | Convert Feedback → Work Order | `done` | — | 061, 081, 085 | Lab ⚠️ | `components/lab/`, `app/api/projects/` |
 | 089 | Convert Feedback → Feature | `done` | — | 026, 081, 085 | Lab ⚠️ | `components/lab/`, `app/api/lab/` |
 | 090 | Insights Lab Agent Infra | `done` | — | 081, 083 | Lab | `components/lab/`, `app/api/lab/agent/` |
-| 091 | Agent: Auto-Categorization | `ready` | — | 081, 086, 090 | Lab | `components/lab/` |
-| 092 | Agent: Feedback Enrichment | `blocked` | — | 026, 085, 090, 091 | Lab ⚠️ | `components/lab/` |
-| 093 | Agent: Conversion Suggestions | `blocked` | — | 088, 089, 090, 091 | Lab ⚠️ | `components/lab/` |
+| 091 | Agent: Auto-Categorization | `done` | — | 081, 086, 090 | Lab | `components/lab/` |
+| 092 | Agent: Feedback Enrichment | `ready` | — | 026, 085, 090, 091 | Lab ⚠️ | `components/lab/` |
+| 093 | Agent: Conversion Suggestions | `ready` | — | 088, 089, 090, 091 | Lab ⚠️ | `components/lab/` |
 | 094 | App Key Management | `done` | — | 006, 081, 082 | Lab | `components/lab/`, `app/api/lab/` |
 | 095 | Feedback Bulk Operations | `ready` | — | 084, 086, 088 | Lab | `components/lab/` |
 
