@@ -15,9 +15,9 @@
 
 ---
 
-### Completed Phases (105/150)
+### Completed Phases (106/150)
 
-001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–086 + 088–090 (Lab schema/API/categorization/convert-to-WO/convert-to-feature/agent), 083–085 (Lab layout/inbox/detail), 096–101 (Artifacts full stack + folders), 105 (Comments schema), 106 (@Mentions), 109–110 (Knowledge schema + explorer), 113 (Org console), 117 (Realtime presence), 118 (Collaborative editing), 119 (Audit trail), 120 (Project archive), 128 (Phase burndown)
+001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 059–060 (Blueprint versioning + comments), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–086 + 088–090 (Lab schema/API/categorization/convert-to-WO/convert-to-feature/agent), 083–085 (Lab layout/inbox/detail), 096–101 (Artifacts full stack + folders), 105 (Comments schema), 106 (@Mentions), 109–110 (Knowledge schema + explorer), 113 (Org console), 117 (Realtime presence), 118 (Collaborative editing), 119 (Audit trail), 120 (Project archive), 128 (Phase burndown)
 
 ---
 
@@ -367,7 +367,7 @@ After this initial update, stay in this session. I will come back to you after e
 | 057 | Agent: Blueprint Generation | `done` | — | 048, 051, 056 | Room | `components/room/` |
 | 058 | Agent: Blueprint Review | `done` | — | 048, 051, 054, 056 | Room | `components/room/` |
 | 059 | Blueprint Version History | `done` | — | 046, 049, 054 | Room | `components/room/` |
-| 060 | Blueprint Comments | `ready` | — | 046, 049, 054, 059 | Room | `components/room/` |
+| 060 | Blueprint Comments | `done` | — | 046, 049, 054, 059 | Room | `components/room/` |
 
 ### Section 5: The Assembly Floor MVP (061–080)
 
@@ -702,7 +702,7 @@ These phases require work from **multiple module tracks** to be complete before 
 | Foundation (001–010) | 10 | 10 | 0 | 0 | 0 |
 | The Hall (011–025) | 15 | 15 | 0 | 0 | 0 |
 | Pattern Shop (026–045) | 20 | 20 | 0 | 0 | 0 |
-| Control Room (046–060) | 15 | 14 | 0 | 1 | 0 |
+| Control Room (046–060) | 15 | 15 | 0 | 0 | 0 |
 | Assembly Floor (061–080) | 20 | 17 | 0 | 3 | 0 |
 | Insights Lab (081–095) | 15 | 7 | 0 | 5 | 3 |
 | Cross-Cutting (096–120) | 25 | 10 | 0 | 6 | 9 |
@@ -710,4 +710,4 @@ These phases require work from **multiple module tracks** to be complete before 
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
 | **TOTAL** | **150** | **93** | **0** | **23** | **34** |
 
-**Currently ready to start**: 060, 087, 089, 090, 094, 095, 101, 102, 106, 110, 118, 120, 121, 122, 123, 124, 127, 128, 129, 131, 132
+**Currently ready to start**: 087, 089, 090, 094, 095, 101, 102, 106, 110, 118, 120, 121, 122, 123, 124, 127, 128, 129, 131, 132
