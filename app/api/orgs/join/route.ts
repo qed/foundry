@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { requireAuth } from '@/lib/auth/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { handleAuthError } from '@/lib/auth/errors'
+import { canAddSeat, incrementSeats } from '@/lib/billing/seats'
 
 export async function POST(request: NextRequest) {
   try {
@@ -67,6 +68,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Check seat limit
+    const seatCheck = await canAddSeat(org.id)
+    if (!seatCheck.allowed) {
+      return Response.json({ error: seatCheck.reason }, { status: 403 })
+    }
+
     // Add user as member
     const { error: memberError } = await supabase
       .from('org_members')
@@ -82,6 +89,9 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       )
     }
+
+    // Increment seat count
+    incrementSeats(org.id).catch(() => {})
 
     return Response.json({ org })
   } catch (error) {

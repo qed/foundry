@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { getOrgAndValidateAccess } from '@/lib/auth/org-validation'
 import { createServiceClient } from '@/lib/supabase/server'
 import { handleAuthError } from '@/lib/auth/errors'
+import { canAddSeat } from '@/lib/billing/seats'
 import { sendEmail } from '@/lib/email/service'
 import { invitationEmailHtml, invitationEmailText } from '@/lib/email/templates'
 
@@ -83,6 +84,12 @@ export async function POST(
 
     if (role && !['admin', 'member'].includes(role)) {
       return Response.json({ error: 'Role must be admin or member' }, { status: 400 })
+    }
+
+    // Check seat limit before creating invitation
+    const seatCheck = await canAddSeat(orgId)
+    if (!seatCheck.allowed) {
+      return Response.json({ error: seatCheck.reason }, { status: 403 })
     }
 
     const supabase = createServiceClient()

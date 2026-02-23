@@ -1,12 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { Settings, Users, FolderKanban, AlertTriangle, FileText } from 'lucide-react'
+import { Settings, Users, FolderKanban, AlertTriangle, FileText, CreditCard } from 'lucide-react'
 import { TopBar } from '@/components/layout/top-bar'
 import { GeneralSettingsTab } from './general-settings-tab'
 import { MembersTab } from './members-tab'
 import { ProjectsTab } from './projects-tab'
 import { DangerZoneTab } from './danger-zone-tab'
+import { BillingTab } from './billing-tab'
 import { TemplatesTab } from './templates-tab'
 import { cn } from '@/lib/utils'
 import type { Organization, Project } from '@/types/database'
@@ -31,6 +32,7 @@ const tabs = [
   { id: 'general', label: 'General', icon: Settings },
   { id: 'members', label: 'Members', icon: Users },
   { id: 'projects', label: 'Projects', icon: FolderKanban },
+  { id: 'billing', label: 'Billing', icon: CreditCard },
   { id: 'templates', label: 'Templates', icon: FileText },
   { id: 'danger', label: 'Danger Zone', icon: AlertTriangle },
 ] as const
@@ -101,6 +103,9 @@ export function OrgConsoleClient({
             orgSlug={orgSlug}
             initialProjects={initialProjects}
           />
+        )}
+        {activeTab === 'billing' && (
+          <BillingTab orgId={org.id} />
         )}
         {activeTab === 'templates' && (
           <TemplatesTab orgId={org.id} />

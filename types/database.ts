@@ -2059,6 +2059,60 @@ export type Database = {
         };
         Relationships: [];
       };
+      org_subscriptions: {
+        Row: {
+          id: string;
+          organization_id: string;
+          plan: string;
+          seat_limit: number;
+          current_seats: number;
+          stripe_customer_id: string | null;
+          stripe_subscription_id: string | null;
+          billing_email: string | null;
+          billing_status: string;
+          auto_renew: boolean;
+          current_period_start: string | null;
+          current_period_end: string | null;
+          cancel_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          plan?: string;
+          seat_limit?: number;
+          current_seats?: number;
+          stripe_customer_id?: string | null;
+          stripe_subscription_id?: string | null;
+          billing_email?: string | null;
+          billing_status?: string;
+          auto_renew?: boolean;
+          current_period_start?: string | null;
+          current_period_end?: string | null;
+          cancel_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          plan?: string;
+          seat_limit?: number;
+          current_seats?: number;
+          stripe_customer_id?: string | null;
+          stripe_subscription_id?: string | null;
+          billing_email?: string | null;
+          billing_status?: string;
+          auto_renew?: boolean;
+          current_period_start?: string | null;
+          current_period_end?: string | null;
+          cancel_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -2215,3 +2269,6 @@ export type UserNotificationPreferences = Database["public"]["Tables"]["user_not
 export type EmailLog = Database["public"]["Tables"]["email_log"]["Row"];
 export type Invitation = Database["public"]["Tables"]["invitations"]["Row"];
 export type InvitationStatus = "pending" | "accepted" | "expired" | "revoked";
+export type OrgSubscription = Database["public"]["Tables"]["org_subscriptions"]["Row"];
+export type PlanType = "free" | "pro" | "enterprise";
+export type BillingStatus = "active" | "past_due" | "unpaid" | "cancelled" | "trialing";

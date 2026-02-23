@@ -3,6 +3,7 @@ import { getOrgAndValidateAccess } from '@/lib/auth/org-validation'
 import { createServiceClient } from '@/lib/supabase/server'
 import { handleAuthError } from '@/lib/auth/errors'
 import { ForbiddenError } from '@/lib/auth/errors'
+import { decrementSeats } from '@/lib/billing/seats'
 
 interface RouteParams {
   params: Promise<{ orgId: string; memberId: string }>
@@ -136,6 +137,9 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
     if (error) {
       return Response.json({ error: error.message }, { status: 500 })
     }
+
+    // Decrement seat count
+    decrementSeats(orgId).catch(() => {})
 
     return Response.json({ success: true })
   } catch (error) {
