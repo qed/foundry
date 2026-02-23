@@ -36,7 +36,7 @@ Where XXX is the phase number (e.g., 017, 026, 113). This sets the Claude Code s
 | Artifacts | `PhaseHistory/artifacts.md` | 096–101 | `components/artifacts/`, `app/api/projects/*/artifacts/`, `lib/artifacts/` |
 | Cross-Cutting | `PhaseHistory/cross-cutting.md` | 105–119 | `lib/activity/`, `lib/realtime/`, `components/presence/` |
 
-**129 phases complete** (001–060, 061–095, 096–102, 105–108, 109–111, 112–123, 124–130).
+**132 phases complete** (001–060, 061–095, 096–102, 105–108, 109–111, 112–133).
 
 _Previously this was a single giant paragraph. Migrated to per-module files on 2026-02-22._
 
@@ -266,6 +266,11 @@ After building, run `npm run build` and `npm run lint` to verify zero errors. Th
 - Phase 111: Auto-Connection Detection (Cross-Cutting) -- done
 - Phase 131: Slack Integration (Lab) -- done
 - Phase 132: Feedback Analytics Dashboard (Lab) -- done
+- Phase 133: Priority Scoring (Lab) -- done
 
 **Next up** (sequential order):
-...
+- Phase 134: Global Search (Cross-Cutting)
+- Phase 135: Dark/Light Theme Toggle (Cross-Cutting)
+- Phase 136: Error Boundaries & Fallback UI (Quality)
+- Phase 137: Loading States & Skeletons (Quality)
+- Phase 138: Form Validation / Zod (Quality)

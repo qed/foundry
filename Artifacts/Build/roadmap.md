@@ -15,9 +15,9 @@
 
 ---
 
-### Completed Phases (131/150)
+### Completed Phases (132/150)
 
-001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 059–060 (Blueprint versioning + comments), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–091 (Lab full stack + auto-categorization), 092 (Feedback enrichment), 094–095 (App key management + bulk ops), 096–104 (Artifacts full stack + folders + versioning complete), 105 (Comments schema), 106 (@Mentions), 107–108 (Notifications + Email), 109–111 (Knowledge schema + explorer + auto-connections), 112 (Manual entity linking), 113 (Org console), 117 (Realtime presence), 118 (Collaborative editing), 119 (Audit trail), 120 (Project archive), 121–123 (Idea maturity + agent instructions + aggregate export), 124 (Drift detection), 125 (Cross-doc suggestions), 126 (Org templates), 127 (Extraction strategy), 128 (Phase burndown), 129 (MCP implementation), 130 (WO sync alerts), 131 (Slack integration), 132 (Feedback analytics), 114–116 (Team invitations + billing + user profile)
+001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 059–060 (Blueprint versioning + comments), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–091 (Lab full stack + auto-categorization), 092 (Feedback enrichment), 094–095 (App key management + bulk ops), 096–104 (Artifacts full stack + folders + versioning complete), 105 (Comments schema), 106 (@Mentions), 107–108 (Notifications + Email), 109–111 (Knowledge schema + explorer + auto-connections), 112 (Manual entity linking), 113 (Org console), 117 (Realtime presence), 118 (Collaborative editing), 119 (Audit trail), 120 (Project archive), 121–123 (Idea maturity + agent instructions + aggregate export), 124 (Drift detection), 125 (Cross-doc suggestions), 126 (Org templates), 127 (Extraction strategy), 128 (Phase burndown), 129 (MCP implementation), 130 (WO sync alerts), 131–133 (Slack integration + feedback analytics + priority scoring), 114–116 (Team invitations + billing + user profile)
 
 ---
 
@@ -436,9 +436,9 @@ After this initial update, stay in this session. I will come back to you after e
 | 111 | Auto-Connection Detection | `done` | — | 106, 109, 110 | Knowledge | `components/knowledge-graph/`, `lib/knowledge-graph/` |
 | 112 | Manual Entity Linking | `done` | — | 109, 110 | Knowledge | `components/knowledge/` |
 | 113 | Organization Console | `done` | — | 005, 009 | Admin | `components/admin/`, `app/.../admin/` |
-| 114 | Team Invitation System | `ready` | — | 108, 113 | Admin ⚠️ | `components/admin/` |
-| 115 | Seat Management & Billing | `blocked` | — | 005, 113, 114 | Admin | `components/admin/` |
-| 116 | User Profile & Settings | `ready` | — | 004, 107 | Admin | `components/settings/`, `app/.../settings/` |
+| 114 | Team Invitation System | `done` | — | 108, 113 | Admin ⚠️ | `components/admin/` |
+| 115 | Seat Management & Billing | `done` | — | 005, 113, 114 | Admin | `components/admin/` |
+| 116 | User Profile & Settings | `done` | — | 004, 107 | Admin | `components/settings/`, `app/.../settings/` |
 | 117 | Real-Time Presence | `done` | — | 002 | Realtime | `lib/realtime/`, `components/layout/` |
 | 118 | Collaborative Editing | `done` | — | 034, 049, 117 | Realtime ⚠️ | `components/editor/` |
 | 119 | Audit Trail & Activity Log | `done` | — | 002 | Admin | `supabase/migrations/`, `components/admin/` |
@@ -460,9 +460,9 @@ After this initial update, stay in this session. I will come back to you after e
 | 130 | Work Order Sync Alerts | `done` | — | 046, 061, 124 | Floor ⚠️ | `components/floor/` |
 | 131 | Slack Integration | `done` | — | 081 | Lab | `lib/slack/`, `app/api/projects/` |
 | 132 | Feedback Analytics | `done` | — | 081 | Lab | `components/lab/` |
-| 133 | Priority Scoring | `ready` | — | 081, 090 | Lab | `components/lab/` |
-| 134 | Global Search | `blocked` | — | all 001–133 | Cross ⚠️ | `components/search/`, `app/api/search/` |
-| 135 | Dark/Light Theme Toggle | `blocked` | — | 001, 116 | Cross | `app/globals.css`, `lib/theme/` |
+| 133 | Priority Scoring | `done` | — | 081, 090 | Lab | `components/lab/` |
+| 134 | Global Search | `ready` | — | all 001–133 | Cross ⚠️ | `components/search/`, `app/api/search/` |
+| 135 | Dark/Light Theme Toggle | `ready` | — | 001, 116 | Cross | `app/globals.css`, `lib/theme/` |
 
 ### Section 9: Polish & Deployment (136–150)
 
@@ -703,11 +703,11 @@ These phases require work from **multiple module tracks** to be complete before 
 | The Hall (011–025) | 15 | 15 | 0 | 0 | 0 |
 | Pattern Shop (026–045) | 20 | 20 | 0 | 0 | 0 |
 | Control Room (046–060) | 15 | 15 | 0 | 0 | 0 |
-| Assembly Floor (061–080) | 20 | 17 | 0 | 3 | 0 |
+| Assembly Floor (061–080) | 20 | 20 | 0 | 0 | 0 |
 | Insights Lab (081–095) | 15 | 15 | 0 | 0 | 0 |
-| Cross-Cutting (096–120) | 25 | 21 | 0 | 3 | 1 |
-| Advanced (121–135) | 15 | 12 | 0 | 1 | 2 |
+| Cross-Cutting (096–120) | 25 | 25 | 0 | 0 | 0 |
+| Advanced (121–135) | 15 | 13 | 0 | 2 | 0 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **131** | **0** | **1** | **18** |
+| **TOTAL** | **150** | **132** | **0** | **2** | **16** |
 
-**Currently ready to start**: 133
+**Currently ready to start**: 134, 135
