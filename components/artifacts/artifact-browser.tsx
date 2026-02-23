@@ -12,6 +12,8 @@ import {
   Loader2,
   Search,
   X,
+  PanelLeftClose,
+  PanelLeft,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useToast } from '@/components/ui/toast-container'
@@ -21,6 +23,7 @@ import { ArtifactContextMenu } from './artifact-context-menu'
 import { FolderContextMenu } from './folder-context-menu'
 import { ArtifactPreview } from './artifact-preview'
 import { UploadZone } from './upload-zone'
+import { FolderTree } from './folder-tree'
 import { formatFileSize } from '@/lib/artifacts/file-types'
 import { timeAgo } from '@/lib/utils'
 import type { Artifact, ArtifactFolder } from '@/types/database'
@@ -60,7 +63,12 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
 
   // Move state
   const [movingArtifact, setMovingArtifact] = useState<string | null>(null)
+  const [movingFolder, setMovingFolder] = useState<{ id: string; name: string } | null>(null)
   const [allFolders, setAllFolders] = useState<ArtifactFolder[]>([])
+
+  // Sidebar tree
+  const [showTree, setShowTree] = useState(true)
+  const [treeKey, setTreeKey] = useState(0)
 
   // Delete confirmation
   const [deletingId, setDeletingId] = useState<string | null>(null)
@@ -273,6 +281,7 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
         setBreadcrumb((prev) =>
           prev.map((b) => (b.id === renamingId ? { ...b, name: renameValue.trim() } : b))
         )
+        setTreeKey((k) => k + 1)
       }
       addToastRef.current('Renamed', 'success')
     } catch {
@@ -305,6 +314,7 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
           return
         }
         setFolders((prev) => prev.filter((f) => f.id !== deletingId))
+        setTreeKey((k) => k + 1)
       }
       addToastRef.current('Deleted', 'success')
     } catch {
@@ -361,6 +371,53 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
     [movingArtifact, projectId, selectedArtifact]
   )
 
+  const handleFolderMoveStart = useCallback(
+    async (folderId: string, folderName: string) => {
+      setMovingFolder({ id: folderId, name: folderName })
+      try {
+        const res = await fetch(`/api/projects/${projectId}/artifacts/folders?all=true`)
+        if (res.ok) {
+          const data = await res.json()
+          setAllFolders(data.folders || [])
+        }
+      } catch {
+        setAllFolders(folders)
+      }
+    },
+    [projectId, folders]
+  )
+
+  const handleFolderMoveConfirm = useCallback(
+    async (targetParentId: string | null) => {
+      if (!movingFolder) return
+
+      try {
+        const res = await fetch(
+          `/api/projects/${projectId}/artifacts/folders/${movingFolder.id}`,
+          {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ parent_folder_id: targetParentId }),
+          }
+        )
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({ error: 'Failed to move folder' }))
+          addToastRef.current(data.error || 'Failed to move folder', 'error')
+          return
+        }
+        addToastRef.current('Folder moved', 'success')
+        // Refresh contents and tree
+        fetchContents()
+        setTreeKey((k) => k + 1)
+      } catch {
+        addToastRef.current('Failed to move folder', 'error')
+      } finally {
+        setMovingFolder(null)
+      }
+    },
+    [movingFolder, projectId, fetchContents]
+  )
+
   const handleCreateFolder = useCallback(async () => {
     if (!newFolderName.trim()) return
 
@@ -376,6 +433,7 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
       }
       const { folder } = await res.json()
       setFolders((prev) => [...prev, folder])
+      setTreeKey((k) => k + 1)
       addToastRef.current('Folder created', 'success')
     } catch {
       addToastRef.current('Failed to create folder', 'error')
@@ -425,6 +483,18 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
 
   return (
     <div className="flex h-full">
+      {/* Folder tree sidebar */}
+      {showTree && (
+        <div className="hidden md:flex w-48 lg:w-56 shrink-0 border-r border-border-default bg-bg-primary flex-col">
+          <FolderTree
+            key={treeKey}
+            projectId={projectId}
+            selectedFolderId={currentFolderId}
+            onFolderSelect={navigateToFolder}
+          />
+        </div>
+      )}
+
       {/* Main content */}
       <div className={cn('flex-1 flex flex-col min-w-0', selectedArtifact && 'hidden sm:flex')}>
         {/* Toolbar */}
@@ -432,6 +502,18 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
           <BreadcrumbNav path={breadcrumb} onNavigate={navigateToFolder} />
 
           <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setShowTree((prev) => !prev)}
+              className={cn(
+                'hidden md:flex p-1.5 rounded transition-colors',
+                showTree
+                  ? 'text-accent-cyan bg-accent-cyan/10'
+                  : 'text-text-tertiary hover:text-text-primary'
+              )}
+              title={showTree ? 'Hide folder tree' : 'Show folder tree'}
+            >
+              {showTree ? <PanelLeftClose className="w-4 h-4" /> : <PanelLeft className="w-4 h-4" />}
+            </button>
             {/* Search bar */}
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-tertiary" />
@@ -854,6 +936,7 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
           y={folderContextMenu.y}
           depth={folderContextMenu.depth}
           onRename={() => handleRenameStart(folderContextMenu.folderId, folderContextMenu.folderName, 'folder')}
+          onMove={() => handleFolderMoveStart(folderContextMenu.folderId, folderContextMenu.folderName)}
           onDelete={() => { setDeletingId(folderContextMenu.folderId); setDeletingType('folder') }}
           onCreateSubfolder={() => handleCreateSubfolder(folderContextMenu.folderId)}
           onClose={() => setFolderContextMenu(null)}
@@ -894,7 +977,7 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
         </div>
       )}
 
-      {/* Move dialog */}
+      {/* Move artifact dialog */}
       {movingArtifact && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60" onClick={() => setMovingArtifact(null)} />
@@ -931,6 +1014,53 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
             <div className="flex justify-end">
               <button
                 onClick={() => setMovingArtifact(null)}
+                className="px-4 py-2 text-xs font-medium text-text-secondary hover:text-text-primary bg-bg-tertiary rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Move folder dialog */}
+      {movingFolder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setMovingFolder(null)} />
+          <div className="relative bg-bg-secondary border border-border-default rounded-lg shadow-xl p-6 max-w-sm w-full">
+            <h3 className="text-sm font-semibold text-text-primary mb-1">Move folder</h3>
+            <p className="text-xs text-text-tertiary mb-4">
+              Move &ldquo;{movingFolder.name}&rdquo; to:
+            </p>
+            <div className="space-y-1 max-h-[300px] overflow-y-auto mb-4">
+              <button
+                onClick={() => handleFolderMoveConfirm(null)}
+                disabled={currentFolderId === null}
+                className="w-full flex items-center gap-2 px-3 py-2 text-xs text-text-secondary hover:bg-bg-tertiary rounded-lg transition-colors disabled:opacity-30"
+              >
+                <Folder className="w-4 h-4 text-accent-warning" />
+                Root (Artifacts)
+                {currentFolderId === null && (
+                  <span className="text-[10px] text-text-tertiary ml-auto">(current parent)</span>
+                )}
+              </button>
+              {allFolders
+                .filter((f) => f.id !== movingFolder.id)
+                .map((folder) => (
+                  <button
+                    key={folder.id}
+                    onClick={() => handleFolderMoveConfirm(folder.id)}
+                    disabled={folder.parent_folder_id === movingFolder.id}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-text-secondary hover:bg-bg-tertiary rounded-lg transition-colors disabled:opacity-30"
+                  >
+                    <Folder className="w-4 h-4 text-accent-warning" />
+                    {folder.name}
+                  </button>
+                ))}
+            </div>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setMovingFolder(null)}
                 className="px-4 py-2 text-xs font-medium text-text-secondary hover:text-text-primary bg-bg-tertiary rounded-lg transition-colors"
               >
                 Cancel
