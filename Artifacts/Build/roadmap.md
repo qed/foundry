@@ -15,9 +15,9 @@
 
 ---
 
-### Completed Phases (81/150)
+### Completed Phases (103/150)
 
-001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–086 + 088–090 (Lab schema/API/categorization/convert-to-WO/convert-to-feature/agent), 083–085 (Lab layout/inbox/detail), 096–101 (Artifacts full stack + folders), 105 (Comments schema), 106 (@Mentions), 109–110 (Knowledge schema + explorer), 113 (Org console), 117 (Realtime presence), 119 (Audit trail)
+001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–086 + 088–090 (Lab schema/API/categorization/convert-to-WO/convert-to-feature/agent), 083–085 (Lab layout/inbox/detail), 096–101 (Artifacts full stack + folders), 105 (Comments schema), 106 (@Mentions), 109–110 (Knowledge schema + explorer), 113 (Org console), 117 (Realtime presence), 118 (Collaborative editing), 119 (Audit trail)
 
 ---
 
@@ -440,7 +440,7 @@ After this initial update, stay in this session. I will come back to you after e
 | 115 | Seat Management & Billing | `blocked` | — | 005, 113, 114 | Admin | `components/admin/` |
 | 116 | User Profile & Settings | `blocked` | — | 004, 107 | Admin | `components/settings/`, `app/.../settings/` |
 | 117 | Real-Time Presence | `done` | — | 002 | Realtime | `lib/realtime/`, `components/layout/` |
-| 118 | Collaborative Editing | `ready` | — | 034, 049, 117 | Realtime ⚠️ | `components/editor/` |
+| 118 | Collaborative Editing | `done` | — | 034, 049, 117 | Realtime ⚠️ | `components/editor/` |
 | 119 | Audit Trail & Activity Log | `done` | — | 002 | Admin | `supabase/migrations/`, `components/admin/` |
 | 120 | Project Archive & Cleanup | `ready` | — | 002, 005, 113 | Admin | `components/admin/` |
 
