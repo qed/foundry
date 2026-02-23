@@ -219,13 +219,14 @@ export async function POST(
 
     const authorName = profile?.display_name || 'Unknown'
 
-    // Fire-and-forget: notify mentioned users
+    // Fire-and-forget: notify mentioned users (in-app + email)
     if (mentionedUserIds.length > 0) {
       notifyMentionedUsers({
         projectId,
         commentId: comment.id,
         commentAuthorId: user.id,
         commentAuthorName: authorName,
+        commentContent: content.trim().slice(0, 200),
         entityType: entityType,
         entityId: entityId,
         mentionedUserIds,

@@ -1,4 +1,5 @@
 import { createServiceClient } from '@/lib/supabase/server'
+import { sendMentionEmail, sendCommentEmail } from '@/lib/email/triggers'
 import type { Database } from '@/types/database'
 
 type NotificationInsert = Database['public']['Tables']['notifications']['Insert']
@@ -45,12 +46,14 @@ export async function createNotification(params: CreateNotificationParams) {
 
 /**
  * Create notifications for all mentioned users in a comment.
+ * Also triggers email notifications (fire-and-forget).
  */
 export async function notifyMentionedUsers(params: {
   projectId: string
   commentId: string
   commentAuthorId: string
   commentAuthorName: string
+  commentContent?: string
   entityType: string
   entityId: string
   mentionedUserIds: string[]
@@ -68,11 +71,21 @@ export async function notifyMentionedUsers(params: {
       sourceEntityId: params.commentId,
       triggeredByUserId: params.commentAuthorId,
     })
+
+    // Fire-and-forget email
+    sendMentionEmail({
+      mentionedUserId: userId,
+      mentionerUserId: params.commentAuthorId,
+      projectId: params.projectId,
+      commentPreview: params.commentContent || params.commentAuthorName + ' mentioned you',
+      actionUrl: params.linkUrl,
+    }).catch(() => {})
   }
 }
 
 /**
  * Create a notification for the entity owner when someone comments on their entity.
+ * Also triggers email notification (fire-and-forget).
  */
 export async function notifyEntityOwner(params: {
   ownerId: string
@@ -80,6 +93,7 @@ export async function notifyEntityOwner(params: {
   commentId: string
   commentAuthorId: string
   commentAuthorName: string
+  commentContent?: string
   entityType: string
   entityId: string
   entityName: string
@@ -96,4 +110,15 @@ export async function notifyEntityOwner(params: {
     sourceEntityId: params.entityId,
     triggeredByUserId: params.commentAuthorId,
   })
+
+  // Fire-and-forget email
+  sendCommentEmail({
+    ownerId: params.ownerId,
+    commenterUserId: params.commentAuthorId,
+    projectId: params.projectId,
+    entityName: params.entityName,
+    entityType: params.entityType,
+    commentPreview: params.commentContent || `${params.commentAuthorName} left a comment`,
+    actionUrl: params.linkUrl,
+  }).catch(() => {})
 }

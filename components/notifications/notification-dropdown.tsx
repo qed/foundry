@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { CheckCheck, Loader2 } from 'lucide-react'
+import { CheckCheck, Loader2, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { NotificationItem } from './notification-item'
+import { NotificationPreferences } from './notification-preferences'
 
 interface NotificationData {
   id: string
@@ -38,6 +39,7 @@ export function NotificationDropdown({
   const [isLoading, setIsLoading] = useState(true)
   const [unreadCount, setUnreadCount] = useState(0)
   const [markingAllRead, setMarkingAllRead] = useState(false)
+  const [showPreferences, setShowPreferences] = useState(false)
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -185,24 +187,40 @@ export function NotificationDropdown({
         )}
       </div>
 
-      {/* Footer */}
-      {notifications.length > 0 && (
-        <div
-          className={cn(
-            'px-4 py-2 border-t border-border-default text-center'
-          )}
-        >
-          <button
-            onClick={() => {
-              // For now, just close — full page can be added in a future phase
-              onClose()
-            }}
-            className="text-[11px] text-accent-cyan hover:text-accent-cyan/80 transition-colors"
-          >
-            View all notifications
-          </button>
+      {/* Preferences panel */}
+      {showPreferences && (
+        <div className="border-t border-border-default">
+          <NotificationPreferences />
         </div>
       )}
+
+      {/* Footer */}
+      <div
+        className={cn(
+          'flex items-center justify-between px-4 py-2 border-t border-border-default'
+        )}
+      >
+        <button
+          onClick={() => setShowPreferences((prev) => !prev)}
+          className={cn(
+            'flex items-center gap-1 text-[11px] transition-colors',
+            showPreferences
+              ? 'text-accent-cyan'
+              : 'text-text-tertiary hover:text-text-secondary'
+          )}
+        >
+          <Settings className="w-3 h-3" />
+          Email settings
+        </button>
+        {notifications.length > 0 && (
+          <button
+            onClick={onClose}
+            className="text-[11px] text-text-tertiary hover:text-text-secondary transition-colors"
+          >
+            Close
+          </button>
+        )}
+      </div>
     </div>
   )
 }

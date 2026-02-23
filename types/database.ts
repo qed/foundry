@@ -1922,6 +1922,92 @@ export type Database = {
           },
         ];
       };
+      user_notification_preferences: {
+        Row: {
+          id: string;
+          user_id: string;
+          email_on_mention: boolean;
+          email_on_comment: boolean;
+          email_on_assignment: boolean;
+          email_on_feedback: boolean;
+          email_digest: boolean;
+          email_digest_frequency: "daily" | "weekly";
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          email_on_mention?: boolean;
+          email_on_comment?: boolean;
+          email_on_assignment?: boolean;
+          email_on_feedback?: boolean;
+          email_digest?: boolean;
+          email_digest_frequency?: "daily" | "weekly";
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          email_on_mention?: boolean;
+          email_on_comment?: boolean;
+          email_on_assignment?: boolean;
+          email_on_feedback?: boolean;
+          email_digest?: boolean;
+          email_digest_frequency?: "daily" | "weekly";
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_notification_preferences_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      email_log: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          email_address: string;
+          event_type: string;
+          subject: string | null;
+          template_name: string | null;
+          sent_at: string;
+          delivery_status: "pending" | "sent" | "failed";
+          error_message: string | null;
+          resend_message_id: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          email_address: string;
+          event_type: string;
+          subject?: string | null;
+          template_name?: string | null;
+          sent_at?: string;
+          delivery_status?: "pending" | "sent" | "failed";
+          error_message?: string | null;
+          resend_message_id?: string | null;
+        };
+        Update: {
+          id?: string;
+          user_id?: string | null;
+          email_address?: string;
+          event_type?: string;
+          subject?: string | null;
+          template_name?: string | null;
+          sent_at?: string;
+          delivery_status?: "pending" | "sent" | "failed";
+          error_message?: string | null;
+          resend_message_id?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -2073,3 +2159,6 @@ export type WoSyncAlertStatus = WoSyncAlert["status"];
 
 export type Notification = Database["public"]["Tables"]["notifications"]["Row"];
 export type NotificationType = Notification["type"];
+
+export type UserNotificationPreferences = Database["public"]["Tables"]["user_notification_preferences"]["Row"];
+export type EmailLog = Database["public"]["Tables"]["email_log"]["Row"];
