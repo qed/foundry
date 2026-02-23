@@ -9,6 +9,7 @@ import { LabDetailPanel } from './lab-detail-panel'
 import { LabAgentPanel } from './lab-agent-panel'
 import { FeedbackFilterBar } from './feedback-filter-bar'
 import type { FeedbackFilters } from './feedback-filter-bar'
+import { BulkActionsBar } from './bulk-actions-bar'
 import type { FeedbackSubmission } from '@/types/database'
 
 interface LabStats {
@@ -69,6 +70,7 @@ export function LabClient({ projectId, initialStats }: LabClientProps) {
   const [feedback, setFeedback] = useState<FeedbackSubmission[]>([])
   const [total, setTotal] = useState(0)
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [agentPanelOpen, setAgentPanelOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -82,10 +84,11 @@ export function LabClient({ projectId, initialStats }: LabClientProps) {
 
   const activeFilterCount = useMemo(() => countActiveFilters(filters), [filters])
 
-  // Update URL when filters change
+  // Update URL when filters change — also clear selection
   const handleFiltersChange = useCallback((newFilters: FeedbackFilters) => {
     setFilters(newFilters)
-    setPage(1) // Reset pagination on filter change
+    setPage(1)
+    setSelectedIds(new Set())
 
     const params = filtersToURLParams(newFilters)
     const queryString = params.toString()
@@ -131,13 +134,17 @@ export function LabClient({ projectId, initialStats }: LabClientProps) {
     fetchFeedback()
   }, [fetchFeedback])
 
+  // Clear selection on sort change
   const handleSortChange = useCallback((newSort: FeedbackSort) => {
     setSort(newSort)
     setPage(1)
+    setSelectedIds(new Set())
   }, [])
 
+  // Clear selection on page change
   const handlePageChange = useCallback((newPage: number) => {
     setPage(newPage)
+    setSelectedIds(new Set())
   }, [])
 
   const handleFeedbackUpdate = useCallback((updated: FeedbackSubmission) => {
@@ -145,6 +152,60 @@ export function LabClient({ projectId, initialStats }: LabClientProps) {
       prev.map((f) => (f.id === updated.id ? updated : f))
     )
   }, [])
+
+  // Multi-select handlers
+  const handleToggleSelect = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }, [])
+
+  const handleToggleAll = useCallback(() => {
+    setSelectedIds((prev) => {
+      if (prev.size === feedback.length && feedback.length > 0) {
+        return new Set()
+      }
+      return new Set(feedback.map((f) => f.id))
+    })
+  }, [feedback])
+
+  const handleClearSelection = useCallback(() => {
+    setSelectedIds(new Set())
+  }, [])
+
+  const handleBulkActionComplete = useCallback(() => {
+    setSelectedIds(new Set())
+    fetchFeedback(true)
+  }, [fetchFeedback])
+
+  // Keyboard shortcuts for selection
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      const target = e.target as HTMLElement
+      if (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable
+      ) {
+        return
+      }
+
+      if ((e.metaKey || e.ctrlKey) && e.key === 'a') {
+        e.preventDefault()
+        handleToggleAll()
+      }
+
+      if (e.key === 'Escape' && selectedIds.size > 0) {
+        handleClearSelection()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [handleToggleAll, handleClearSelection, selectedIds.size])
 
   const stats: LabStats = isLoading
     ? initialStats
@@ -193,6 +254,9 @@ export function LabClient({ projectId, initialStats }: LabClientProps) {
               onPageChange={handlePageChange}
               sort={sort}
               onSortChange={handleSortChange}
+              selectedIds={selectedIds}
+              onToggleSelect={handleToggleSelect}
+              onToggleAll={handleToggleAll}
             />
           </div>
         </div>
@@ -206,6 +270,16 @@ export function LabClient({ projectId, initialStats }: LabClientProps) {
           />
         </div>
       </div>
+
+      {/* Bulk actions bar — shown when items are selected */}
+      {selectedIds.size > 0 && (
+        <BulkActionsBar
+          projectId={projectId}
+          selectedIds={Array.from(selectedIds)}
+          onClear={handleClearSelection}
+          onActionComplete={handleBulkActionComplete}
+        />
+      )}
 
       {/* Agent panel overlay */}
       <LabAgentPanel
