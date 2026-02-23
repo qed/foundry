@@ -223,6 +223,13 @@ export type Database = {
           created_at: string;
           updated_at: string;
           promoted_to_seed_id: string | null;
+          maturity_score: number;
+          maturity_tier: "raw" | "developing" | "mature";
+          maturity_completeness: number;
+          maturity_engagement: number;
+          maturity_age: number;
+          maturity_updated_at: string | null;
+          view_count: number;
         };
         Insert: {
           id?: string;
@@ -234,6 +241,13 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           promoted_to_seed_id?: string | null;
+          maturity_score?: number;
+          maturity_tier?: "raw" | "developing" | "mature";
+          maturity_completeness?: number;
+          maturity_engagement?: number;
+          maturity_age?: number;
+          maturity_updated_at?: string | null;
+          view_count?: number;
         };
         Update: {
           id?: string;
@@ -245,6 +259,13 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           promoted_to_seed_id?: string | null;
+          maturity_score?: number;
+          maturity_tier?: "raw" | "developing" | "mature";
+          maturity_completeness?: number;
+          maturity_engagement?: number;
+          maturity_age?: number;
+          maturity_updated_at?: string | null;
+          view_count?: number;
         };
         Relationships: [
           {
@@ -2227,6 +2248,7 @@ export type FeedbackSubmission = Database["public"]["Tables"]["feedback_submissi
 
 // Status type aliases
 export type IdeaStatus = Idea["status"];
+export type IdeaMaturityTier = Idea["maturity_tier"];
 export type FeatureLevel = FeatureNode["level"];
 export type FeatureStatus = FeatureNode["status"];
 export type DocType = RequirementsDocument["doc_type"];

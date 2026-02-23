@@ -2,13 +2,15 @@
 
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { STATUS_OPTIONS, SORT_OPTIONS, type SortOption } from './types'
+import { STATUS_OPTIONS, SORT_OPTIONS, MATURITY_TIER_OPTIONS, type SortOption } from './types'
 import { TagFilter } from './tag-filter'
 import type { Tag } from '@/types/database'
 
 interface FilterBarProps {
   statusFilter: string | null
   onStatusChange: (status: string | null) => void
+  maturityTier: string | null
+  onMaturityTierChange: (tier: string | null) => void
   sortBy: SortOption
   onSortChange: (sort: SortOption) => void
   selectedTagIds: string[]
@@ -24,6 +26,8 @@ interface FilterBarProps {
 export function FilterBar({
   statusFilter,
   onStatusChange,
+  maturityTier,
+  onMaturityTierChange,
   sortBy,
   onSortChange,
   selectedTagIds,
@@ -36,7 +40,7 @@ export function FilterBar({
   total,
 }: FilterBarProps) {
   const selectedTags = projectTags.filter((t) => selectedTagIds.includes(t.id))
-  const hasChips = !!searchValue || !!statusFilter || selectedTagIds.length > 0
+  const hasChips = !!searchValue || !!statusFilter || !!maturityTier || selectedTagIds.length > 0
 
   return (
     <div className="mb-6 space-y-3">
@@ -54,6 +58,34 @@ export function FilterBar({
             )}
           >
             {STATUS_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          <svg
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none text-text-tertiary"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+
+        {/* Maturity tier filter */}
+        <div className="relative">
+          <select
+            value={maturityTier || ''}
+            onChange={(e) => onMaturityTierChange(e.target.value || null)}
+            className={cn(
+              'appearance-none bg-bg-secondary border border-border-default rounded-lg px-3 py-1.5 pr-8 text-sm text-text-primary',
+              'focus:outline-none focus:ring-2 focus:ring-accent-cyan focus:border-transparent',
+              maturityTier && 'border-accent-cyan/50'
+            )}
+          >
+            {MATURITY_TIER_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
               </option>
@@ -143,6 +175,17 @@ export function FilterBar({
               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-accent-cyan/15 text-accent-cyan hover:bg-accent-cyan/25 transition-colors"
             >
               Status: {STATUS_OPTIONS.find((s) => s.value === statusFilter)?.label}
+              <X className="w-3 h-3" />
+            </button>
+          )}
+
+          {/* Maturity tier chip */}
+          {maturityTier && (
+            <button
+              onClick={() => onMaturityTierChange(null)}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-accent-cyan/15 text-accent-cyan hover:bg-accent-cyan/25 transition-colors"
+            >
+              Maturity: {MATURITY_TIER_OPTIONS.find((m) => m.value === maturityTier)?.label}
               <X className="w-3 h-3" />
             </button>
           )}

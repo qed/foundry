@@ -55,6 +55,7 @@ export function HallClient({
   const searchValue = searchParams.get('search') || ''
   const statusFilter = searchParams.get('status') || null
   const sortBy = (searchParams.get('sort') as SortOption) || 'newest'
+  const maturityTier = searchParams.get('maturityTier') || null
   const tagsParam = searchParams.get('tags') || ''
   const selectedTagIds = tagsParam ? tagsParam.split(',').filter(Boolean) : []
 
@@ -187,6 +188,7 @@ export function HallClient({
       })
       if (debouncedSearch) params.set('search', debouncedSearch)
       if (statusFilter) params.set('status', statusFilter)
+      if (maturityTier) params.set('maturityTier', maturityTier)
       if (tagsParam) params.set('tags', tagsParam)
 
       const res = await fetch(`/api/hall/ideas?${params}`, signal ? { signal } : undefined)
@@ -197,7 +199,7 @@ export function HallClient({
         hasMore: boolean
       }>
     },
-    [projectId, sortBy, debouncedSearch, statusFilter, tagsParam]
+    [projectId, sortBy, debouncedSearch, statusFilter, maturityTier, tagsParam]
   )
 
   // Refetch when filters/sort change
@@ -205,7 +207,7 @@ export function HallClient({
     // On first render with default filters, use server-provided data
     if (isFirstRender.current) {
       isFirstRender.current = false
-      if (!debouncedSearch && !statusFilter && !tagsParam && sortBy === 'newest') {
+      if (!debouncedSearch && !statusFilter && !maturityTier && !tagsParam && sortBy === 'newest') {
         return
       }
     }
@@ -223,6 +225,7 @@ export function HallClient({
         })
         if (debouncedSearch) params.set('search', debouncedSearch)
         if (statusFilter) params.set('status', statusFilter)
+        if (maturityTier) params.set('maturityTier', maturityTier)
         if (tagsParam) params.set('tags', tagsParam)
 
         const res = await fetch(`/api/hall/ideas?${params}`, {
@@ -244,7 +247,7 @@ export function HallClient({
 
     doFetch()
     return () => controller.abort()
-  }, [debouncedSearch, statusFilter, sortBy, tagsParam, projectId])
+  }, [debouncedSearch, statusFilter, maturityTier, sortBy, tagsParam, projectId])
 
   // Load more (append next page)
   const loadMore = useCallback(() => {
@@ -505,7 +508,7 @@ export function HallClient({
   )
 
   const hasActiveFilters =
-    !!searchValue || !!statusFilter || selectedTagIds.length > 0 || sortBy !== 'newest'
+    !!searchValue || !!statusFilter || !!maturityTier || selectedTagIds.length > 0 || sortBy !== 'newest'
   const showEmptyProject = ideas.length === 0 && !hasActiveFilters && !isRefetching
   const showNoResults = ideas.length === 0 && hasActiveFilters && !isRefetching
 
@@ -531,6 +534,8 @@ export function HallClient({
         <FilterBar
           statusFilter={statusFilter}
           onStatusChange={(status) => updateParams({ status })}
+          maturityTier={maturityTier}
+          onMaturityTierChange={(tier) => updateParams({ maturityTier: tier })}
           sortBy={sortBy}
           onSortChange={(sort) =>
             updateParams({ sort: sort === 'newest' ? null : sort })
@@ -543,7 +548,7 @@ export function HallClient({
           searchValue={searchValue}
           onClearSearch={() => updateParams({ search: null })}
           onClearAll={() =>
-            updateParams({ search: null, status: null, sort: null, tags: null })
+            updateParams({ search: null, status: null, maturityTier: null, sort: null, tags: null })
           }
           hasActiveFilters={hasActiveFilters}
           total={total}
@@ -579,7 +584,7 @@ export function HallClient({
         ) : showNoResults ? (
           <NoResultsState
             onClearFilters={() =>
-              updateParams({ search: null, status: null, sort: null, tags: null })
+              updateParams({ search: null, status: null, maturityTier: null, sort: null, tags: null })
             }
           />
         ) : viewMode === 'grid' ? (

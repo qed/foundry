@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
       : null
     const tagsParam = searchParams.get('tags') || ''
     const tagIds = tagsParam ? tagsParam.split(',').filter(Boolean) : []
+    const maturityTier = searchParams.get('maturityTier') || ''
 
     if (!projectId) {
       return Response.json({ error: 'Project ID is required' }, { status: 400 })
@@ -76,6 +77,9 @@ export async function GET(request: NextRequest) {
     if (status) {
       countQuery = countQuery.eq('status', status)
     }
+    if (maturityTier && ['raw', 'developing', 'mature'].includes(maturityTier)) {
+      countQuery = countQuery.eq('maturity_tier', maturityTier as 'raw' | 'developing' | 'mature')
+    }
     if (search) {
       countQuery = countQuery.or(`title.ilike.%${search}%,body.ilike.%${search}%`)
     }
@@ -95,6 +99,9 @@ export async function GET(request: NextRequest) {
     if (status) {
       query = query.eq('status', status)
     }
+    if (maturityTier && ['raw', 'developing', 'mature'].includes(maturityTier)) {
+      query = query.eq('maturity_tier', maturityTier as 'raw' | 'developing' | 'mature')
+    }
     if (search) {
       query = query.or(`title.ilike.%${search}%,body.ilike.%${search}%`)
     }
@@ -109,6 +116,7 @@ export async function GET(request: NextRequest) {
       updated: { column: 'updated_at', ascending: false },
       az: { column: 'title', ascending: true },
       za: { column: 'title', ascending: false },
+      maturity: { column: 'maturity_score', ascending: false },
     }
     const sortCfg = sortMap[sort] || sortMap.newest
     query = query.order(sortCfg.column, { ascending: sortCfg.ascending })

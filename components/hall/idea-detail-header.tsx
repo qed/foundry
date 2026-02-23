@@ -3,6 +3,7 @@
 import { Avatar } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { timeAgo } from '@/lib/utils'
+import { MaturityBar } from './maturity-bar'
 import { STATUS_CONFIG, type IdeaWithDetails } from './types'
 import type { IdeaStatus } from '@/types/database'
 
@@ -32,6 +33,16 @@ export function IdeaDetailHeader({ idea }: IdeaDetailHeaderProps) {
       <div>
         <Badge variant={statusCfg.variant}>{statusCfg.label}</Badge>
       </div>
+
+      {/* Maturity breakdown */}
+      {idea.maturity_score !== undefined && (
+        <MaturityBar
+          completeness={idea.maturity_completeness ?? 0}
+          engagement={idea.maturity_engagement ?? 0}
+          age={idea.maturity_age ?? 0}
+          total={idea.maturity_score ?? 0}
+        />
+      )}
 
       {/* Creator info */}
       <div className="flex items-center gap-3">

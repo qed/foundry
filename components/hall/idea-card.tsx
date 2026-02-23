@@ -3,8 +3,9 @@
 import { cn, timeAgo } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Avatar } from '@/components/ui/avatar'
+import { MaturityBadge } from './maturity-badge'
 import { STATUS_CONFIG, type IdeaWithDetails } from './types'
-import type { IdeaStatus } from '@/types/database'
+import type { IdeaStatus, IdeaMaturityTier } from '@/types/database'
 
 interface IdeaCardProps {
   idea: IdeaWithDetails
@@ -51,11 +52,17 @@ export function IdeaCard({ idea, onClick, highlighted, isSelected, onSelect }: I
         </label>
       )}
 
-      {/* Status badge */}
+      {/* Status + maturity badges */}
       <div className="flex items-center justify-between mb-2">
-        <Badge variant={statusCfg.variant} className="text-[10px]">
-          {statusCfg.label}
-        </Badge>
+        <div className="flex items-center gap-1.5">
+          <Badge variant={statusCfg.variant} className="text-[10px]">
+            {statusCfg.label}
+          </Badge>
+          <MaturityBadge
+            tier={(idea.maturity_tier as IdeaMaturityTier) || 'raw'}
+            score={idea.maturity_score}
+          />
+        </div>
       </div>
 
       {/* Title */}

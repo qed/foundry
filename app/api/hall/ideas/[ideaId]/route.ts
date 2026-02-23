@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { requireAuth } from '@/lib/auth/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { handleAuthError } from '@/lib/auth/errors'
+import { recalculateIdeaMaturity } from '@/lib/ideas/maturity'
 import type { IdeaStatus } from '@/types/database'
 
 const VALID_EDIT_STATUSES: IdeaStatus[] = ['raw', 'developing', 'mature']
@@ -86,6 +87,20 @@ export async function GET(
     }
 
     const fullIdea = await fetchIdeaWithDetails(supabase, ideaId)
+
+    // Fire-and-forget: increment view count and recalculate maturity
+    ;(async () => {
+      try {
+        await supabase
+          .from('ideas')
+          .update({ view_count: (idea.view_count || 0) + 1 })
+          .eq('id', ideaId)
+        await recalculateIdeaMaturity(ideaId)
+      } catch {
+        // Silently fail — view tracking and maturity are non-critical
+      }
+    })()
+
     return Response.json(fullIdea)
   } catch (error) {
     return handleAuthError(error)
@@ -223,6 +238,20 @@ export async function PUT(
 
     // Return full updated idea
     const fullIdea = await fetchIdeaWithDetails(supabase, ideaId)
+
+    // Fire-and-forget: recalculate maturity after edit (bypass debounce by clearing timestamp)
+    ;(async () => {
+      try {
+        await supabase
+          .from('ideas')
+          .update({ maturity_updated_at: null })
+          .eq('id', ideaId)
+        await recalculateIdeaMaturity(ideaId)
+      } catch {
+        // Non-critical
+      }
+    })()
+
     return Response.json(fullIdea)
   } catch (error) {
     return handleAuthError(error)

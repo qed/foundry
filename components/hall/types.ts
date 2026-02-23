@@ -34,6 +34,14 @@ export const SORT_OPTIONS = [
   { value: 'updated', label: 'Recently Updated' },
   { value: 'az', label: 'A → Z' },
   { value: 'za', label: 'Z → A' },
+  { value: 'maturity', label: 'Maturity Score' },
 ]
 
-export type SortOption = 'newest' | 'oldest' | 'updated' | 'az' | 'za'
+export type SortOption = 'newest' | 'oldest' | 'updated' | 'az' | 'za' | 'maturity'
+
+export const MATURITY_TIER_OPTIONS = [
+  { value: '', label: 'All Maturity' },
+  { value: 'raw', label: 'Raw' },
+  { value: 'developing', label: 'Developing' },
+  { value: 'mature', label: 'Mature' },
+]
