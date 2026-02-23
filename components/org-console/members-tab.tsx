@@ -2,12 +2,14 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, Shield, User, Trash2 } from 'lucide-react'
+import { Search, Shield, User, Trash2, UserPlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogBody, DialogFooter } from '@/components/ui/dialog'
 import { useToast } from '@/components/ui/toast-container'
+import { InviteUserDialog } from '@/components/invitations/invite-user-dialog'
+import { PendingInvitations } from '@/components/invitations/pending-invitations'
 import { cn } from '@/lib/utils'
 
 interface MemberWithProfile {
@@ -32,6 +34,8 @@ export function MembersTab({ orgId, currentUserId, initialMembers }: MembersTabP
   const [roleFilter, setRoleFilter] = useState<string>('all')
   const [removingId, setRemovingId] = useState<string | null>(null)
   const [changingRoleId, setChangingRoleId] = useState<string | null>(null)
+  const [showInviteDialog, setShowInviteDialog] = useState(false)
+  const [inviteRefreshKey, setInviteRefreshKey] = useState(0)
 
   const filtered = members.filter((m) => {
     const name = m.profile?.display_name || ''
@@ -92,7 +96,10 @@ export function MembersTab({ orgId, currentUserId, initialMembers }: MembersTabP
 
   return (
     <div className="space-y-4">
-      {/* Search and filter */}
+      {/* Pending Invitations */}
+      <PendingInvitations orgId={orgId} refreshKey={inviteRefreshKey} />
+
+      {/* Search, filter, and invite */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" />
@@ -113,6 +120,10 @@ export function MembersTab({ orgId, currentUserId, initialMembers }: MembersTabP
           <option value="admin">Admin</option>
           <option value="member">Member</option>
         </select>
+        <Button onClick={() => setShowInviteDialog(true)} size="sm">
+          <UserPlus className="w-4 h-4 mr-1.5" />
+          Invite
+        </Button>
       </div>
 
       {/* Member count */}
@@ -227,6 +238,14 @@ export function MembersTab({ orgId, currentUserId, initialMembers }: MembersTabP
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Invite user dialog */}
+      <InviteUserDialog
+        orgId={orgId}
+        isOpen={showInviteDialog}
+        onClose={() => setShowInviteDialog(false)}
+        onInvited={() => setInviteRefreshKey((k) => k + 1)}
+      />
     </div>
   )
 }

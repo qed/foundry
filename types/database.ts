@@ -2008,6 +2008,51 @@ export type Database = {
         };
         Relationships: [];
       };
+      invitations: {
+        Row: {
+          id: string;
+          organization_id: string;
+          email: string;
+          role: string;
+          invited_by: string;
+          token: string;
+          status: string;
+          accepted_by: string | null;
+          created_at: string;
+          expires_at: string;
+          accepted_at: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          email: string;
+          role?: string;
+          invited_by: string;
+          token?: string;
+          status?: string;
+          accepted_by?: string | null;
+          created_at?: string;
+          expires_at?: string;
+          accepted_at?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          email?: string;
+          role?: string;
+          invited_by?: string;
+          token?: string;
+          status?: string;
+          accepted_by?: string | null;
+          created_at?: string;
+          expires_at?: string;
+          accepted_at?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -2162,3 +2207,5 @@ export type NotificationType = Notification["type"];
 
 export type UserNotificationPreferences = Database["public"]["Tables"]["user_notification_preferences"]["Row"];
 export type EmailLog = Database["public"]["Tables"]["email_log"]["Row"];
+export type Invitation = Database["public"]["Tables"]["invitations"]["Row"];
+export type InvitationStatus = "pending" | "accepted" | "expired" | "revoked";
