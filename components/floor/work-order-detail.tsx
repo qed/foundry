@@ -19,6 +19,8 @@ import {
 import { cn, timeAgo } from '@/lib/utils'
 import { Spinner } from '@/components/ui/spinner'
 import { Avatar } from '@/components/ui/avatar'
+import { CommentThread, type CommentData } from '@/components/shop/comment-thread'
+import { CommentForm } from '@/components/shop/comment-form'
 
 function getInitials(name: string): string {
   return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
@@ -98,6 +100,8 @@ export function WorkOrderDetail({
   const [planDraft, setPlanDraft] = useState('')
   const [generatingPlan, setGeneratingPlan] = useState(false)
   const [generatedPlan, setGeneratedPlan] = useState<string | null>(null)
+  const [discussionTab, setDiscussionTab] = useState<'comments' | 'activity'>('comments')
+  const [comments, setComments] = useState<CommentData[]>([])
 
   // Dropdown states
   const [statusOpen, setStatusOpen] = useState(false)
@@ -111,10 +115,11 @@ export function WorkOrderDetail({
     try {
       setIsLoading(true)
       setError(null)
-      const [woRes, actRes, memRes] = await Promise.all([
+      const [woRes, actRes, memRes, comRes] = await Promise.all([
         fetch(`/api/projects/${projectId}/work-orders/${id}`),
         fetch(`/api/projects/${projectId}/work-orders/${id}/activity`),
         fetch(`/api/projects/${projectId}/members`),
+        fetch(`/api/projects/${projectId}/comments?entityType=work_order&entityId=${id}&filter=all`),
       ])
 
       if (!woRes.ok) throw new Error('Work order not found')
@@ -129,6 +134,11 @@ export function WorkOrderDetail({
       if (memRes.ok) {
         const memData = await memRes.json()
         setMembers(memData.members || [])
+      }
+
+      if (comRes.ok) {
+        const comData = await comRes.json()
+        setComments(comData.comments || [])
       }
     } catch (err) {
       console.error('Error fetching work order:', err)
@@ -145,6 +155,8 @@ export function WorkOrderDetail({
     if (!open) {
       setWorkOrder(null)
       setActivities([])
+      setComments([])
+      setDiscussionTab('comments')
       setEditingTitle(false)
       setEditingDescription(false)
       setEditingCriteria(false)
@@ -308,6 +320,70 @@ export function WorkOrderDetail({
   const handleRejectPlan = useCallback(() => {
     setGeneratedPlan(null)
   }, [])
+
+  const refetchComments = useCallback(async () => {
+    if (!workOrderId) return
+    try {
+      const res = await fetch(
+        `/api/projects/${projectId}/comments?entityType=work_order&entityId=${workOrderId}&filter=all`
+      )
+      if (res.ok) {
+        const data = await res.json()
+        setComments(data.comments || [])
+      }
+    } catch { /* ignore */ }
+  }, [projectId, workOrderId])
+
+  const handleCreateComment = useCallback(async (
+    content: string,
+    _anchorData?: { selectedText: string }
+  ) => {
+    if (!workOrderId) return
+    const res = await fetch(`/api/projects/${projectId}/comments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        entityType: 'work_order',
+        entityId: workOrderId,
+        content,
+      }),
+    })
+    if (!res.ok) throw new Error('Failed to post comment')
+    refetchComments()
+  }, [workOrderId, projectId, refetchComments])
+
+  const handleReply = useCallback(async (parentCommentId: string, content: string) => {
+    if (!workOrderId) return
+    const res = await fetch(`/api/projects/${projectId}/comments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        entityType: 'work_order',
+        entityId: workOrderId,
+        content,
+        parentCommentId,
+      }),
+    })
+    if (!res.ok) throw new Error('Failed to post reply')
+    refetchComments()
+  }, [workOrderId, projectId, refetchComments])
+
+  const handleResolveToggle = useCallback(async (commentId: string) => {
+    const res = await fetch(`/api/projects/${projectId}/comments/${commentId}/resolve`, {
+      method: 'POST',
+    })
+    if (!res.ok) return
+    refetchComments()
+  }, [projectId, refetchComments])
+
+  const handleDeleteComment = useCallback(async (commentId: string) => {
+    if (!confirm('Delete this comment?')) return
+    const res = await fetch(`/api/projects/${projectId}/comments/${commentId}`, {
+      method: 'DELETE',
+    })
+    if (!res.ok) return
+    refetchComments()
+  }, [projectId, refetchComments])
 
   if (!open) return null
 
@@ -722,41 +798,77 @@ export function WorkOrderDetail({
               )}
             </div>
 
-            {/* Activity Feed */}
+            {/* Comments & Activity */}
             <div className="px-5 py-4 border-t border-border-default">
-              <div className="flex items-center gap-2 mb-3">
-                <Activity className="w-3.5 h-3.5 text-text-tertiary" />
-                <span className="text-xs font-medium text-text-secondary uppercase tracking-wide">
-                  Activity
-                </span>
+              {/* Tab header */}
+              <div className="flex items-center gap-4 mb-3 border-b border-border-default">
+                <button
+                  onClick={() => setDiscussionTab('comments')}
+                  className={cn(
+                    'flex items-center gap-1.5 text-xs font-medium transition-colors pb-2 -mb-px',
+                    discussionTab === 'comments'
+                      ? 'text-accent-cyan border-b-2 border-accent-cyan'
+                      : 'text-text-tertiary hover:text-text-secondary border-b-2 border-transparent'
+                  )}
+                >
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  Comments{comments.length > 0 ? ` (${comments.length})` : ''}
+                </button>
+                <button
+                  onClick={() => setDiscussionTab('activity')}
+                  className={cn(
+                    'flex items-center gap-1.5 text-xs font-medium transition-colors pb-2 -mb-px',
+                    discussionTab === 'activity'
+                      ? 'text-accent-cyan border-b-2 border-accent-cyan'
+                      : 'text-text-tertiary hover:text-text-secondary border-b-2 border-transparent'
+                  )}
+                >
+                  <Activity className="w-3.5 h-3.5" />
+                  Activity{activities.length > 0 ? ` (${activities.length})` : ''}
+                </button>
               </div>
-              {activities.length === 0 ? (
-                <p className="text-xs text-text-tertiary">No activity yet</p>
-              ) : (
+
+              {/* Comments tab */}
+              {discussionTab === 'comments' && (
                 <div className="space-y-3">
-                  {activities.map((entry) => (
-                    <ActivityItem key={entry.id} entry={entry} />
-                  ))}
+                  <CommentForm
+                    placeholder="Add a comment..."
+                    onSubmit={handleCreateComment}
+                  />
+                  {comments.length === 0 ? (
+                    <div className="text-center py-4">
+                      <MessageSquare className="w-6 h-6 text-text-tertiary mx-auto mb-1.5 opacity-50" />
+                      <p className="text-xs text-text-tertiary">No comments yet. Be the first to comment.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {comments.map((comment) => (
+                        <CommentThread
+                          key={comment.id}
+                          comment={comment}
+                          projectId={projectId}
+                          onResolveToggle={handleResolveToggle}
+                          onDelete={handleDeleteComment}
+                          onReply={handleReply}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
 
-            {/* Comments placeholder */}
-            <div className="px-5 py-4 border-t border-border-default">
-              <div className="flex items-center gap-2 mb-3">
-                <MessageSquare className="w-3.5 h-3.5 text-text-tertiary" />
-                <span className="text-xs font-medium text-text-secondary uppercase tracking-wide">
-                  Comments
-                </span>
-              </div>
-              <div className="rounded-lg bg-bg-primary border border-border-default p-3">
-                <input
-                  type="text"
-                  placeholder="Comments coming in Phase 078..."
-                  disabled
-                  className="w-full bg-transparent text-xs text-text-tertiary placeholder:text-text-tertiary/60 focus:outline-none"
-                />
-              </div>
+              {/* Activity tab */}
+              {discussionTab === 'activity' && (
+                activities.length === 0 ? (
+                  <p className="text-xs text-text-tertiary">No activity yet</p>
+                ) : (
+                  <div className="space-y-3">
+                    {activities.map((entry) => (
+                      <ActivityItem key={entry.id} entry={entry} />
+                    ))}
+                  </div>
+                )
+              )}
             </div>
           </div>
         ) : null}
@@ -1092,6 +1204,8 @@ function formatAction(entry: ActivityEntry): string {
       return 'updated the implementation plan'
     case 'implementation_plan_generated':
       return 'generated an implementation plan via AI'
+    case 'commented':
+      return 'added a comment'
     case 'phase_changed':
       return 'changed the phase'
     case 'feature_linked':
