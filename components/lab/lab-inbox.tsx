@@ -10,6 +10,7 @@ import {
   Sparkles,
   Check,
   Minus,
+  AlertTriangle,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { timeAgo } from '@/lib/utils'
@@ -18,7 +19,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { CategoryBadge } from '@/components/lab/category-badge'
 import type { FeedbackSubmission } from '@/types/database'
 
-export type FeedbackSort = 'newest' | 'oldest' | 'highest_score'
+export type FeedbackSort = 'newest' | 'oldest' | 'highest_score' | 'highest_priority'
 
 interface LabInboxProps {
   feedback: FeedbackSubmission[]
@@ -48,6 +49,7 @@ const SORT_OPTIONS: { value: FeedbackSort; label: string }[] = [
   { value: 'newest', label: 'Newest first' },
   { value: 'oldest', label: 'Oldest first' },
   { value: 'highest_score', label: 'Highest score' },
+  { value: 'highest_priority', label: 'Highest priority' },
 ]
 
 export function LabInbox({
@@ -315,11 +317,30 @@ function FeedbackInboxItem({
                 </span>
               )}
 
-              {/* Priority score */}
+              {/* AI score */}
               {item.score != null && (
-                <span className="flex items-center gap-0.5 text-[10px] text-text-tertiary" title={`Priority score: ${item.score}`}>
+                <span className="flex items-center gap-0.5 text-[10px] text-text-tertiary" title={`AI score: ${item.score}`}>
                   <Gauge className="w-2.5 h-2.5" />
                   {item.score}
+                </span>
+              )}
+
+              {/* Priority tier badge */}
+              {item.priority_score > 0 && (
+                <span
+                  className={cn(
+                    'flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold',
+                    item.priority_tier === 'critical' && 'bg-accent-error/15 text-accent-error',
+                    item.priority_tier === 'high' && 'bg-accent-warning/15 text-accent-warning',
+                    item.priority_tier === 'medium' && 'bg-accent-cyan/15 text-accent-cyan',
+                    item.priority_tier === 'low' && 'bg-text-tertiary/10 text-text-tertiary',
+                  )}
+                  title={`Priority: ${item.priority_score}/100 (${item.priority_tier})`}
+                >
+                  {(item.priority_tier === 'critical' || item.priority_tier === 'high') && (
+                    <AlertTriangle className="w-2 h-2" />
+                  )}
+                  P{item.priority_score}
                 </span>
               )}
 

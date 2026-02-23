@@ -33,6 +33,7 @@ function parseFiltersFromURL(searchParams: URLSearchParams): FeedbackFilters {
     search: searchParams.get('search') || '',
     categories: searchParams.get('category')?.split(',').filter(Boolean) || [],
     statuses: searchParams.get('status')?.split(',').filter(Boolean) || [],
+    priorityTiers: searchParams.get('priorityTier')?.split(',').filter(Boolean) || [],
     tags: searchParams.get('tags')?.split(',').filter(Boolean) || [],
     dateFrom: searchParams.get('dateFrom') || '',
     dateTo: searchParams.get('dateTo') || '',
@@ -46,6 +47,7 @@ function filtersToURLParams(filters: FeedbackFilters): URLSearchParams {
   if (filters.search) params.set('search', filters.search)
   if (filters.categories.length) params.set('category', filters.categories.join(','))
   if (filters.statuses.length) params.set('status', filters.statuses.join(','))
+  if (filters.priorityTiers.length) params.set('priorityTier', filters.priorityTiers.join(','))
   if (filters.tags.length) params.set('tags', filters.tags.join(','))
   if (filters.dateFrom) params.set('dateFrom', filters.dateFrom)
   if (filters.dateTo) params.set('dateTo', filters.dateTo)
@@ -59,6 +61,7 @@ function countActiveFilters(f: FeedbackFilters): number {
   if (f.search) count++
   if (f.categories.length) count++
   if (f.statuses.length) count++
+  if (f.priorityTiers.length) count++
   if (f.tags.length) count++
   if (f.dateFrom || f.dateTo) count++
   if (f.scoreMin > 0 || f.scoreMax < 100) count++
@@ -115,6 +118,7 @@ export function LabClient({ projectId, initialStats }: LabClientProps) {
       if (filters.search) params.set('search', filters.search)
       if (filters.categories.length) params.set('category', filters.categories.join(','))
       if (filters.statuses.length) params.set('status', filters.statuses.join(','))
+      if (filters.priorityTiers.length) params.set('priorityTier', filters.priorityTiers.join(','))
       if (filters.tags.length) params.set('tags', filters.tags.join(','))
       if (filters.dateFrom) params.set('dateFrom', filters.dateFrom)
       if (filters.dateTo) params.set('dateTo', filters.dateTo)

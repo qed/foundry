@@ -420,6 +420,75 @@ export function LabDetailPanel({ feedback, projectId, onUpdate }: LabDetailPanel
             </section>
           )}
 
+          {/* ── Priority Score Breakdown ─────────────────────── */}
+          {feedback.priority_score > 0 && (
+            <section>
+              <h3 className="text-xs font-medium text-text-tertiary uppercase tracking-wider mb-2">
+                Priority Score
+              </h3>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="flex-1 bg-bg-tertiary rounded-full h-2.5">
+                  <div
+                    className={cn(
+                      'h-2.5 rounded-full transition-all',
+                      feedback.priority_tier === 'critical' && 'bg-accent-error',
+                      feedback.priority_tier === 'high' && 'bg-accent-warning',
+                      feedback.priority_tier === 'medium' && 'bg-accent-cyan',
+                      feedback.priority_tier === 'low' && 'bg-text-tertiary',
+                    )}
+                    style={{ width: `${feedback.priority_score}%` }}
+                  />
+                </div>
+                <span className={cn(
+                  'text-sm font-bold min-w-[4.5rem] text-right',
+                  feedback.priority_tier === 'critical' && 'text-accent-error',
+                  feedback.priority_tier === 'high' && 'text-accent-warning',
+                  feedback.priority_tier === 'medium' && 'text-accent-cyan',
+                  feedback.priority_tier === 'low' && 'text-text-tertiary',
+                )}>
+                  {feedback.priority_score}/100
+                </span>
+              </div>
+              <span className={cn(
+                'inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider mb-2',
+                feedback.priority_tier === 'critical' && 'bg-accent-error/15 text-accent-error',
+                feedback.priority_tier === 'high' && 'bg-accent-warning/15 text-accent-warning',
+                feedback.priority_tier === 'medium' && 'bg-accent-cyan/15 text-accent-cyan',
+                feedback.priority_tier === 'low' && 'bg-text-tertiary/10 text-text-tertiary',
+              )}>
+                {feedback.priority_tier}
+              </span>
+              {feedback.priority_components && (() => {
+                const c = feedback.priority_components as Record<string, unknown>
+                return (
+                  <div className="mt-2 space-y-1.5 bg-bg-tertiary/50 rounded-lg p-3">
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-text-secondary">Frequency</span>
+                      <span className="text-text-primary font-medium">{String(c.frequency || 0)}/30</span>
+                    </div>
+                    {typeof c.frequencyDetail === 'string' && (
+                      <p className="text-[10px] text-text-tertiary ml-0.5">{c.frequencyDetail}</p>
+                    )}
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-text-secondary">Severity</span>
+                      <span className="text-text-primary font-medium">{String(c.severity || 0)}/40</span>
+                    </div>
+                    {typeof c.severityDetail === 'string' && (
+                      <p className="text-[10px] text-text-tertiary ml-0.5">{c.severityDetail}</p>
+                    )}
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-text-secondary">Feature Importance</span>
+                      <span className="text-text-primary font-medium">{String(c.featureImportance || 0)}/30</span>
+                    </div>
+                    {typeof c.featureDetail === 'string' && (
+                      <p className="text-[10px] text-text-tertiary ml-0.5">{c.featureDetail}</p>
+                    )}
+                  </div>
+                )
+              })()}
+            </section>
+          )}
+
           {/* ── AI Categorization Reasoning ─────────────────── */}
           {feedback.ai_suggested && feedback.categorization_reasoning && (() => {
             try {

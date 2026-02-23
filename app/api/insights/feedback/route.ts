@@ -6,6 +6,7 @@ import { getUserAgentInfo, getDeviceType } from '@/lib/feedback/browser-utils'
 import { checkRateLimit, rateLimitHeaders } from '@/lib/mcp/rate-limit'
 import { categorizeFeedback } from '@/lib/agent/categorize-feedback'
 import { notifySlackOnFeedback } from '@/lib/slack/notifications'
+import { calculatePriority } from '@/lib/feedback/priority-scorer'
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -181,6 +182,13 @@ export async function POST(request: NextRequest) {
         console.error('Auto-categorization failed:', err)
       )
     }, 2000)
+
+    // Fire-and-forget: priority scoring (after categorization has time to complete)
+    setTimeout(() => {
+      calculatePriority(feedback.id).catch((err) =>
+        console.error('Priority scoring failed:', err)
+      )
+    }, 4000)
 
     // Fire-and-forget: Slack notification (after categorization has time to complete)
     setTimeout(() => {

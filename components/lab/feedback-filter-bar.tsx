@@ -19,6 +19,7 @@ export interface FeedbackFilters {
   search: string
   categories: string[]
   statuses: string[]
+  priorityTiers: string[]
   tags: string[]
   dateFrom: string
   dateTo: string
@@ -30,6 +31,7 @@ export const EMPTY_FILTERS: FeedbackFilters = {
   search: '',
   categories: [],
   statuses: [],
+  priorityTiers: [],
   tags: [],
   dateFrom: '',
   dateTo: '',
@@ -53,6 +55,13 @@ const CATEGORY_OPTIONS = [
   { value: 'performance', label: 'Performance' },
   { value: 'other', label: 'Other' },
   { value: 'uncategorized', label: 'Uncategorized' },
+]
+
+const PRIORITY_TIER_OPTIONS = [
+  { value: 'critical', label: 'Critical' },
+  { value: 'high', label: 'High' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'low', label: 'Low' },
 ]
 
 const STATUS_OPTIONS = [
@@ -137,6 +146,9 @@ export function FeedbackFilterBar({
   if (filters.statuses.length > 0) {
     chips.push({ type: 'statuses', label: `Status: ${filters.statuses.length}` })
   }
+  if (filters.priorityTiers.length > 0) {
+    chips.push({ type: 'priorityTiers', label: `Priority: ${filters.priorityTiers.length}` })
+  }
   if (filters.tags.length > 0) {
     chips.push({ type: 'tags', label: `Tags: ${filters.tags.length}` })
   }
@@ -157,6 +169,7 @@ export function FeedbackFilterBar({
       case 'search': clearSearch(); break
       case 'categories': updateFilter('categories', []); break
       case 'statuses': updateFilter('statuses', []); break
+      case 'priorityTiers': updateFilter('priorityTiers', []); break
       case 'tags': updateFilter('tags', []); break
       case 'date': onFiltersChange({ ...filters, dateFrom: '', dateTo: '' }); break
       case 'score': onFiltersChange({ ...filters, scoreMin: 0, scoreMax: 100 }); break
@@ -209,7 +222,7 @@ export function FeedbackFilterBar({
 
         {/* Filter dropdowns — always visible on lg, toggled on mobile */}
         {isExpanded && (
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-2">
+          <div className="grid grid-cols-2 lg:grid-cols-6 gap-2">
             <MultiSelectDropdown
               label="Category"
               options={CATEGORY_OPTIONS}
@@ -221,6 +234,12 @@ export function FeedbackFilterBar({
               options={STATUS_OPTIONS}
               selectedValues={filters.statuses}
               onChange={(v) => updateFilter('statuses', v)}
+            />
+            <MultiSelectDropdown
+              label="Priority"
+              options={PRIORITY_TIER_OPTIONS}
+              selectedValues={filters.priorityTiers}
+              onChange={(v) => updateFilter('priorityTiers', v)}
             />
             <MultiSelectDropdown
               label="Tags"

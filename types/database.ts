@@ -1411,6 +1411,10 @@ export type Database = {
           ai_suggested: boolean;
           categorization_reasoning: string | null;
           enrichment: Json | null;
+          priority_score: number;
+          priority_tier: "low" | "medium" | "high" | "critical";
+          priority_components: Json | null;
+          priority_updated_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -1431,6 +1435,10 @@ export type Database = {
           ai_suggested?: boolean;
           categorization_reasoning?: string | null;
           enrichment?: Json | null;
+          priority_score?: number;
+          priority_tier?: "low" | "medium" | "high" | "critical";
+          priority_components?: Json | null;
+          priority_updated_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -1451,6 +1459,10 @@ export type Database = {
           ai_suggested?: boolean;
           categorization_reasoning?: string | null;
           enrichment?: Json | null;
+          priority_score?: number;
+          priority_tier?: "low" | "medium" | "high" | "critical";
+          priority_components?: Json | null;
+          priority_updated_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -2359,6 +2371,7 @@ export type AppKeyStatus = AppKey["status"];
 export type AppKeyEnvironment = AppKey["environment"];
 export type FeedbackCategory = FeedbackSubmission["category"];
 export type FeedbackStatus = FeedbackSubmission["status"];
+export type FeedbackPriorityTier = FeedbackSubmission["priority_tier"];
 
 export type ActivityLog = Database["public"]["Tables"]["activity_log"]["Row"];
 export type MentionReference = Database["public"]["Tables"]["mention_references"]["Row"];

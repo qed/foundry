@@ -19,6 +19,7 @@ export async function GET(
     // Single or comma-separated values
     const statusParam = searchParams.get('status')
     const categoryParam = searchParams.get('category')
+    const priorityTierParam = searchParams.get('priorityTier')
     const search = searchParams.get('search')
     const tagsParam = searchParams.get('tags')
     const dateFrom = searchParams.get('dateFrom')
@@ -71,6 +72,17 @@ export async function GET(
       }
     }
 
+    // Priority tier filter
+    if (priorityTierParam) {
+      const validTiers = ['low', 'medium', 'high', 'critical']
+      const tiers = priorityTierParam.split(',').filter((t) => validTiers.includes(t))
+      if (tiers.length === 1) {
+        query = query.eq('priority_tier', tiers[0] as 'low' | 'medium' | 'high' | 'critical')
+      } else if (tiers.length > 1) {
+        query = query.in('priority_tier', tiers as ('low' | 'medium' | 'high' | 'critical')[])
+      }
+    }
+
     // Text search on content
     if (search) {
       query = query.ilike('content', `%${search}%`)
@@ -112,6 +124,9 @@ export async function GET(
       query = query.order('created_at', { ascending: true })
     } else if (sort === 'highest_score') {
       query = query.order('score', { ascending: false, nullsFirst: false })
+        .order('created_at', { ascending: false })
+    } else if (sort === 'highest_priority') {
+      query = query.order('priority_score', { ascending: false })
         .order('created_at', { ascending: false })
     } else {
       query = query.order('created_at', { ascending: false })
