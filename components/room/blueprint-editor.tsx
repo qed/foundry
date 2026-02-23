@@ -30,6 +30,7 @@ import {
   ListTree,
   TableIcon,
   Minus,
+  MessageSquare,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { RemoteUsersIndicator } from '@/components/editors/remote-users-indicator'
@@ -47,6 +48,7 @@ interface BlueprintEditorProps {
   content: JSONContent | null
   onSave: (content: JSONContent) => Promise<void>
   readOnly?: boolean
+  commentsPanel?: (props: { selectedText?: string; onClearSelection: () => void }) => React.ReactNode
   // Collaboration props
   ydoc?: YDoc | null
   provider?: { awareness: Map<string, AwarenessState>; getRemoteStates: () => AwarenessState[] } | null
@@ -58,6 +60,7 @@ export function BlueprintEditor({
   content,
   onSave,
   readOnly = false,
+  commentsPanel,
   ydoc,
   provider: _provider,
   remoteUsers = [],
@@ -67,6 +70,8 @@ export function BlueprintEditor({
   const [wordCount, setWordCount] = useState(0)
   const [headings, setHeadings] = useState<Heading[]>([])
   const [showOutline, setShowOutline] = useState(false)
+  const [showComments, setShowComments] = useState(false)
+  const [commentSelectedText, setCommentSelectedText] = useState<string | undefined>(undefined)
   const [isDirty, setIsDirty] = useState(false)
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -240,6 +245,23 @@ export function BlueprintEditor({
     }
   }, [editor])
 
+  const handleToggleComments = useCallback(() => {
+    if (!showComments && editor) {
+      // Capture selected text when opening comments
+      const { from, to } = editor.state.selection
+      if (from !== to) {
+        setCommentSelectedText(editor.state.doc.textBetween(from, to, ' '))
+      } else {
+        setCommentSelectedText(undefined)
+      }
+    }
+    setShowComments((prev) => !prev)
+  }, [showComments, editor])
+
+  const handleClearSelection = useCallback(() => {
+    setCommentSelectedText(undefined)
+  }, [])
+
   if (!editor) return null
 
   return (
@@ -371,6 +393,16 @@ export function BlueprintEditor({
           />
         )}
 
+        {/* Comments toggle */}
+        {commentsPanel && (
+          <ToolbarButton
+            icon={<MessageSquare className="w-4 h-4" />}
+            onClick={handleToggleComments}
+            isActive={showComments}
+            tooltip="Comments"
+          />
+        )}
+
         {/* Unsaved indicator */}
         {isDirty && saveStatus === 'idle' && (
           <span className="w-2 h-2 rounded-full bg-accent-warning flex-shrink-0" title="Unsaved changes" />
@@ -427,6 +459,13 @@ export function BlueprintEditor({
                 </button>
               ))}
             </nav>
+          </div>
+        )}
+
+        {/* Comments panel */}
+        {showComments && commentsPanel && (
+          <div className="w-80 border-l border-border-default bg-bg-primary flex-shrink-0 overflow-hidden">
+            {commentsPanel({ selectedText: commentSelectedText, onClearSelection: handleClearSelection })}
           </div>
         )}
       </div>

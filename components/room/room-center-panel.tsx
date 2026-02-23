@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import { EmptyState } from '@/components/ui/empty-state'
 import { BlueprintEditor } from './blueprint-editor'
 import { SystemDiagramEditor } from './system-diagram-editor'
+import { CommentsPanel } from '@/components/shop/comments-panel'
 import { BlueprintActivityTimeline } from './blueprint-activity-timeline'
 import { BlueprintVersionHistory } from './blueprint-version-history'
 import type { BlueprintVersionEntry } from './blueprint-version-history'
@@ -237,6 +238,15 @@ export function RoomCenterPanel({ projectId, blueprint, onStatusChange, onConten
           key={blueprint.id}
           content={blueprint.content as JSONContent | null}
           onSave={handleSave}
+          commentsPanel={({ selectedText, onClearSelection }) => (
+            <CommentsPanel
+              projectId={projectId}
+              entityType="blueprint"
+              entityId={blueprint.id}
+              selectedText={selectedText}
+              onClearSelection={onClearSelection}
+            />
+          )}
         />
       )}
 
