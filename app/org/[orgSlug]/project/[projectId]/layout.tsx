@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { ProjectProvider } from '@/lib/context/project-context'
 import { CurrentUserProvider } from '@/lib/context/current-user-context'
 import { AppLayout } from '@/components/layout/app-layout'
+import { ArchivedBanner } from '@/components/projects/archived-banner'
 
 interface ProjectLayoutProps {
   children: React.ReactNode
@@ -64,7 +65,10 @@ export default async function ProjectLayout({
         isOrgAdmin={orgMember?.role === 'admin'}
         isProjectLeader={projectMember.role === 'leader'}
       >
-        <AppLayout>{children}</AppLayout>
+        <AppLayout>
+          {project.is_archived && <ArchivedBanner />}
+          {children}
+        </AppLayout>
       </CurrentUserProvider>
     </ProjectProvider>
   )

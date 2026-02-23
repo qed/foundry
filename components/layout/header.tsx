@@ -6,6 +6,7 @@ import { useProject } from '@/lib/context/project-context'
 import { UserMenu } from './user-menu'
 import { Breadcrumb, type BreadcrumbItem } from './breadcrumb'
 import { HeaderPresence } from '@/components/presence/header-presence'
+import { ArchivedBadge } from '@/components/projects/archived-badge'
 import { Menu } from 'lucide-react'
 
 const MODULE_NAMES: Record<string, string> = {
@@ -55,6 +56,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         </button>
 
         <Breadcrumb items={breadcrumbs} />
+        {project.is_archived && <ArchivedBadge />}
       </div>
 
       {/* Right side: presence + user menu */}

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useOrg } from '@/lib/context/org-context'
 import { useProject } from '@/lib/context/project-context'
-import { ChevronDown, Plus } from 'lucide-react'
+import { ChevronDown, Plus, Archive } from 'lucide-react'
 import type { Database } from '@/types/database'
 
 type Project = Database['public']['Tables']['projects']['Row']
@@ -51,6 +51,9 @@ export function ProjectSwitcher() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [open])
 
+  const activeProjects = projects.filter((p) => !p.is_archived)
+  const archivedProjects = projects.filter((p) => p.is_archived)
+
   return (
     <div className="relative" ref={ref}>
       <button
@@ -77,14 +80,14 @@ export function ProjectSwitcher() {
             </div>
           )}
 
-          {!loading && projects.length === 0 && (
+          {!loading && activeProjects.length === 0 && archivedProjects.length === 0 && (
             <div className="p-3 text-sm text-text-tertiary text-center">
               No projects
             </div>
           )}
 
           {!loading &&
-            projects.map((p) => (
+            activeProjects.map((p) => (
               <Link
                 key={p.id}
                 href={`/org/${org.slug}/project/${p.id}`}
@@ -98,6 +101,29 @@ export function ProjectSwitcher() {
                 {p.name}
               </Link>
             ))}
+
+          {!loading && archivedProjects.length > 0 && (
+            <>
+              <div className="px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-text-tertiary border-t border-border-default flex items-center gap-1">
+                <Archive className="w-3 h-3" />
+                Archived
+              </div>
+              {archivedProjects.map((p) => (
+                <Link
+                  key={p.id}
+                  href={`/org/${org.slug}/project/${p.id}`}
+                  onClick={() => setOpen(false)}
+                  className={`block px-4 py-2.5 text-sm transition-colors ${
+                    p.id === currentProject.id
+                      ? 'bg-accent-cyan/10 text-accent-cyan'
+                      : 'text-text-tertiary hover:bg-bg-secondary hover:text-text-secondary'
+                  }`}
+                >
+                  {p.name}
+                </Link>
+              ))}
+            </>
+          )}
 
           <div className="border-t border-border-default p-1.5">
             <Link

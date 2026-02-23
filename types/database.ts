@@ -114,6 +114,9 @@ export type Database = {
           org_id: string;
           name: string;
           description: string | null;
+          is_archived: boolean;
+          archived_at: string | null;
+          archived_by: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -122,6 +125,9 @@ export type Database = {
           org_id: string;
           name: string;
           description?: string | null;
+          is_archived?: boolean;
+          archived_at?: string | null;
+          archived_by?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -130,6 +136,9 @@ export type Database = {
           org_id?: string;
           name?: string;
           description?: string | null;
+          is_archived?: boolean;
+          archived_at?: string | null;
+          archived_by?: string | null;
           created_at?: string;
           updated_at?: string;
         };
