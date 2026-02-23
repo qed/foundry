@@ -7,6 +7,8 @@ import type { FeatureTreeNode } from './room-left-panel'
 import { RoomCenterPanel } from './room-center-panel'
 import { RoomRightPanel } from './room-right-panel'
 import { DriftAlertsPanel } from './drift-alerts-panel'
+import { CrossDocSuggestionsPanel } from './cross-doc-suggestions-panel'
+import { CrossDocReviewModal } from './cross-doc-review-modal'
 import { CreateBlueprintModal } from './create-blueprint-modal'
 import { Spinner } from '@/components/ui/spinner'
 import type { Blueprint, BlueprintStatus } from '@/types/database'
@@ -34,6 +36,9 @@ export function RoomClient({ projectId, initialStats }: RoomClientProps) {
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [driftPanelOpen, setDriftPanelOpen] = useState(false)
   const [driftCount, setDriftCount] = useState(0)
+  const [crossDocPanelOpen, setCrossDocPanelOpen] = useState(false)
+  const [crossDocCount, setCrossDocCount] = useState(0)
+  const [reviewSuggestionId, setReviewSuggestionId] = useState<string | null>(null)
 
   // Fetch blueprints and feature tree
   useEffect(() => {
@@ -93,6 +98,21 @@ export function RoomClient({ projectId, initialStats }: RoomClientProps) {
       }
     }
     fetchDriftCount()
+  }, [projectId, fetchKey])
+
+  // Fetch cross-doc suggestion count
+  useEffect(() => {
+    async function fetchCrossDocCount() {
+      try {
+        const res = await fetch(`/api/projects/${projectId}/cross-doc-suggestions?status=proposed`)
+        if (!res.ok) return
+        const data = await res.json()
+        setCrossDocCount(data.counts?.proposed || 0)
+      } catch {
+        // Silently ignore
+      }
+    }
+    fetchCrossDocCount()
   }, [projectId, fetchKey])
 
   // Auto-collapse right panel on narrow screens
@@ -196,11 +216,13 @@ export function RoomClient({ projectId, initialStats }: RoomClientProps) {
       <RoomHeader
         stats={initialStats}
         driftCount={driftCount}
+        crossDocCount={crossDocCount}
         leftPanelOpen={leftPanelOpen}
         rightPanelOpen={rightPanelOpen}
         onToggleLeftPanel={() => setLeftPanelOpen((prev) => !prev)}
         onToggleRightPanel={() => setRightPanelOpen((prev) => !prev)}
         onToggleDriftPanel={() => setDriftPanelOpen((prev) => !prev)}
+        onToggleCrossDocPanel={() => setCrossDocPanelOpen((prev) => !prev)}
       />
 
       {/* Three-panel layout */}
@@ -232,10 +254,13 @@ export function RoomClient({ projectId, initialStats }: RoomClientProps) {
           onStatusChange={handleStatusChange}
           onContentRefresh={handleApplyDraft}
           onToggleDriftPanel={() => setDriftPanelOpen((prev) => !prev)}
+          onAnalyzeCrossDoc={() => {
+            setCrossDocPanelOpen(true)
+          }}
         />
 
         {/* Drift alerts panel */}
-        {driftPanelOpen && (
+        {driftPanelOpen && !crossDocPanelOpen && (
           <div className="w-[320px] flex-shrink-0 border-l border-border-default overflow-hidden">
             <DriftAlertsPanel
               projectId={projectId}
@@ -243,6 +268,23 @@ export function RoomClient({ projectId, initialStats }: RoomClientProps) {
               onNavigateBlueprint={(bpId) => {
                 setSelectedBlueprintId(bpId)
                 setDriftPanelOpen(false)
+              }}
+            />
+          </div>
+        )}
+
+        {/* Cross-doc suggestions panel */}
+        {crossDocPanelOpen && !driftPanelOpen && (
+          <div className="w-[320px] flex-shrink-0 border-l border-border-default overflow-hidden">
+            <CrossDocSuggestionsPanel
+              projectId={projectId}
+              onClose={() => setCrossDocPanelOpen(false)}
+              onReview={(id) => {
+                setReviewSuggestionId(id)
+              }}
+              onNavigateBlueprint={(bpId) => {
+                setSelectedBlueprintId(bpId)
+                setCrossDocPanelOpen(false)
               }}
             />
           </div>
@@ -258,6 +300,23 @@ export function RoomClient({ projectId, initialStats }: RoomClientProps) {
         onOpenChange={setCreateModalOpen}
         projectId={projectId}
         onCreated={handleBlueprintCreated}
+      />
+
+      {/* Cross-Doc Review Modal */}
+      <CrossDocReviewModal
+        open={reviewSuggestionId !== null}
+        onOpenChange={(open) => { if (!open) setReviewSuggestionId(null) }}
+        projectId={projectId}
+        suggestionId={reviewSuggestionId}
+        onApplied={() => {
+          setFetchKey((k) => k + 1)
+          setReviewSuggestionId(null)
+        }}
+        onNavigateBlueprint={(bpId) => {
+          setSelectedBlueprintId(bpId)
+          setReviewSuggestionId(null)
+          setCrossDocPanelOpen(false)
+        }}
       />
     </div>
   )

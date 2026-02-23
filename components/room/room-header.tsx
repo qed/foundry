@@ -7,6 +7,7 @@ import {
   PanelRightClose,
   PanelRightOpen,
   AlertTriangle,
+  GitCompare,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -20,21 +21,25 @@ interface RoomStats {
 interface RoomHeaderProps {
   stats: RoomStats
   driftCount?: number
+  crossDocCount?: number
   leftPanelOpen: boolean
   rightPanelOpen: boolean
   onToggleLeftPanel: () => void
   onToggleRightPanel: () => void
   onToggleDriftPanel?: () => void
+  onToggleCrossDocPanel?: () => void
 }
 
 export function RoomHeader({
   stats,
   driftCount = 0,
+  crossDocCount = 0,
   leftPanelOpen,
   rightPanelOpen,
   onToggleLeftPanel,
   onToggleRightPanel,
   onToggleDriftPanel,
+  onToggleCrossDocPanel,
 }: RoomHeaderProps) {
   const total = stats.foundations + stats.systemDiagrams + stats.featureBlueprints
 
@@ -109,6 +114,18 @@ export function RoomHeader({
         >
           <AlertTriangle className="w-3.5 h-3.5" />
           <span className="text-xs font-medium">{driftCount}</span>
+        </button>
+      )}
+
+      {/* Cross-doc suggestions indicator */}
+      {crossDocCount > 0 && (
+        <button
+          onClick={onToggleCrossDocPanel}
+          className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-accent-purple/10 text-accent-purple hover:bg-accent-purple/15 transition-colors"
+          title={`${crossDocCount} cross-doc suggestion${crossDocCount !== 1 ? 's' : ''}`}
+        >
+          <GitCompare className="w-3.5 h-3.5" />
+          <span className="text-xs font-medium">{crossDocCount}</span>
         </button>
       )}
 

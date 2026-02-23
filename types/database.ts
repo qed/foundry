@@ -1636,6 +1636,123 @@ export type Database = {
           },
         ];
       };
+      cross_doc_suggestions: {
+        Row: {
+          id: string;
+          project_id: string;
+          created_by: string | null;
+          trigger_blueprint_id: string | null;
+          title: string;
+          description: string;
+          change_impact: string | null;
+          status: "proposed" | "approved" | "rejected" | "applied";
+          created_at: string;
+          updated_at: string;
+          applied_at: string | null;
+          applied_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          created_by?: string | null;
+          trigger_blueprint_id?: string | null;
+          title: string;
+          description: string;
+          change_impact?: string | null;
+          status?: "proposed" | "approved" | "rejected" | "applied";
+          created_at?: string;
+          updated_at?: string;
+          applied_at?: string | null;
+          applied_by?: string | null;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          created_by?: string | null;
+          trigger_blueprint_id?: string | null;
+          title?: string;
+          description?: string;
+          change_impact?: string | null;
+          status?: "proposed" | "approved" | "rejected" | "applied";
+          created_at?: string;
+          updated_at?: string;
+          applied_at?: string | null;
+          applied_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "cross_doc_suggestions_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cross_doc_suggestions_trigger_blueprint_id_fkey";
+            columns: ["trigger_blueprint_id"];
+            isOneToOne: false;
+            referencedRelation: "blueprints";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      cross_doc_suggestion_items: {
+        Row: {
+          id: string;
+          suggestion_id: string;
+          blueprint_id: string;
+          suggestion_type: "edit" | "add_section" | "remove_section";
+          target_section: string | null;
+          current_content: string | null;
+          proposed_content: string | null;
+          reasoning: string | null;
+          is_approved: boolean;
+          applied: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          suggestion_id: string;
+          blueprint_id: string;
+          suggestion_type: "edit" | "add_section" | "remove_section";
+          target_section?: string | null;
+          current_content?: string | null;
+          proposed_content?: string | null;
+          reasoning?: string | null;
+          is_approved?: boolean;
+          applied?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          suggestion_id?: string;
+          blueprint_id?: string;
+          suggestion_type?: "edit" | "add_section" | "remove_section";
+          target_section?: string | null;
+          current_content?: string | null;
+          proposed_content?: string | null;
+          reasoning?: string | null;
+          is_approved?: boolean;
+          applied?: boolean;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "cross_doc_suggestion_items_suggestion_id_fkey";
+            columns: ["suggestion_id"];
+            isOneToOne: false;
+            referencedRelation: "cross_doc_suggestions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cross_doc_suggestion_items_blueprint_id_fkey";
+            columns: ["blueprint_id"];
+            isOneToOne: false;
+            referencedRelation: "blueprints";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -1772,3 +1889,8 @@ export type DriftAlert = Database["public"]["Tables"]["drift_alerts"]["Row"];
 export type DriftAlertType = DriftAlert["alert_type"];
 export type DriftSeverity = DriftAlert["severity"];
 export type DriftStatus = DriftAlert["status"];
+
+export type CrossDocSuggestion = Database["public"]["Tables"]["cross_doc_suggestions"]["Row"];
+export type CrossDocSuggestionItem = Database["public"]["Tables"]["cross_doc_suggestion_items"]["Row"];
+export type CrossDocSuggestionStatus = CrossDocSuggestion["status"];
+export type CrossDocSuggestionType = CrossDocSuggestionItem["suggestion_type"];

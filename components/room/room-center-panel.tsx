@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { FileText, ExternalLink } from 'lucide-react'
+import { FileText, ExternalLink, GitCompare } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { EmptyState } from '@/components/ui/empty-state'
 import { BlueprintEditor } from './blueprint-editor'
@@ -25,6 +25,7 @@ interface RoomCenterPanelProps {
   onStatusChange?: (blueprintId: string, status: BlueprintStatus) => void
   onContentRefresh?: () => void
   onToggleDriftPanel?: () => void
+  onAnalyzeCrossDoc?: () => void
 }
 
 const STATUS_OPTIONS: { value: BlueprintStatus; label: string; description: string }[] = [
@@ -57,7 +58,7 @@ const TYPE_LABELS: Record<string, string> = {
 // Confirmation is required for approved/implemented (final states)
 const CONFIRM_STATUSES: BlueprintStatus[] = ['approved', 'implemented']
 
-export function RoomCenterPanel({ projectId, blueprint, onStatusChange, onContentRefresh, onToggleDriftPanel }: RoomCenterPanelProps) {
+export function RoomCenterPanel({ projectId, blueprint, onStatusChange, onContentRefresh, onToggleDriftPanel, onAnalyzeCrossDoc }: RoomCenterPanelProps) {
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false)
   const [confirmDialog, setConfirmDialog] = useState<{ status: BlueprintStatus } | null>(null)
   const [versionRefreshKey, setVersionRefreshKey] = useState(0)
@@ -187,6 +188,18 @@ export function RoomCenterPanel({ projectId, blueprint, onStatusChange, onConten
         )}
 
         <div className="flex-1" />
+
+        {/* Cross-doc analyze */}
+        {onAnalyzeCrossDoc && (
+          <button
+            onClick={onAnalyzeCrossDoc}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-medium text-accent-purple hover:bg-accent-purple/10 transition-colors"
+            title="Analyze cross-document consistency"
+          >
+            <GitCompare className="w-3.5 h-3.5" />
+            <span className="hidden lg:inline">Cross-Doc</span>
+          </button>
+        )}
 
         {/* Status dropdown */}
         <div className="relative">
