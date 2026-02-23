@@ -728,27 +728,39 @@ export type Database = {
           project_id: string;
           key_value: string;
           name: string;
+          environment: "production" | "staging" | "development" | "custom";
+          description: string | null;
           status: "active" | "revoked";
           created_by: string;
           created_at: string;
+          revoked_at: string | null;
+          revoked_by: string | null;
         };
         Insert: {
           id?: string;
           project_id: string;
           key_value: string;
           name: string;
+          environment?: "production" | "staging" | "development" | "custom";
+          description?: string | null;
           status?: "active" | "revoked";
           created_by: string;
           created_at?: string;
+          revoked_at?: string | null;
+          revoked_by?: string | null;
         };
         Update: {
           id?: string;
           project_id?: string;
           key_value?: string;
           name?: string;
+          environment?: "production" | "staging" | "development" | "custom";
+          description?: string | null;
           status?: "active" | "revoked";
           created_by?: string;
           created_at?: string;
+          revoked_at?: string | null;
+          revoked_by?: string | null;
         };
         Relationships: [
           {
@@ -1962,6 +1974,7 @@ export type CommentEntityType = Comment["entity_type"];
 export type BlueprintType = Blueprint["blueprint_type"];
 export type BlueprintStatus = Blueprint["status"];
 export type AppKeyStatus = AppKey["status"];
+export type AppKeyEnvironment = AppKey["environment"];
 export type FeedbackCategory = FeedbackSubmission["category"];
 export type FeedbackStatus = FeedbackSubmission["status"];
 

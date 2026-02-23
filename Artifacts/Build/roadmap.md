@@ -406,9 +406,9 @@ After this initial update, stay in this session. I will come back to you after e
 | 086 | Feedback Categorization | `done` | — | 081, 084, 085 | Lab | `components/lab/` |
 | 087 | Feedback Search & Filter | `done` | — | 083, 084, 086 | Lab | `components/lab/` |
 | 088 | Convert Feedback → Work Order | `done` | — | 061, 081, 085 | Lab ⚠️ | `components/lab/`, `app/api/projects/` |
-| 089 | Convert Feedback → Feature | `ready` | — | 026, 081, 085 | Lab ⚠️ | `components/lab/`, `app/api/lab/` |
-| 090 | Insights Lab Agent Infra | `ready` | — | 081, 083 | Lab | `components/lab/`, `app/api/lab/agent/` |
-| 091 | Agent: Auto-Categorization | `blocked` | — | 081, 086, 090 | Lab | `components/lab/` |
+| 089 | Convert Feedback → Feature | `done` | — | 026, 081, 085 | Lab ⚠️ | `components/lab/`, `app/api/lab/` |
+| 090 | Insights Lab Agent Infra | `done` | — | 081, 083 | Lab | `components/lab/`, `app/api/lab/agent/` |
+| 091 | Agent: Auto-Categorization | `ready` | — | 081, 086, 090 | Lab | `components/lab/` |
 | 092 | Agent: Feedback Enrichment | `blocked` | — | 026, 085, 090, 091 | Lab ⚠️ | `components/lab/` |
 | 093 | Agent: Conversion Suggestions | `blocked` | — | 088, 089, 090, 091 | Lab ⚠️ | `components/lab/` |
 | 094 | App Key Management | `ready` | — | 006, 081, 082 | Lab | `components/lab/`, `app/api/lab/` |
@@ -423,17 +423,17 @@ After this initial update, stay in this session. I will come back to you after e
 | 098 | Artifact Browser & Management | `done` | — | 096, 097 | Artifacts | `components/artifacts/` |
 | 099 | Artifact Linking to Entities | `done` | — | 096, 097 | Artifacts | `components/artifacts/` |
 | 100 | Artifact Search & Indexing | `done` | — | 096, 097 | Artifacts | `components/artifacts/` |
-| 101 | Artifact Folders & Organization | `ready` | — | 096, 098 | Artifacts | `components/artifacts/` |
+| 101 | Artifact Folders & Organization | `done` | — | 096, 098 | Artifacts | `components/artifacts/` |
 | 102 | Document Version History | `done` | — | 002, 034, 049 | Versioning ⚠️ | `components/versioning/`, `lib/` |
 | 103 | Version Diff & Comparison | `done` | — | 102 | Versioning | `components/versioning/` |
 | 104 | Version Restore | `done` | — | 102, 103 | Versioning | `components/versioning/` |
 | 105 | Comments System Foundation | `done` | — | 002 | Comments | `supabase/migrations/`, `components/comments/` |
 | 106 | @Mentions System | `done` | — | 099, 105 | Comments ⚠️ | `components/mentions/` |
-| 107 | Notification System | `blocked` | — | 105, 106 | Notifications | `components/notifications/`, `app/api/notifications/` |
+| 107 | Notification System | `ready` | — | 105, 106 | Notifications | `components/notifications/`, `app/api/notifications/` |
 | 108 | Email Notifications | `blocked` | — | 107 | Notifications | `lib/email/`, `app/api/notifications/` |
 | 109 | Knowledge Graph Schema | `done` | — | 002 | Knowledge | `supabase/migrations/`, `types/database.ts` |
 | 110 | Knowledge Graph Explorer | `done` | — | 002, 109 | Knowledge | `components/knowledge-graph/` |
-| 111 | Auto-Connection Detection | `blocked` | — | 106, 109, 110 | Knowledge ⚠️ | `components/knowledge/` |
+| 111 | Auto-Connection Detection | `ready` | — | 106, 109, 110 | Knowledge ⚠️ | `components/knowledge/` |
 | 112 | Manual Entity Linking | `done` | — | 109, 110 | Knowledge | `components/knowledge/` |
 | 113 | Organization Console | `done` | — | 005, 009 | Admin | `components/admin/`, `app/.../admin/` |
 | 114 | Team Invitation System | `blocked` | — | 108, 113 | Admin ⚠️ | `components/admin/` |
@@ -454,13 +454,13 @@ After this initial update, stay in this session. I will come back to you after e
 | 124 | Drift Detection | `done` | — | 026, 037, 046 | Room ⚠️ | `components/room/` |
 | 125 | Cross-Document Suggestions | `done` | — | 037, 046, 057, 124 | Room ⚠️ | `components/room/` |
 | 126 | Org-Level Blueprint Templates | `done` | — | 053, 113 | Room | `components/room/`, `components/admin/` |
-| 127 | Extraction Strategy Config | `ready` | — | 073, 113 | Floor ⚠️ | `components/floor/`, `components/admin/` |
+| 127 | Extraction Strategy Config | `done` | — | 073, 113 | Floor ⚠️ | `components/floor/`, `components/admin/` |
 | 128 | Sprint/Phase Burndown | `done` | — | 061, 071 | Floor | `components/floor/` |
-| 129 | MCP Implementation | `ready` | — | 080 | Floor | `lib/mcp/`, `app/api/v1/` |
+| 129 | MCP Implementation | `done` | — | 080 | Floor | `lib/mcp/`, `app/api/v1/` |
 | 130 | Work Order Sync Alerts | `done` | — | 046, 061, 124 | Floor ⚠️ | `components/floor/` |
 | 131 | Slack Integration | `ready` | — | 081 | Lab | `lib/integrations/`, `app/api/lab/` |
 | 132 | Feedback Analytics | `ready` | — | 081 | Lab | `components/lab/` |
-| 133 | Priority Scoring | `blocked` | — | 081, 090 | Lab | `components/lab/` |
+| 133 | Priority Scoring | `ready` | — | 081, 090 | Lab | `components/lab/` |
 | 134 | Global Search | `blocked` | — | all 001–133 | Cross ⚠️ | `components/search/`, `app/api/search/` |
 | 135 | Dark/Light Theme Toggle | `blocked` | — | 001, 116 | Cross | `app/globals.css`, `lib/theme/` |
 

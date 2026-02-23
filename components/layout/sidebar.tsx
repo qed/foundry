@@ -19,6 +19,7 @@ import {
   ChevronRight,
   LayoutDashboard,
   AlertCircle,
+  Settings,
 } from 'lucide-react'
 import { OrgSwitcher } from './org-switcher'
 import { ProjectSwitcher } from './project-switcher'
@@ -208,6 +209,28 @@ export function Sidebar({ onClose }: SidebarProps) {
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium truncate">Artifacts</div>
               <div className="text-xs text-text-tertiary truncate">Files & documents</div>
+            </div>
+          )}
+        </Link>
+
+        <div className="border-t border-border-default my-2" />
+
+        {/* Settings link */}
+        <Link
+          href={`${baseUrl}/settings/insights`}
+          onClick={onClose}
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+            pathname.includes('/settings')
+              ? 'bg-accent-cyan/10 text-accent-cyan'
+              : 'text-text-secondary hover:bg-bg-tertiary hover:text-text-primary'
+          }`}
+          title={isCollapsed ? 'Settings' : undefined}
+        >
+          <Settings className="w-5 h-5 flex-shrink-0" />
+          {!isCollapsed && (
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium truncate">Settings</div>
+              <div className="text-xs text-text-tertiary truncate">API keys & config</div>
             </div>
           )}
         </Link>
