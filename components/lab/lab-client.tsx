@@ -10,6 +10,7 @@ import { LabAgentPanel } from './lab-agent-panel'
 import { FeedbackFilterBar } from './feedback-filter-bar'
 import type { FeedbackFilters } from './feedback-filter-bar'
 import { BulkActionsBar } from './bulk-actions-bar'
+import { ConversionSuggestionsPanel } from './conversion-suggestions-panel'
 import type { FeedbackSubmission } from '@/types/database'
 
 interface LabStats {
@@ -72,6 +73,7 @@ export function LabClient({ projectId, initialStats }: LabClientProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [agentPanelOpen, setAgentPanelOpen] = useState(false)
+  const [suggestionsActive, setSuggestionsActive] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [sort, setSort] = useState<FeedbackSort>('newest')
@@ -218,6 +220,11 @@ export function LabClient({ projectId, initialStats }: LabClientProps) {
 
   const selectedFeedback = feedback.find((f) => f.id === selectedId) || null
 
+  const handleSelectFeedback = useCallback((id: string | null) => {
+    setSelectedId(id)
+    if (id) setSuggestionsActive(false)
+  }, [])
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -227,6 +234,8 @@ export function LabClient({ projectId, initialStats }: LabClientProps) {
         onRefresh={() => fetchFeedback(true)}
         agentPanelOpen={agentPanelOpen}
         onToggleAgent={() => setAgentPanelOpen((prev) => !prev)}
+        suggestionsActive={suggestionsActive}
+        onToggleSuggestions={() => setSuggestionsActive((prev) => !prev)}
       />
 
       {/* Two-panel layout */}
@@ -246,7 +255,7 @@ export function LabClient({ projectId, initialStats }: LabClientProps) {
             <LabInbox
               feedback={feedback}
               selectedId={selectedId}
-              onSelect={setSelectedId}
+              onSelect={handleSelectFeedback}
               isLoading={isLoading}
               total={total}
               page={page}
@@ -261,13 +270,17 @@ export function LabClient({ projectId, initialStats }: LabClientProps) {
           </div>
         </div>
 
-        {/* Right panel: Detail (60%) */}
+        {/* Right panel: Detail or Suggestions (60%) */}
         <div className="hidden md:flex flex-1 min-w-0 bg-bg-primary">
-          <LabDetailPanel
-            feedback={selectedFeedback}
-            projectId={projectId}
-            onUpdate={handleFeedbackUpdate}
-          />
+          {suggestionsActive ? (
+            <ConversionSuggestionsPanel projectId={projectId} />
+          ) : (
+            <LabDetailPanel
+              feedback={selectedFeedback}
+              projectId={projectId}
+              onUpdate={handleFeedbackUpdate}
+            />
+          )}
         </div>
       </div>
 
