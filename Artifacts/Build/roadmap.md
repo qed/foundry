@@ -15,9 +15,9 @@
 
 ---
 
-### Completed Phases (72/150)
+### Completed Phases (73/150)
 
-001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081 (Lab schema), 083–085 (Lab layout/inbox/detail), 096–101 (Artifacts full stack), 105 (Comments schema), 109 (Knowledge schema), 113 (Org console), 117 (Realtime presence), 119 (Audit trail)
+001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–082 (Lab schema + feedback API), 083–085 (Lab layout/inbox/detail), 096–101 (Artifacts full stack), 105 (Comments schema), 109 (Knowledge schema), 113 (Org console), 117 (Realtime presence), 119 (Audit trail)
 
 ---
 
@@ -399,7 +399,7 @@ After this initial update, stay in this session. I will come back to you after e
 | Phase | Name | Status | Branch | Prerequisites | Track | File Areas |
 |-------|------|--------|--------|---------------|-------|------------|
 | 081 | Insights Lab Database Schema | `done` | — | 002 | Lab | `supabase/migrations/`, `types/database.ts` |
-| 082 | Feedback Collection API | `ready` | — | 001, 081 | Lab | `app/api/lab/` |
+| 082 | Feedback Collection API | `done` | — | 001, 081 | Lab | `app/api/insights/feedback/` |
 | 083 | Insights Lab Page Layout | `done` | — | 006, 010, 081 | Lab | `components/lab/`, `app/.../lab/` |
 | 084 | Feedback Inbox Display | `done` | — | 081, 083 | Lab | `components/lab/` |
 | 085 | Feedback Detail View | `done` | — | 081, 083, 084 | Lab | `components/lab/` |
@@ -411,7 +411,7 @@ After this initial update, stay in this session. I will come back to you after e
 | 091 | Agent: Auto-Categorization | `blocked` | — | 081, 086, 090 | Lab | `components/lab/` |
 | 092 | Agent: Feedback Enrichment | `blocked` | — | 026, 085, 090, 091 | Lab ⚠️ | `components/lab/` |
 | 093 | Agent: Conversion Suggestions | `blocked` | — | 088, 089, 090, 091 | Lab ⚠️ | `components/lab/` |
-| 094 | App Key Management | `blocked` | — | 006, 081, 082 | Lab | `components/lab/`, `app/api/lab/` |
+| 094 | App Key Management | `ready` | — | 006, 081, 082 | Lab | `components/lab/`, `app/api/lab/` |
 | 095 | Feedback Bulk Operations | `blocked` | — | 084, 086, 088 | Lab | `components/lab/` |
 
 ### Section 7: Cross-Cutting Enhancements (096–120)
@@ -704,10 +704,10 @@ These phases require work from **multiple module tracks** to be complete before 
 | Pattern Shop (026–045) | 20 | 20 | 0 | 0 | 0 |
 | Control Room (046–060) | 15 | 14 | 0 | 1 | 0 |
 | Assembly Floor (061–080) | 20 | 17 | 0 | 3 | 0 |
-| Insights Lab (081–095) | 15 | 4 | 0 | 5 | 6 |
+| Insights Lab (081–095) | 15 | 5 | 0 | 5 | 5 |
 | Cross-Cutting (096–120) | 25 | 10 | 0 | 6 | 9 |
 | Advanced (121–135) | 15 | 0 | 0 | 8 | 7 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **90** | **0** | **23** | **37** |
+| **TOTAL** | **150** | **91** | **0** | **23** | **36** |
 
-**Currently ready to start**: 060, 082, 086, 088, 089, 090, 101, 102, 106, 110, 118, 120, 121, 122, 123, 124, 127, 128, 129, 131, 132
+**Currently ready to start**: 060, 086, 088, 089, 090, 094, 101, 102, 106, 110, 118, 120, 121, 122, 123, 124, 127, 128, 129, 131, 132
