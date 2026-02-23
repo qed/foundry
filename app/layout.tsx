@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { AuthProvider } from "@/lib/auth/context";
 import { ToastProvider } from "@/components/ui/toast-container";
+import { ThemeProvider } from "@/lib/theme/theme-context";
 import "./globals.css";
 
 const inter = Inter({
@@ -22,11 +23,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" data-theme="dark" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('helix-foundry-theme')||'dark';if(t==='system'){t=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'}document.documentElement.setAttribute('data-theme',t)}catch(e){}})()`,
+          }}
+        />
+      </head>
       <body className={`${inter.variable} antialiased`}>
-        <AuthProvider>
-          <ToastProvider>{children}</ToastProvider>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <ToastProvider>{children}</ToastProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -6,12 +6,14 @@ import { useOptionalAuth } from '@/lib/auth/context'
 import { useOptionalOrg } from '@/lib/context/org-context'
 import { useOptionalProject } from '@/lib/context/project-context'
 import { Badge } from '@/components/ui/badge'
-import { LogOut, Home, Settings } from 'lucide-react'
+import { LogOut, Home, Settings, Sun, Moon, Monitor } from 'lucide-react'
+import { useOptionalTheme } from '@/lib/theme/theme-context'
 
 export function UserMenu() {
   const auth = useOptionalAuth()
   const orgCtx = useOptionalOrg()
   const projectCtx = useOptionalProject()
+  const theme = useOptionalTheme()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -115,6 +117,33 @@ export function UserMenu() {
               <Settings className="w-4 h-4" />
               Account Settings
             </Link>
+
+            {theme && (
+              <div className="px-3 py-2">
+                <p className="text-[11px] text-text-tertiary mb-1.5">Theme</p>
+                <div className="flex gap-1">
+                  {([
+                    { value: 'light' as const, icon: Sun, label: 'Light' },
+                    { value: 'dark' as const, icon: Moon, label: 'Dark' },
+                    { value: 'system' as const, icon: Monitor, label: 'System' },
+                  ]).map(({ value, icon: Icon, label }) => (
+                    <button
+                      key={value}
+                      onClick={() => theme.setMode(value)}
+                      className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded text-xs transition-colors ${
+                        theme.mode === value
+                          ? 'bg-accent-cyan/15 text-accent-cyan'
+                          : 'text-text-tertiary hover:text-text-secondary hover:bg-bg-secondary'
+                      }`}
+                      title={label}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                      <span>{label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <button
               onClick={() => {

@@ -21,6 +21,28 @@
   color-scheme: dark;
 }
 
+/* Light theme overrides — CSS variables swap, Tailwind utilities auto-update */
+[data-theme="light"] {
+  color-scheme: light;
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f8f9fb;
+  --color-bg-tertiary: #eef0f4;
+  --color-border-default: #d5d9e2;
+  --color-text-primary: #111827;
+  --color-text-secondary: #4b5563;
+  --color-text-tertiary: #9ca3af;
+  --color-accent-cyan: #0891b2;
+  --color-accent-purple: #7c3aed;
+  --color-accent-success: #16a34a;
+  --color-accent-warning: #d97706;
+  --color-accent-error: #dc2626;
+}
+
+[data-theme="light"] .glass-panel {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(213, 217, 226, 0.6);
+}
+
 body {
   background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
