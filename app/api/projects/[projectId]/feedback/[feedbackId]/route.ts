@@ -127,6 +127,10 @@ export async function PATCH(
       updates.categorization_reasoning = body.categorization_reasoning
     }
 
+    if (body.enrichment !== undefined) {
+      updates.enrichment = body.enrichment
+    }
+
     if (Object.keys(updates).length === 0) {
       return Response.json({ error: 'No fields to update' }, { status: 400 })
     }

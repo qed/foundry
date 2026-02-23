@@ -23,6 +23,7 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { CategoryBadge } from '@/components/lab/category-badge'
 import { ConvertToWoModal } from '@/components/lab/convert-to-wo-modal'
 import { ConvertToFeatureModal } from '@/components/lab/convert-to-feature-modal'
+import { FeedbackEnrichmentSection } from '@/components/lab/feedback-enrichment'
 import type { FeedbackSubmission, FeedbackStatus, FeedbackCategory } from '@/types/database'
 
 interface LabDetailPanelProps {
@@ -442,6 +443,13 @@ export function LabDetailPanel({ feedback, projectId, onUpdate }: LabDetailPanel
               )
             } catch { return null }
           })()}
+
+          {/* ── AI Enrichment ─────────────────────────────────── */}
+          <FeedbackEnrichmentSection
+            feedback={feedback}
+            projectId={projectId}
+            onUpdate={onUpdate}
+          />
 
           {/* ── Tags ─────────────────────────────────────────── */}
           <section>

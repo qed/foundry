@@ -1377,6 +1377,7 @@ export type Database = {
           converted_to_feature_id: string | null;
           ai_suggested: boolean;
           categorization_reasoning: string | null;
+          enrichment: Json | null;
           created_at: string;
           updated_at: string;
         };
@@ -1396,6 +1397,7 @@ export type Database = {
           converted_to_feature_id?: string | null;
           ai_suggested?: boolean;
           categorization_reasoning?: string | null;
+          enrichment?: Json | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -1415,6 +1417,7 @@ export type Database = {
           converted_to_feature_id?: string | null;
           ai_suggested?: boolean;
           categorization_reasoning?: string | null;
+          enrichment?: Json | null;
           created_at?: string;
           updated_at?: string;
         };
