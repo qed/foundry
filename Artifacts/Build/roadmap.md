@@ -15,9 +15,9 @@
 
 ---
 
-### Completed Phases (125/150)
+### Completed Phases (126/150)
 
-001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 059–060 (Blueprint versioning + comments), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–091 (Lab full stack + auto-categorization), 092 (Feedback enrichment), 094–095 (App key management + bulk ops), 096–104 (Artifacts full stack + folders + versioning complete), 105 (Comments schema), 106 (@Mentions), 107–108 (Notifications + Email), 109–110 (Knowledge schema + explorer), 112 (Manual entity linking), 113 (Org console), 117 (Realtime presence), 118 (Collaborative editing), 119 (Audit trail), 120 (Project archive), 124 (Drift detection), 125 (Cross-doc suggestions), 126 (Org templates), 127 (Extraction strategy), 128 (Phase burndown), 129 (MCP implementation), 130 (WO sync alerts), 114–116 (Team invitations + billing + user profile)
+001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 059–060 (Blueprint versioning + comments), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–091 (Lab full stack + auto-categorization), 092 (Feedback enrichment), 094–095 (App key management + bulk ops), 096–104 (Artifacts full stack + folders + versioning complete), 105 (Comments schema), 106 (@Mentions), 107–108 (Notifications + Email), 109–111 (Knowledge schema + explorer + auto-connections), 112 (Manual entity linking), 113 (Org console), 117 (Realtime presence), 118 (Collaborative editing), 119 (Audit trail), 120 (Project archive), 124 (Drift detection), 125 (Cross-doc suggestions), 126 (Org templates), 127 (Extraction strategy), 128 (Phase burndown), 129 (MCP implementation), 130 (WO sync alerts), 114–116 (Team invitations + billing + user profile)
 
 ---
 
@@ -433,7 +433,7 @@ After this initial update, stay in this session. I will come back to you after e
 | 108 | Email Notifications | `done` | — | 107 | Notifications | `lib/email/`, `app/api/notifications/` |
 | 109 | Knowledge Graph Schema | `done` | — | 002 | Knowledge | `supabase/migrations/`, `types/database.ts` |
 | 110 | Knowledge Graph Explorer | `done` | — | 002, 109 | Knowledge | `components/knowledge-graph/` |
-| 111 | Auto-Connection Detection | `ready` | — | 106, 109, 110 | Knowledge ⚠️ | `components/knowledge/` |
+| 111 | Auto-Connection Detection | `done` | — | 106, 109, 110 | Knowledge | `components/knowledge-graph/`, `lib/knowledge-graph/` |
 | 112 | Manual Entity Linking | `done` | — | 109, 110 | Knowledge | `components/knowledge/` |
 | 113 | Organization Console | `done` | — | 005, 009 | Admin | `components/admin/`, `app/.../admin/` |
 | 114 | Team Invitation System | `ready` | — | 108, 113 | Admin ⚠️ | `components/admin/` |
@@ -710,4 +710,4 @@ These phases require work from **multiple module tracks** to be complete before 
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
 | **TOTAL** | **150** | **122** | **0** | **10** | **18** |
 
-**Currently ready to start**: 108, 111, 116, 121, 122, 123, 131, 132, 133
+**Currently ready to start**: 121, 122, 123, 131, 132, 133
