@@ -36,7 +36,7 @@ Where XXX is the phase number (e.g., 017, 026, 113). This sets the Claude Code s
 | Artifacts | `PhaseHistory/artifacts.md` | 096–101 | `components/artifacts/`, `app/api/projects/*/artifacts/`, `lib/artifacts/` |
 | Cross-Cutting | `PhaseHistory/cross-cutting.md` | 105–119 | `lib/activity/`, `lib/realtime/`, `components/presence/` |
 
-**123 phases complete** (001–060, 061–095, 096–102, 105–108, 109, 110, 112–114, 117–120, 124–130).
+**124 phases complete** (001–060, 061–095, 096–102, 105–108, 109, 110, 112–114, 116–120, 124–130).
 
 _Previously this was a single giant paragraph. Migrated to per-module files on 2026-02-22._
 
@@ -261,6 +261,7 @@ After building, run `npm run build` and `npm run lint` to verify zero errors. Th
 - Phase 107: Notification System (Cross-Cutting) -- done
 - Phase 108: Email Notifications (Cross-Cutting) -- done
 - Phase 114: Team Invitation System (Admin) -- done
+- Phase 116: User Profile & Settings (Admin) -- done
 
 **Next up** (sequential order):
 ...

@@ -15,9 +15,9 @@
 
 ---
 
-### Completed Phases (123/150)
+### Completed Phases (124/150)
 
-001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 059–060 (Blueprint versioning + comments), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–091 (Lab full stack + auto-categorization), 092 (Feedback enrichment), 094–095 (App key management + bulk ops), 096–104 (Artifacts full stack + folders + versioning complete), 105 (Comments schema), 106 (@Mentions), 107–108 (Notifications + Email), 109–110 (Knowledge schema + explorer), 112 (Manual entity linking), 113 (Org console), 117 (Realtime presence), 118 (Collaborative editing), 119 (Audit trail), 120 (Project archive), 124 (Drift detection), 125 (Cross-doc suggestions), 126 (Org templates), 127 (Extraction strategy), 128 (Phase burndown), 129 (MCP implementation), 130 (WO sync alerts), 114 (Team invitations)
+001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 059–060 (Blueprint versioning + comments), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–091 (Lab full stack + auto-categorization), 092 (Feedback enrichment), 094–095 (App key management + bulk ops), 096–104 (Artifacts full stack + folders + versioning complete), 105 (Comments schema), 106 (@Mentions), 107–108 (Notifications + Email), 109–110 (Knowledge schema + explorer), 112 (Manual entity linking), 113 (Org console), 117 (Realtime presence), 118 (Collaborative editing), 119 (Audit trail), 120 (Project archive), 124 (Drift detection), 125 (Cross-doc suggestions), 126 (Org templates), 127 (Extraction strategy), 128 (Phase burndown), 129 (MCP implementation), 130 (WO sync alerts), 114 (Team invitations), 116 (User profile & settings)
 
 ---
 
@@ -173,7 +173,7 @@
 |---|-------|------|-------|
 | 71 | 120 | Project Archive & Cleanup | ready now |
 | 72 | ~~114~~ | ~~Team Invitation System~~ | done |
-| 73 | 116 | User Profile & Settings | needs 107 |
+| 73 | ~~116~~ | ~~User Profile & Settings~~ | done |
 | 74 | 115 | Seat Management & Billing | ready now |
 
 ### Cluster 13: Advanced Remainders — 3 phases
@@ -182,7 +182,7 @@
 | # | Phase | Name | Notes |
 |---|-------|------|-------|
 | 75 | 121 | Idea Maturity Scoring | needs 023 (Cluster 1) |
-| 76 | 135 | Dark/Light Theme Toggle | needs 116 (Cluster 12) |
+| 76 | 135 | Dark/Light Theme Toggle | ready now |
 | 77 | 134 | Global Search | needs all 001–133 |
 
 ### Cluster 14: Polish & Deployment — 15 phases
