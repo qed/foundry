@@ -15,9 +15,9 @@
 
 ---
 
-### Completed Phases (70/150)
+### Completed Phases (71/150)
 
-001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078 (Floor comments), 081 (Lab schema), 083–085 (Lab layout/inbox/detail), 096–101 (Artifacts full stack), 105 (Comments schema), 109 (Knowledge schema), 113 (Org console), 117 (Realtime presence), 119 (Audit trail)
+001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–079 (Floor comments + dashboard), 081 (Lab schema), 083–085 (Lab layout/inbox/detail), 096–101 (Artifacts full stack), 105 (Comments schema), 109 (Knowledge schema), 113 (Org console), 117 (Realtime presence), 119 (Audit trail)
 
 ---
 
@@ -391,7 +391,7 @@ After this initial update, stay in this session. I will come back to you after e
 | 076 | Implementation Plans | `done` | — | 061, 064, 073 | Floor | `components/floor/` |
 | 077 | Bulk Operations | `done` | — | 061, 065, 067 | Floor | `components/floor/` |
 | 078 | Floor Comments | `done` | — | 010, 061, 064 | Floor | `components/floor/` |
-| 079 | Leader Progress Dashboard | `ready` | — | 009, 061, 069, 071 | Floor | `components/floor/` |
+| 079 | Leader Progress Dashboard | `done` | — | 009, 061, 069, 071 | Floor | `components/dashboard/` |
 | 080 | MCP Connection Schema | `ready` | — | 010, 061 | Floor | `supabase/migrations/`, `app/api/floor/mcp/` |
 
 ### Section 6: The Insights Lab MVP (081–095)
@@ -710,4 +710,4 @@ These phases require work from **multiple module tracks** to be complete before 
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
 | **TOTAL** | **150** | **90** | **0** | **23** | **37** |
 
-**Currently ready to start**: 060, 079, 080, 082, 086, 088, 089, 090, 101, 102, 106, 110, 118, 120, 121, 122, 123, 124, 127, 128, 131, 132
+**Currently ready to start**: 060, 080, 082, 086, 088, 089, 090, 101, 102, 106, 110, 118, 120, 121, 122, 123, 124, 127, 128, 131, 132
