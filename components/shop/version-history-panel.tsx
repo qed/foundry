@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Clock, ChevronDown, ChevronRight, Eye, RotateCcw, GitCompare } from 'lucide-react'
+import { Clock, ChevronDown, ChevronRight, Eye, RotateCcw, GitCompare, Download, Sparkles, RotateCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { timeAgo } from '@/lib/utils'
 
@@ -13,10 +13,19 @@ interface VersionUser {
 interface Version {
   id: string
   version_number: number
-  content: string
+  content?: string
   created_by: VersionUser
   created_at: string
   change_summary: string | null
+  trigger_type?: string | null
+  change_note?: string | null
+}
+
+const TRIGGER_LABELS: Record<string, { label: string; color: string }> = {
+  edit: { label: 'Edit', color: 'text-text-tertiary' },
+  ai_generated: { label: 'AI', color: 'text-accent-purple' },
+  restore: { label: 'Restore', color: 'text-accent-error' },
+  import: { label: 'Import', color: 'text-accent-warning' },
 }
 
 interface VersionHistoryPanelProps {
@@ -25,6 +34,7 @@ interface VersionHistoryPanelProps {
   onView: (version: Version) => void
   onRestore: (version: Version) => void
   onCompare: (fromVersion: number, toVersion: number) => void
+  onDownload?: (version: Version) => void
   refreshKey?: number
 }
 
@@ -34,6 +44,7 @@ export function VersionHistoryPanel({
   onView,
   onRestore,
   onCompare,
+  onDownload,
   refreshKey,
 }: VersionHistoryPanelProps) {
   const [expanded, setExpanded] = useState(false)
@@ -98,6 +109,7 @@ export function VersionHistoryPanel({
                     ? () => onCompare(versions[index + 1].version_number, version.version_number)
                     : undefined
                   }
+                  onDownload={onDownload ? () => onDownload(version) : undefined}
                 />
               ))}
 
@@ -123,13 +135,17 @@ function VersionItem({
   onView,
   onRestore,
   onCompare,
+  onDownload,
 }: {
   version: Version
   isCurrent: boolean
   onView: () => void
   onRestore: () => void
   onCompare?: () => void
+  onDownload?: () => void
 }) {
+  const triggerInfo = version.trigger_type ? TRIGGER_LABELS[version.trigger_type] : null
+
   return (
     <div
       className={cn(
@@ -148,11 +164,21 @@ function VersionItem({
                 Current
               </span>
             )}
+            {triggerInfo && triggerInfo.label !== 'Edit' && (
+              <span className={cn('text-[10px] px-1.5 py-0.5 rounded bg-bg-tertiary font-medium', triggerInfo.color)}>
+                {triggerInfo.label === 'AI' && <Sparkles className="w-2.5 h-2.5 inline mr-0.5" />}
+                {triggerInfo.label === 'Restore' && <RotateCw className="w-2.5 h-2.5 inline mr-0.5" />}
+                {triggerInfo.label}
+              </span>
+            )}
           </div>
           <p className="text-text-tertiary mt-0.5">
             {timeAgo(version.created_at)} by {version.created_by.name || 'Unknown'}
           </p>
-          {version.change_summary && (
+          {version.change_note && (
+            <p className="text-text-primary mt-0.5 truncate">{version.change_note}</p>
+          )}
+          {version.change_summary && !version.change_note && (
             <p className="text-text-secondary mt-0.5 truncate">{version.change_summary}</p>
           )}
         </div>
@@ -184,6 +210,15 @@ function VersionItem({
           >
             <GitCompare className="w-3 h-3" />
             Compare
+          </button>
+        )}
+
+        {onDownload && (
+          <button
+            onClick={onDownload}
+            className="flex items-center gap-1 px-2 py-1 rounded border border-border-default text-text-secondary hover:text-text-primary hover:bg-bg-tertiary transition-colors"
+          >
+            <Download className="w-3 h-3" />
           </button>
         )}
       </div>

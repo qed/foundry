@@ -90,6 +90,7 @@ export async function POST(
         content: targetVersion.content,
         created_by: user.id,
         change_summary: summary.slice(0, 500),
+        trigger_type: 'restore' as const,
       })
       .select('id, version_number, created_at, change_summary')
       .single()

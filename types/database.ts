@@ -1527,6 +1527,8 @@ export type Database = {
           created_by: string;
           created_at: string;
           change_summary: string | null;
+          trigger_type: "edit" | "ai_generated" | "restore" | "import" | null;
+          change_note: string | null;
         };
         Insert: {
           id?: string;
@@ -1536,6 +1538,8 @@ export type Database = {
           created_by: string;
           created_at?: string;
           change_summary?: string | null;
+          trigger_type?: "edit" | "ai_generated" | "restore" | "import" | null;
+          change_note?: string | null;
         };
         Update: {
           id?: string;
@@ -1545,6 +1549,8 @@ export type Database = {
           created_by?: string;
           created_at?: string;
           change_summary?: string | null;
+          trigger_type?: "edit" | "ai_generated" | "restore" | "import" | null;
+          change_note?: string | null;
         };
         Relationships: [
           {
@@ -1841,6 +1847,7 @@ export type AgentConversation = Database["public"]["Tables"]["agent_conversation
 export type FeatureNode = Database["public"]["Tables"]["feature_nodes"]["Row"];
 export type RequirementsDocument = Database["public"]["Tables"]["requirements_documents"]["Row"];
 export type RequirementVersion = Database["public"]["Tables"]["requirement_versions"]["Row"];
+export type RequirementVersionTriggerType = NonNullable<RequirementVersion["trigger_type"]>;
 
 export type Phase = Database["public"]["Tables"]["phases"]["Row"];
 export type WorkOrder = Database["public"]["Tables"]["work_orders"]["Row"];

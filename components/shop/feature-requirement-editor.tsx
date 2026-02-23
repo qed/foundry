@@ -27,7 +27,7 @@ interface RequirementsDocument {
 
 interface VersionInfo {
   version_number: number
-  content: string
+  content?: string
   created_by: { name: string }
   created_at: string
   change_summary: string | null
@@ -161,6 +161,14 @@ export function FeatureRequirementEditor({
     setShowCompare(true)
   }, [])
 
+  const handleDownload = useCallback((version: { version_number: number }) => {
+    if (!doc) return
+    window.open(
+      `/api/projects/${projectId}/requirements-documents/${doc.id}/versions/${version.version_number}/download`,
+      '_blank'
+    )
+  }, [projectId, doc])
+
   const handleRestoreComplete = useCallback((restoredContent: string) => {
     if (doc) {
       setDoc({ ...doc, content: restoredContent })
@@ -236,6 +244,7 @@ export function FeatureRequirementEditor({
         onView={setViewVersion}
         onRestore={setRestoreVersion}
         onCompare={handleCompare}
+        onDownload={handleDownload}
         refreshKey={versionRefreshKey}
       />
       <VersionViewModal

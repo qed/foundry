@@ -2,10 +2,11 @@ import { NextRequest } from 'next/server'
 import { requireAuth } from '@/lib/auth/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { handleAuthError } from '@/lib/auth/errors'
+import { stripHtml } from '@/lib/shop/version-diff'
 
 /**
- * GET /api/projects/[projectId]/requirements-documents/[docId]/versions/[versionNumber]
- * Fetch a specific version by version number.
+ * GET /api/projects/[projectId]/requirements-documents/[docId]/versions/[versionNumber]/download
+ * Download a specific version as a text file.
  */
 export async function GET(
   _request: NextRequest,
@@ -31,13 +32,13 @@ export async function GET(
       .single()
 
     if (!membership) {
-      return Response.json({ error: 'Not authorized for this project' }, { status: 403 })
+      return Response.json({ error: 'Not authorized' }, { status: 403 })
     }
 
-    // Verify doc exists and belongs to project
+    // Fetch the document title
     const { data: doc } = await supabase
       .from('requirements_documents')
-      .select('id')
+      .select('id, title')
       .eq('id', docId)
       .eq('project_id', projectId)
       .single()
@@ -46,10 +47,10 @@ export async function GET(
       return Response.json({ error: 'Document not found' }, { status: 404 })
     }
 
-    // Fetch the specific version
+    // Fetch the version
     const { data: version, error } = await supabase
       .from('requirement_versions')
-      .select('id, version_number, content, created_by, created_at, change_summary, trigger_type, change_note')
+      .select('version_number, content, created_by, created_at, change_summary')
       .eq('requirement_doc_id', docId)
       .eq('version_number', versionNumber)
       .single()
@@ -58,18 +59,37 @@ export async function GET(
       return Response.json({ error: 'Version not found' }, { status: 404 })
     }
 
-    // Fetch creator profile
+    // Fetch creator name
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, display_name')
+      .select('display_name')
       .eq('id', version.created_by)
       .single()
 
-    return Response.json({
-      ...version,
-      created_by: profile
-        ? { id: profile.id, name: profile.display_name }
-        : { id: version.created_by, name: 'Unknown' },
+    // Build the download content
+    const plainText = stripHtml(version.content)
+    const header = [
+      `# ${doc.title}`,
+      `Version: ${version.version_number}`,
+      `Date: ${new Date(version.created_at).toISOString()}`,
+      `Author: ${profile?.display_name || 'Unknown'}`,
+      version.change_summary ? `Changes: ${version.change_summary}` : null,
+      '',
+      '---',
+      '',
+    ].filter(Boolean).join('\n')
+
+    const body = header + plainText
+
+    // Sanitize filename
+    const safeTitle = doc.title.replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '-').slice(0, 50)
+    const filename = `${safeTitle}-v${versionNumber}.md`
+
+    return new Response(body, {
+      headers: {
+        'Content-Type': 'text/markdown; charset=utf-8',
+        'Content-Disposition': `attachment; filename="${filename}"`,
+      },
     })
   } catch (err) {
     return handleAuthError(err)

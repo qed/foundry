@@ -13,7 +13,7 @@ import { CommentsPanel } from './comments-panel'
 
 interface VersionInfo {
   version_number: number
-  content: string
+  content?: string
   created_by: { name: string }
   created_at: string
   change_summary: string | null
@@ -97,6 +97,13 @@ export function TechnicalRequirementEditor({ projectId, docId }: TechnicalRequir
     setShowCompare(true)
   }, [])
 
+  const handleDownload = useCallback((version: { version_number: number }) => {
+    window.open(
+      `/api/projects/${projectId}/requirements-documents/${docId}/versions/${version.version_number}/download`,
+      '_blank'
+    )
+  }, [projectId, docId])
+
   const handleRestoreComplete = useCallback((restoredContent: string) => {
     setContent(restoredContent)
     setEditorKey((k) => k + 1)
@@ -154,6 +161,7 @@ export function TechnicalRequirementEditor({ projectId, docId }: TechnicalRequir
         onView={setViewVersion}
         onRestore={setRestoreVersion}
         onCompare={handleCompare}
+        onDownload={handleDownload}
         refreshKey={versionRefreshKey}
       />
       <VersionViewModal

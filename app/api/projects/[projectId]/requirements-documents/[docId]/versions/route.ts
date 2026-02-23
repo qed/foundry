@@ -51,10 +51,10 @@ export async function GET(
       .select('id', { count: 'exact', head: true })
       .eq('requirement_doc_id', docId)
 
-    // Fetch versions with user info
+    // Fetch versions with all fields
     const { data: versions, error } = await supabase
       .from('requirement_versions')
-      .select('id, version_number, content, created_by, created_at, change_summary')
+      .select('id, version_number, content, created_by, created_at, change_summary, trigger_type, change_note')
       .eq('requirement_doc_id', docId)
       .order('version_number', { ascending: false })
       .range(offset, offset + limit - 1)
@@ -98,7 +98,7 @@ export async function POST(
     const user = await requireAuth()
     const { projectId, docId } = await params
     const body = await request.json()
-    const { content, changeSummary, previousContent } = body
+    const { content, changeSummary, previousContent, triggerType, changeNote } = body
 
     if (!content || typeof content !== 'string') {
       return Response.json({ error: 'content is required' }, { status: 400 })
@@ -150,6 +150,12 @@ export async function POST(
     const nextVersionNumber = (latestVersion?.version_number || 0) + 1
     const summary = changeSummary || generateChangeSummary(oldContent, content)
 
+    const validTriggerTypes = ['edit', 'ai_generated', 'restore', 'import'] as const
+    type TrigType = typeof validTriggerTypes[number]
+    const safeTriggerType = triggerType && validTriggerTypes.includes(triggerType as TrigType)
+      ? (triggerType as TrigType)
+      : 'edit'
+
     const { data: version, error: insertErr } = await supabase
       .from('requirement_versions')
       .insert({
@@ -158,8 +164,10 @@ export async function POST(
         content,
         created_by: user.id,
         change_summary: summary.slice(0, 500),
+        trigger_type: safeTriggerType,
+        change_note: changeNote || null,
       })
-      .select('id, version_number, created_at, change_summary')
+      .select('id, version_number, created_at, change_summary, trigger_type')
       .single()
 
     if (insertErr) {

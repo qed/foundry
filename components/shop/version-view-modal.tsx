@@ -9,7 +9,7 @@ interface VersionViewModalProps {
   onOpenChange: (open: boolean) => void
   version: {
     version_number: number
-    content: string
+    content?: string
     created_by: { name: string }
     created_at: string
     change_summary: string | null
@@ -41,7 +41,7 @@ export function VersionViewModal({ open, onOpenChange, version }: VersionViewMod
         <DialogBody className="flex-1 overflow-y-auto min-h-0">
           <div
             className="prose-foundry"
-            dangerouslySetInnerHTML={{ __html: version.content }}
+            dangerouslySetInnerHTML={{ __html: version.content || '' }}
           />
         </DialogBody>
 
