@@ -4,6 +4,7 @@ import { createServiceClient } from '@/lib/supabase/server'
 import { validateEmail, sanitizeContent } from '@/lib/feedback/validation'
 import { getUserAgentInfo, getDeviceType } from '@/lib/feedback/browser-utils'
 import { checkRateLimit, rateLimitHeaders } from '@/lib/mcp/rate-limit'
+import { categorizeFeedback } from '@/lib/agent/categorize-feedback'
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -172,6 +173,13 @@ export async function POST(request: NextRequest) {
         { status: 500, headers: { ...CORS_HEADERS, ...rlHeaders } }
       )
     }
+
+    // Fire-and-forget: auto-categorize after 2-second delay
+    setTimeout(() => {
+      categorizeFeedback(feedback.id).catch((err) =>
+        console.error('Auto-categorization failed:', err)
+      )
+    }, 2000)
 
     return Response.json(
       {

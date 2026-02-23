@@ -1375,6 +1375,8 @@ export type Database = {
           status: "new" | "triaged" | "converted" | "archived";
           converted_to_work_order_id: string | null;
           converted_to_feature_id: string | null;
+          ai_suggested: boolean;
+          categorization_reasoning: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -1392,6 +1394,8 @@ export type Database = {
           status?: "new" | "triaged" | "converted" | "archived";
           converted_to_work_order_id?: string | null;
           converted_to_feature_id?: string | null;
+          ai_suggested?: boolean;
+          categorization_reasoning?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -1409,6 +1413,8 @@ export type Database = {
           status?: "new" | "triaged" | "converted" | "archived";
           converted_to_work_order_id?: string | null;
           converted_to_feature_id?: string | null;
+          ai_suggested?: boolean;
+          categorization_reasoning?: string | null;
           created_at?: string;
           updated_at?: string;
         };

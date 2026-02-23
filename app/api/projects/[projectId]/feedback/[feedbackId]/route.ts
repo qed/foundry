@@ -98,6 +98,10 @@ export async function PATCH(
         return Response.json({ error: 'Invalid category' }, { status: 400 })
       }
       updates.category = body.category
+      // Clear AI flag when user manually changes category
+      if (body.ai_suggested === undefined) {
+        updates.ai_suggested = false
+      }
     }
 
     if (body.tags !== undefined) {
@@ -105,6 +109,22 @@ export async function PATCH(
         return Response.json({ error: 'Tags must be an array' }, { status: 400 })
       }
       updates.tags = body.tags
+    }
+
+    if (body.score !== undefined) {
+      const score = Number(body.score)
+      if (isNaN(score) || score < 0 || score > 100) {
+        return Response.json({ error: 'Score must be 0-100' }, { status: 400 })
+      }
+      updates.score = score
+    }
+
+    if (body.ai_suggested !== undefined) {
+      updates.ai_suggested = !!body.ai_suggested
+    }
+
+    if (body.categorization_reasoning !== undefined) {
+      updates.categorization_reasoning = body.categorization_reasoning
     }
 
     if (Object.keys(updates).length === 0) {

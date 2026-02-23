@@ -7,6 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Gauge,
+  Sparkles,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { timeAgo } from '@/lib/utils'
@@ -220,6 +221,13 @@ function FeedbackInboxItem({ item, isSelected, onSelect }: FeedbackInboxItemProp
           <div className="flex items-center gap-2 mt-1.5">
             {/* Category badge */}
             <CategoryBadge category={item.category} size="sm" />
+
+            {/* AI indicator */}
+            {item.ai_suggested && (
+              <span className="flex items-center text-[9px] text-accent-purple" title="AI-categorized">
+                <Sparkles className="w-2.5 h-2.5" />
+              </span>
+            )}
 
             {/* Priority score */}
             {item.score != null && (

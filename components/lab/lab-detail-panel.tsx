@@ -15,6 +15,8 @@ import {
   Smartphone,
   Tablet,
   Globe,
+  Sparkles,
+  RotateCcw,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -89,6 +91,7 @@ export function LabDetailPanel({ feedback, projectId, onUpdate }: LabDetailPanel
   const [projectTags, setProjectTags] = useState<string[]>([])
   const [tagSuggestions, setTagSuggestions] = useState<string[]>([])
   const [tagSuggestionsOpen, setTagSuggestionsOpen] = useState(false)
+  const [isCategorizing, setIsCategorizing] = useState(false)
   const tagInputRef = useRef<HTMLInputElement>(null)
 
   // Fetch existing project tags for autocomplete
@@ -174,6 +177,24 @@ export function LabDetailPanel({ feedback, projectId, onUpdate }: LabDetailPanel
     const currentTags = feedback.tags || []
     patchFeedback({ tags: currentTags.filter((t) => t !== tag) })
   }, [feedback, patchFeedback])
+
+  const handleRecategorize = useCallback(async () => {
+    if (!feedback || isCategorizing) return
+    setIsCategorizing(true)
+    try {
+      const res = await fetch(
+        `/api/projects/${projectId}/feedback/${feedback.id}/categorize`,
+        { method: 'POST' }
+      )
+      if (!res.ok) throw new Error('Failed to categorize')
+      const updated = await res.json()
+      onUpdate(updated)
+    } catch (err) {
+      console.error('Error re-categorizing:', err)
+    } finally {
+      setIsCategorizing(false)
+    }
+  }, [feedback, projectId, onUpdate, isCategorizing])
 
   if (!feedback) {
     return (
@@ -281,6 +302,38 @@ export function LabDetailPanel({ feedback, projectId, onUpdate }: LabDetailPanel
           )}
         </div>
 
+        {/* AI-suggested badge */}
+        {feedback.ai_suggested && (
+          <span className="flex items-center gap-1 text-[10px] text-accent-purple bg-accent-purple/10 px-1.5 py-0.5 rounded-full"
+            title={(() => {
+              try {
+                const r = JSON.parse(feedback.categorization_reasoning || '{}')
+                return `AI confidence: ${r.confidence}%\n${r.reasoning || ''}`
+              } catch { return 'AI-suggested categorization' }
+            })()}
+          >
+            <Sparkles className="w-2.5 h-2.5" />
+            AI
+            {(() => {
+              try {
+                const r = JSON.parse(feedback.categorization_reasoning || '{}')
+                return r.confidence ? ` ${r.confidence}%` : ''
+              } catch { return '' }
+            })()}
+          </span>
+        )}
+
+        {/* Re-categorize button */}
+        <button
+          onClick={handleRecategorize}
+          disabled={isCategorizing || isSaving}
+          className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] text-text-tertiary hover:text-accent-purple hover:bg-accent-purple/5 transition-colors disabled:opacity-50"
+          title="Run AI categorization"
+        >
+          <RotateCcw className={cn('w-3 h-3', isCategorizing && 'animate-spin')} />
+          {isCategorizing ? 'Analyzing...' : 'AI'}
+        </button>
+
         <div className="flex-1" />
 
         {/* Priority score */}
@@ -353,9 +406,42 @@ export function LabDetailPanel({ feedback, projectId, onUpdate }: LabDetailPanel
                   {feedback.score}/100
                 </span>
               </div>
-              <p className="text-[10px] text-text-tertiary mt-1">AI-assigned priority score</p>
+              {(() => {
+                try {
+                  const r = JSON.parse(feedback.categorization_reasoning || '{}')
+                  return r.scoreReasoning ? (
+                    <p className="text-[10px] text-text-tertiary mt-1">{r.scoreReasoning}</p>
+                  ) : (
+                    <p className="text-[10px] text-text-tertiary mt-1">AI-assigned priority score</p>
+                  )
+                } catch { return <p className="text-[10px] text-text-tertiary mt-1">AI-assigned priority score</p> }
+              })()}
             </section>
           )}
+
+          {/* ── AI Categorization Reasoning ─────────────────── */}
+          {feedback.ai_suggested && feedback.categorization_reasoning && (() => {
+            try {
+              const r = JSON.parse(feedback.categorization_reasoning)
+              if (!r.reasoning) return null
+              return (
+                <section>
+                  <h3 className="text-xs font-medium text-text-tertiary uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <Sparkles className="w-3 h-3 text-accent-purple" />
+                    AI Analysis
+                  </h3>
+                  <div className="bg-accent-purple/5 border border-accent-purple/10 rounded-lg p-3 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-medium text-accent-purple">
+                        {r.confidence >= 80 ? 'High' : r.confidence >= 50 ? 'Medium' : 'Low'} confidence ({r.confidence}%)
+                      </span>
+                    </div>
+                    <p className="text-xs text-text-secondary">{r.reasoning}</p>
+                  </div>
+                </section>
+              )
+            } catch { return null }
+          })()}
 
           {/* ── Tags ─────────────────────────────────────────── */}
           <section>
