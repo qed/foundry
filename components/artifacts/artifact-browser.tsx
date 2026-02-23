@@ -83,6 +83,8 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
   } | null>(null)
 
   const { addToast } = useToast()
+  const addToastRef = useRef(addToast)
+  addToastRef.current = addToast
 
   // ── Data fetching ──────────────────────────────────────────
   const fetchContents = useCallback(async () => {
@@ -105,11 +107,11 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
         setArtifacts(data.artifacts || [])
       }
     } catch {
-      addToast('Failed to load artifacts', 'error')
+      addToastRef.current('Failed to load artifacts', 'error')
     } finally {
       setIsLoading(false)
     }
-  }, [projectId, currentFolderId, addToast])
+  }, [projectId, currentFolderId])
 
   useEffect(() => {
     fetchContents()
@@ -212,16 +214,16 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
       try {
         const res = await fetch(`/api/projects/${projectId}/artifacts/${artifactId}/download`)
         if (!res.ok) {
-          addToast('Failed to download', 'error')
+          addToastRef.current('Failed to download', 'error')
           return
         }
         const { url } = await res.json()
         window.open(url, '_blank')
       } catch {
-        addToast('Failed to download', 'error')
+        addToastRef.current('Failed to download', 'error')
       }
     },
-    [projectId, addToast]
+    [projectId]
   )
 
   const handleRenameStart = useCallback(
@@ -244,7 +246,7 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
           body: JSON.stringify({ name: renameValue.trim() }),
         })
         if (!res.ok) {
-          addToast('Failed to rename', 'error')
+          addToastRef.current('Failed to rename', 'error')
           return
         }
         setArtifacts((prev) =>
@@ -261,7 +263,7 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
         })
         if (!res.ok) {
           const data = await res.json()
-          addToast(data.error || 'Failed to rename folder', 'error')
+          addToastRef.current(data.error || 'Failed to rename folder', 'error')
           return
         }
         setFolders((prev) =>
@@ -272,13 +274,13 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
           prev.map((b) => (b.id === renamingId ? { ...b, name: renameValue.trim() } : b))
         )
       }
-      addToast('Renamed', 'success')
+      addToastRef.current('Renamed', 'success')
     } catch {
-      addToast('Failed to rename', 'error')
+      addToastRef.current('Failed to rename', 'error')
     } finally {
       setRenamingId(null)
     }
-  }, [renamingId, renameValue, renameType, projectId, addToast, selectedArtifact])
+  }, [renamingId, renameValue, renameType, projectId, selectedArtifact])
 
   const handleDelete = useCallback(async () => {
     if (!deletingId) return
@@ -289,7 +291,7 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
           method: 'DELETE',
         })
         if (!res.ok) {
-          addToast('Failed to delete', 'error')
+          addToastRef.current('Failed to delete', 'error')
           return
         }
         setArtifacts((prev) => prev.filter((a) => a.id !== deletingId))
@@ -299,18 +301,18 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
           method: 'DELETE',
         })
         if (!res.ok) {
-          addToast('Failed to delete folder', 'error')
+          addToastRef.current('Failed to delete folder', 'error')
           return
         }
         setFolders((prev) => prev.filter((f) => f.id !== deletingId))
       }
-      addToast('Deleted', 'success')
+      addToastRef.current('Deleted', 'success')
     } catch {
-      addToast('Failed to delete', 'error')
+      addToastRef.current('Failed to delete', 'error')
     } finally {
       setDeletingId(null)
     }
-  }, [deletingId, deletingType, projectId, addToast, selectedArtifact])
+  }, [deletingId, deletingType, projectId, selectedArtifact])
 
   const handleMoveStart = useCallback(
     async (artifactId: string) => {
@@ -344,19 +346,19 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
           }
         )
         if (!res.ok) {
-          addToast('Failed to move artifact', 'error')
+          addToastRef.current('Failed to move artifact', 'error')
           return
         }
-        addToast('Moved', 'success')
+        addToastRef.current('Moved', 'success')
         setArtifacts((prev) => prev.filter((a) => a.id !== movingArtifact))
         if (selectedArtifact?.id === movingArtifact) setSelectedArtifact(null)
       } catch {
-        addToast('Failed to move artifact', 'error')
+        addToastRef.current('Failed to move artifact', 'error')
       } finally {
         setMovingArtifact(null)
       }
     },
-    [movingArtifact, projectId, addToast, selectedArtifact]
+    [movingArtifact, projectId, selectedArtifact]
   )
 
   const handleCreateFolder = useCallback(async () => {
@@ -369,19 +371,19 @@ export function ArtifactBrowser({ projectId }: ArtifactBrowserProps) {
         body: JSON.stringify({ name: newFolderName.trim(), parentFolderId: currentFolderId }),
       })
       if (!res.ok) {
-        addToast('Failed to create folder', 'error')
+        addToastRef.current('Failed to create folder', 'error')
         return
       }
       const { folder } = await res.json()
       setFolders((prev) => [...prev, folder])
-      addToast('Folder created', 'success')
+      addToastRef.current('Folder created', 'success')
     } catch {
-      addToast('Failed to create folder', 'error')
+      addToastRef.current('Failed to create folder', 'error')
     } finally {
       setShowNewFolder(false)
       setNewFolderName('')
     }
-  }, [newFolderName, projectId, currentFolderId, addToast])
+  }, [newFolderName, projectId, currentFolderId])
 
   const handleContextMenu = useCallback((e: React.MouseEvent, artifactId: string) => {
     e.preventDefault()
