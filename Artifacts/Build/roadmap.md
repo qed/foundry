@@ -15,9 +15,9 @@
 
 ---
 
-### Completed Phases (127/150)
+### Completed Phases (128/150)
 
-001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 059–060 (Blueprint versioning + comments), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–091 (Lab full stack + auto-categorization), 092 (Feedback enrichment), 094–095 (App key management + bulk ops), 096–104 (Artifacts full stack + folders + versioning complete), 105 (Comments schema), 106 (@Mentions), 107–108 (Notifications + Email), 109–111 (Knowledge schema + explorer + auto-connections), 112 (Manual entity linking), 113 (Org console), 117 (Realtime presence), 118 (Collaborative editing), 119 (Audit trail), 120 (Project archive), 121 (Idea maturity scoring), 124 (Drift detection), 125 (Cross-doc suggestions), 126 (Org templates), 127 (Extraction strategy), 128 (Phase burndown), 129 (MCP implementation), 130 (WO sync alerts), 114–116 (Team invitations + billing + user profile)
+001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 059–060 (Blueprint versioning + comments), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–091 (Lab full stack + auto-categorization), 092 (Feedback enrichment), 094–095 (App key management + bulk ops), 096–104 (Artifacts full stack + folders + versioning complete), 105 (Comments schema), 106 (@Mentions), 107–108 (Notifications + Email), 109–111 (Knowledge schema + explorer + auto-connections), 112 (Manual entity linking), 113 (Org console), 117 (Realtime presence), 118 (Collaborative editing), 119 (Audit trail), 120 (Project archive), 121–122 (Idea maturity + agent writing instructions), 124 (Drift detection), 125 (Cross-doc suggestions), 126 (Org templates), 127 (Extraction strategy), 128 (Phase burndown), 129 (MCP implementation), 130 (WO sync alerts), 114–116 (Team invitations + billing + user profile)
 
 ---
 
@@ -59,7 +59,7 @@
 | 16 | 043 | Document Versioning | needed for 044 |
 | 17 | 045 | Technical Requirements | |
 | 18 | 044 | Pattern Shop Comments | needs 039 + 043 |
-| 19 | 122 | Agent Writing Instructions | Shop + Admin |
+| 19 | ~~122~~ | ~~Agent Writing Instructions~~ | done |
 | 20 | 123 | Aggregate Export | needs 042 |
 
 ### Cluster 4: Control Room — 10 phases
@@ -449,7 +449,7 @@ After this initial update, stay in this session. I will come back to you after e
 | Phase | Name | Status | Branch | Prerequisites | Track | File Areas |
 |-------|------|--------|--------|---------------|-------|------------|
 | 121 | Idea Maturity Scoring | `done` | — | 011, 023 | Hall ⚠️ | `components/hall/` |
-| 122 | Agent Writing Instructions | `ready` | — | 037, 113 | Shop ⚠️ | `components/shop/`, `components/admin/` |
+| 122 | Agent Writing Instructions | `done` | — | 037, 113 | Shop ⚠️ | `components/settings/`, `app/api/projects/*/settings/` |
 | 123 | Aggregate Export | `ready` | — | 037, 042 | Shop | `components/shop/` |
 | 124 | Drift Detection | `done` | — | 026, 037, 046 | Room ⚠️ | `components/room/` |
 | 125 | Cross-Document Suggestions | `done` | — | 037, 046, 057, 124 | Room ⚠️ | `components/room/` |
@@ -706,8 +706,8 @@ These phases require work from **multiple module tracks** to be complete before 
 | Assembly Floor (061–080) | 20 | 17 | 0 | 3 | 0 |
 | Insights Lab (081–095) | 15 | 15 | 0 | 0 | 0 |
 | Cross-Cutting (096–120) | 25 | 21 | 0 | 3 | 1 |
-| Advanced (121–135) | 15 | 8 | 0 | 5 | 2 |
+| Advanced (121–135) | 15 | 9 | 0 | 4 | 2 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **127** | **0** | **5** | **18** |
+| **TOTAL** | **150** | **128** | **0** | **4** | **18** |
 
-**Currently ready to start**: 122, 123, 131, 132, 133
+**Currently ready to start**: 123, 131, 132, 133

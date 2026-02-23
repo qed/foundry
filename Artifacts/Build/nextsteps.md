@@ -36,7 +36,7 @@ Where XXX is the phase number (e.g., 017, 026, 113). This sets the Claude Code s
 | Artifacts | `PhaseHistory/artifacts.md` | 096–101 | `components/artifacts/`, `app/api/projects/*/artifacts/`, `lib/artifacts/` |
 | Cross-Cutting | `PhaseHistory/cross-cutting.md` | 105–119 | `lib/activity/`, `lib/realtime/`, `components/presence/` |
 
-**127 phases complete** (001–060, 061–095, 096–102, 105–108, 109–111, 112–121, 124–130).
+**128 phases complete** (001–060, 061–095, 096–102, 105–108, 109–111, 112–122, 124–130).
 
 _Previously this was a single giant paragraph. Migrated to per-module files on 2026-02-22._
 
