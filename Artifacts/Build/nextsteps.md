@@ -36,7 +36,7 @@ Where XXX is the phase number (e.g., 017, 026, 113). This sets the Claude Code s
 | Artifacts | `PhaseHistory/artifacts.md` | 096–101 | `components/artifacts/`, `app/api/projects/*/artifacts/`, `lib/artifacts/` |
 | Cross-Cutting | `PhaseHistory/cross-cutting.md` | 105–119 | `lib/activity/`, `lib/realtime/`, `components/presence/` |
 
-**89 phases complete** (001–059, 061–076, 081, 083–085, 096–100, 105, 109, 113, 117, 119).
+**90 phases complete** (001–059, 061–077, 081, 083–085, 096–100, 105, 109, 113, 117, 119).
 
 _Previously this was a single giant paragraph. Migrated to per-module files on 2026-02-22._
 
@@ -228,6 +228,7 @@ After building, run `npm run build` and `npm run lint` to verify zero errors. Th
 - Phase 074: Agent WO Extraction from Blueprints (Floor) -- done
 - Phase 075: Agent Phase Planning & Suggestions (Floor) -- done
 - Phase 076: Work Order Implementation Plans (Floor) -- done
+- Phase 077: Work Order Bulk Operations (Floor) -- done
 
 **Next up** (sequential order):
-077, 078, 079, 080, 082, 086, 088, 089, 090, 101, 102, 106, 110, 118, 120, 128...
+078, 079, 080, 082, 086, 088, 089, 090, 101, 102, 106, 110, 118, 120, 128...

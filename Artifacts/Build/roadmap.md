@@ -389,7 +389,7 @@ After this initial update, stay in this session. I will come back to you after e
 | 074 | Agent: WO Extraction | `done` | — | 046, 061, 073 | Floor | `components/floor/` |
 | 075 | Agent: Phase Planning | `done` | — | 061, 069, 073, 074 | Floor | `components/floor/` |
 | 076 | Implementation Plans | `done` | — | 061, 064, 073 | Floor | `components/floor/` |
-| 077 | Bulk Operations | `ready` | — | 061, 065, 067 | Floor | `components/floor/` |
+| 077 | Bulk Operations | `done` | — | 061, 065, 067 | Floor | `components/floor/` |
 | 078 | Floor Comments | `ready` | — | 010, 061, 064 | Floor | `components/floor/` |
 | 079 | Leader Progress Dashboard | `ready` | — | 009, 061, 069, 071 | Floor | `components/floor/` |
 | 080 | MCP Connection Schema | `ready` | — | 010, 061 | Floor | `supabase/migrations/`, `app/api/floor/mcp/` |
@@ -703,11 +703,11 @@ These phases require work from **multiple module tracks** to be complete before 
 | The Hall (011–025) | 15 | 15 | 0 | 0 | 0 |
 | Pattern Shop (026–045) | 20 | 20 | 0 | 0 | 0 |
 | Control Room (046–060) | 15 | 14 | 0 | 1 | 0 |
-| Assembly Floor (061–080) | 20 | 16 | 0 | 4 | 0 |
+| Assembly Floor (061–080) | 20 | 17 | 0 | 3 | 0 |
 | Insights Lab (081–095) | 15 | 4 | 0 | 5 | 6 |
 | Cross-Cutting (096–120) | 25 | 10 | 0 | 6 | 9 |
 | Advanced (121–135) | 15 | 0 | 0 | 8 | 7 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **89** | **0** | **24** | **37** |
+| **TOTAL** | **150** | **90** | **0** | **23** | **37** |
 
-**Currently ready to start**: 060, 077, 078, 079, 080, 082, 086, 088, 089, 090, 101, 102, 106, 110, 118, 120, 121, 122, 123, 124, 127, 128, 131, 132
+**Currently ready to start**: 060, 078, 079, 080, 082, 086, 088, 089, 090, 101, 102, 106, 110, 118, 120, 121, 122, 123, 124, 127, 128, 131, 132
