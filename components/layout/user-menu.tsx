@@ -6,7 +6,7 @@ import { useOptionalAuth } from '@/lib/auth/context'
 import { useOptionalOrg } from '@/lib/context/org-context'
 import { useOptionalProject } from '@/lib/context/project-context'
 import { Badge } from '@/components/ui/badge'
-import { LogOut, Home } from 'lucide-react'
+import { LogOut, Home, Settings } from 'lucide-react'
 
 export function UserMenu() {
   const auth = useOptionalAuth()
@@ -105,6 +105,15 @@ export function UserMenu() {
             >
               <Home className="w-4 h-4" />
               My Organizations
+            </Link>
+
+            <Link
+              href="/settings/profile"
+              onClick={() => setMenuOpen(false)}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-text-secondary hover:bg-bg-secondary hover:text-text-primary rounded-md transition-colors"
+            >
+              <Settings className="w-4 h-4" />
+              Account Settings
             </Link>
 
             <button
