@@ -13,6 +13,8 @@ import {
   FileText,
   ListChecks,
   ClipboardList,
+  Wand2,
+  Loader2,
 } from 'lucide-react'
 import { cn, timeAgo } from '@/lib/utils'
 import { Spinner } from '@/components/ui/spinner'
@@ -94,6 +96,8 @@ export function WorkOrderDetail({
   const [criteriaDraft, setCriteriaDraft] = useState('')
   const [editingPlan, setEditingPlan] = useState(false)
   const [planDraft, setPlanDraft] = useState('')
+  const [generatingPlan, setGeneratingPlan] = useState(false)
+  const [generatedPlan, setGeneratedPlan] = useState<string | null>(null)
 
   // Dropdown states
   const [statusOpen, setStatusOpen] = useState(false)
@@ -145,6 +149,8 @@ export function WorkOrderDetail({
       setEditingDescription(false)
       setEditingCriteria(false)
       setEditingPlan(false)
+      setGeneratingPlan(false)
+      setGeneratedPlan(null)
       setStatusOpen(false)
       setPriorityOpen(false)
       setAssigneeOpen(false)
@@ -267,6 +273,41 @@ export function WorkOrderDetail({
     }
     setEditingPlan(false)
   }, [planDraft, workOrder?.implementation_plan, patchWorkOrder])
+
+  const handleGeneratePlan = useCallback(async () => {
+    if (!workOrder) return
+    setGeneratingPlan(true)
+    setGeneratedPlan(null)
+    try {
+      const res = await fetch(`/api/projects/${projectId}/work-orders/${workOrder.id}/generate-plan`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+      if (!res.ok) {
+        console.error('Plan generation failed')
+        setGeneratingPlan(false)
+        return
+      }
+      const data = await res.json()
+      setGeneratedPlan(data.generated_plan)
+    } catch {
+      console.error('Plan generation error')
+    } finally {
+      setGeneratingPlan(false)
+    }
+  }, [workOrder, projectId])
+
+  const handleAcceptPlan = useCallback(() => {
+    if (!generatedPlan) return
+    setWorkOrder((prev) => prev ? { ...prev, implementation_plan: generatedPlan } : prev)
+    patchWorkOrder({ implementation_plan: generatedPlan })
+    setGeneratedPlan(null)
+    onWorkOrderUpdated?.()
+  }, [generatedPlan, patchWorkOrder, onWorkOrderUpdated])
+
+  const handleRejectPlan = useCallback(() => {
+    setGeneratedPlan(null)
+  }, [])
 
   if (!open) return null
 
@@ -554,22 +595,132 @@ export function WorkOrderDetail({
             />
 
             {/* Implementation Plan */}
-            <EditableSection
-              label="Implementation Plan"
-              icon={<ClipboardList className="w-3.5 h-3.5" />}
-              content={workOrder.implementation_plan}
-              emptyText="No implementation plan. Agent can generate one in Phase 076."
-              editing={editingPlan}
-              draft={planDraft}
-              onEdit={() => {
-                setPlanDraft(workOrder.implementation_plan || '')
-                setEditingPlan(true)
-              }}
-              onDraftChange={setPlanDraft}
-              onSave={handlePlanSave}
-              onCancel={() => setEditingPlan(false)}
-              rows={6}
-            />
+            <div className="px-5 py-4 border-t border-border-default">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-text-tertiary"><ClipboardList className="w-3.5 h-3.5" /></span>
+                  <span className="text-xs font-medium text-text-secondary uppercase tracking-wide">
+                    Implementation Plan
+                  </span>
+                </div>
+                <div className="flex items-center gap-1">
+                  {!editingPlan && !generatedPlan && (
+                    <button
+                      onClick={handleGeneratePlan}
+                      disabled={generatingPlan}
+                      className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium text-accent-purple hover:bg-accent-purple/10 transition-colors disabled:opacity-50"
+                      title="Generate plan with AI"
+                    >
+                      {generatingPlan ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <Wand2 className="w-3 h-3" />
+                      )}
+                      {generatingPlan ? 'Generating...' : 'Generate'}
+                    </button>
+                  )}
+                  {!editingPlan && !generatedPlan && (
+                    <button
+                      onClick={() => {
+                        setPlanDraft(workOrder.implementation_plan || '')
+                        setEditingPlan(true)
+                      }}
+                      className="p-1 rounded text-text-tertiary hover:text-text-primary hover:bg-bg-tertiary transition-colors"
+                    >
+                      <Pencil className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Preview generated plan */}
+              {generatedPlan && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[10px] text-accent-purple font-medium bg-accent-purple/10 px-2 py-0.5 rounded">
+                      AI Generated — Review before accepting
+                    </span>
+                  </div>
+                  <div className="border border-accent-purple/20 rounded-lg p-3 bg-bg-primary max-h-[300px] overflow-y-auto">
+                    <MarkdownContent text={generatedPlan} />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleAcceptPlan}
+                      className="px-3 py-1 bg-accent-cyan text-bg-primary rounded text-xs font-medium hover:bg-accent-cyan/80 transition-colors"
+                    >
+                      Accept
+                    </button>
+                    <button
+                      onClick={() => {
+                        setPlanDraft(generatedPlan)
+                        setEditingPlan(true)
+                        setGeneratedPlan(null)
+                      }}
+                      className="px-3 py-1 text-text-secondary text-xs hover:text-text-primary transition-colors border border-border-default rounded"
+                    >
+                      Edit First
+                    </button>
+                    <button
+                      onClick={handleRejectPlan}
+                      className="px-3 py-1 text-text-secondary text-xs hover:text-accent-error transition-colors"
+                    >
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Editing mode */}
+              {editingPlan && !generatedPlan && (
+                <div>
+                  <textarea
+                    value={planDraft}
+                    onChange={(e) => setPlanDraft(e.target.value)}
+                    rows={10}
+                    className="w-full px-3 py-2 bg-bg-primary border border-border-default rounded-lg text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent-cyan resize-y font-mono text-xs"
+                    autoFocus
+                    placeholder="Write your implementation plan in markdown..."
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') setEditingPlan(false)
+                    }}
+                  />
+                  <div className="flex items-center gap-2 mt-2">
+                    <button
+                      onClick={handlePlanSave}
+                      className="px-3 py-1 bg-accent-cyan text-bg-primary rounded text-xs font-medium hover:bg-accent-cyan/80 transition-colors"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={() => setEditingPlan(false)}
+                      className="px-3 py-1 text-text-secondary text-xs hover:text-text-primary transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Display mode with markdown */}
+              {!editingPlan && !generatedPlan && !generatingPlan && (
+                workOrder.implementation_plan ? (
+                  <MarkdownContent text={workOrder.implementation_plan} />
+                ) : (
+                  <p className="text-xs text-text-tertiary italic">
+                    No implementation plan defined. Click Generate to create one with AI.
+                  </p>
+                )
+              )}
+
+              {/* Generating spinner */}
+              {generatingPlan && !generatedPlan && (
+                <div className="flex items-center gap-2 py-4 justify-center">
+                  <Loader2 className="w-4 h-4 animate-spin text-accent-purple" />
+                  <span className="text-xs text-text-secondary">Generating implementation plan...</span>
+                </div>
+              )}
+            </div>
 
             {/* Activity Feed */}
             <div className="px-5 py-4 border-t border-border-default">
@@ -762,6 +913,128 @@ function EditableSection({
   )
 }
 
+/**
+ * Simple markdown renderer for implementation plans.
+ * Handles: headings, bold, italic, inline code, code blocks, lists, paragraphs.
+ */
+function MarkdownContent({ text }: { text: string }) {
+  const lines = text.split('\n')
+  const elements: React.ReactNode[] = []
+  let i = 0
+
+  while (i < lines.length) {
+    const line = lines[i]
+
+    // Code block
+    if (line.trimStart().startsWith('```')) {
+      const codeLines: string[] = []
+      i++
+      while (i < lines.length && !lines[i].trimStart().startsWith('```')) {
+        codeLines.push(lines[i])
+        i++
+      }
+      i++ // skip closing ```
+      elements.push(
+        <pre key={elements.length} className="bg-bg-primary border border-border-default rounded-lg p-3 overflow-x-auto my-2">
+          <code className="text-xs text-text-primary font-mono whitespace-pre">
+            {codeLines.join('\n')}
+          </code>
+        </pre>
+      )
+      continue
+    }
+
+    // Empty line
+    if (!line.trim()) {
+      i++
+      continue
+    }
+
+    // Heading
+    const headingMatch = line.match(/^(#{1,3})\s+(.+)$/)
+    if (headingMatch) {
+      const level = headingMatch[1].length
+      const headingText = headingMatch[2]
+      if (level === 1) {
+        elements.push(<h3 key={elements.length} className="text-sm font-semibold text-text-primary mt-3 mb-1">{headingText}</h3>)
+      } else if (level === 2) {
+        elements.push(<h4 key={elements.length} className="text-xs font-semibold text-text-primary mt-3 mb-1">{headingText}</h4>)
+      } else {
+        elements.push(<h5 key={elements.length} className="text-xs font-medium text-text-secondary mt-2 mb-1">{headingText}</h5>)
+      }
+      i++
+      continue
+    }
+
+    // List item (- or * or numbered)
+    const listMatch = line.match(/^(\s*)([-*]|\d+[.)]) (.+)$/)
+    if (listMatch) {
+      const listItems: { indent: number; text: string }[] = []
+      while (i < lines.length) {
+        const lm = lines[i].match(/^(\s*)([-*]|\d+[.)]) (.+)$/)
+        if (!lm) break
+        listItems.push({ indent: lm[1].length, text: lm[3] })
+        i++
+      }
+      elements.push(
+        <ul key={elements.length} className="space-y-0.5 my-1">
+          {listItems.map((item, j) => (
+            <li key={j} className="flex items-start gap-2 text-xs text-text-primary" style={{ paddingLeft: `${item.indent * 4}px` }}>
+              <span className="w-1 h-1 rounded-full bg-text-tertiary mt-1.5 flex-shrink-0" />
+              <span><InlineMarkdown text={item.text} /></span>
+            </li>
+          ))}
+        </ul>
+      )
+      continue
+    }
+
+    // Regular paragraph
+    elements.push(
+      <p key={elements.length} className="text-xs text-text-primary leading-relaxed my-1">
+        <InlineMarkdown text={line} />
+      </p>
+    )
+    i++
+  }
+
+  return <div className="space-y-0.5">{elements}</div>
+}
+
+/** Handles bold, italic, inline code within a text string. */
+function InlineMarkdown({ text }: { text: string }) {
+  // Process: `code`, **bold**, *italic*
+  const parts: React.ReactNode[] = []
+  const regex = /(`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*)/g
+  let lastIndex = 0
+  let match: RegExpExecArray | null
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index))
+    }
+    const token = match[0]
+    if (token.startsWith('`')) {
+      parts.push(
+        <code key={parts.length} className="px-1 py-0.5 bg-bg-primary border border-border-default rounded text-accent-cyan text-[11px] font-mono">
+          {token.slice(1, -1)}
+        </code>
+      )
+    } else if (token.startsWith('**')) {
+      parts.push(<strong key={parts.length} className="font-semibold">{token.slice(2, -2)}</strong>)
+    } else if (token.startsWith('*')) {
+      parts.push(<em key={parts.length} className="italic text-text-secondary">{token.slice(1, -1)}</em>)
+    }
+    lastIndex = match.index + token.length
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex))
+  }
+
+  return <>{parts}</>
+}
+
 function CriteriaList({ text }: { text: string }) {
   const lines = text.split('\n').filter((l) => l.trim())
   return (
@@ -817,6 +1090,8 @@ function formatAction(entry: ActivityEntry): string {
       return 'updated acceptance criteria'
     case 'implementation_plan_updated':
       return 'updated the implementation plan'
+    case 'implementation_plan_generated':
+      return 'generated an implementation plan via AI'
     case 'phase_changed':
       return 'changed the phase'
     case 'feature_linked':
