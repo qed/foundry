@@ -264,6 +264,7 @@ After building, run `npm run build` and `npm run lint` to verify zero errors. Th
 - Phase 116: User Profile & Settings (Admin) -- done
 - Phase 115: Seat Management & Billing (Admin) -- done
 - Phase 111: Auto-Connection Detection (Cross-Cutting) -- done
+- Phase 131: Slack Integration (Lab) -- done
 
 **Next up** (sequential order):
 ...
