@@ -58,12 +58,20 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Fetch custom writing instructions
+    const { data: projectSettings } = await supabase
+      .from('projects')
+      .select('agent_writing_instructions')
+      .eq('id', projectId)
+      .single()
+
     // Build context and system prompt
     const context = buildShopContext(
       project.name,
       nodes || [],
       productOverviewContent,
-      currentFrd
+      currentFrd,
+      projectSettings?.agent_writing_instructions
     )
     const systemPrompt = buildShopSystemPrompt(context)
 

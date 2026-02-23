@@ -126,6 +126,8 @@ export type Database = {
           extraction_strategy: "feature-slice" | "specialist" | "custom";
           extraction_instructions: string | null;
           extraction_strategy_updated_at: string | null;
+          agent_writing_instructions: string | null;
+          agent_writing_instructions_updated_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -140,6 +142,8 @@ export type Database = {
           extraction_strategy?: "feature-slice" | "specialist" | "custom";
           extraction_instructions?: string | null;
           extraction_strategy_updated_at?: string | null;
+          agent_writing_instructions?: string | null;
+          agent_writing_instructions_updated_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -154,6 +158,8 @@ export type Database = {
           extraction_strategy?: "feature-slice" | "specialist" | "custom";
           extraction_instructions?: string | null;
           extraction_strategy_updated_at?: string | null;
+          agent_writing_instructions?: string | null;
+          agent_writing_instructions_updated_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };

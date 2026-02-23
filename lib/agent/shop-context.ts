@@ -13,6 +13,7 @@ export interface ShopContext {
   featureTree: string
   productOverview: string | null
   currentFrd: { title: string; content: string } | null
+  writingInstructions: string | null
 }
 
 const LEVEL_LABELS: Record<string, string> = {
@@ -65,13 +66,15 @@ export function buildShopContext(
   projectName: string,
   nodes: FeatureNodeForContext[],
   productOverviewContent: string | null,
-  currentFrd: { title: string; content: string } | null
+  currentFrd: { title: string; content: string } | null,
+  writingInstructions?: string | null
 ): ShopContext {
   return {
     projectName,
     featureTree: formatTree(nodes),
     productOverview: productOverviewContent,
     currentFrd,
+    writingInstructions: writingInstructions || null,
   }
 }
 
@@ -241,6 +244,10 @@ export function buildShopSystemPrompt(context: ShopContext): string {
       ? context.currentFrd.content.slice(0, 3000) + '\n...(truncated)'
       : context.currentFrd.content
     prompt += `\n\nCurrently Viewing FRD: "${context.currentFrd.title}"\n${frdContent}`
+  }
+
+  if (context.writingInstructions) {
+    prompt += `\n\n## Custom Writing Guidelines\nThe project team has defined the following writing guidelines. Follow these when generating or reviewing content:\n${context.writingInstructions}`
   }
 
   return prompt
