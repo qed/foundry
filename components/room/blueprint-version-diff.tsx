@@ -1,19 +1,30 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { X, Plus, Minus as MinusIcon } from 'lucide-react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { timeAgo } from '@/lib/utils'
+import {
+  type DiffLine,
+  type DiffSegment,
+  type SideBySidePair,
+  type UnifiedDiffLine,
+  buildSideBySide,
+  enrichUnifiedDiffWithWords,
+  computeDiffStats,
+} from '@/lib/shop/version-diff'
 
-interface DiffLine {
-  type: 'context' | 'addition' | 'deletion'
-  text: string
-}
-
-interface DiffStats {
+interface ApiDiffStats {
   additions: number
   deletions: number
   from_chars: number
   to_chars: number
+}
+
+interface VersionMeta {
+  version_number: number
+  created_at: string
+  created_by: { id: string; name: string }
 }
 
 interface BlueprintVersionDiffProps {
@@ -30,21 +41,58 @@ export function BlueprintVersionDiff({
   onClose,
   projectId,
   blueprintId,
-  fromVersion,
-  toVersion,
+  fromVersion: initialFrom,
+  toVersion: initialTo,
 }: BlueprintVersionDiffProps) {
   const [diff, setDiff] = useState<DiffLine[]>([])
-  const [stats, setStats] = useState<DiffStats | null>(null)
+  const [apiStats, setApiStats] = useState<ApiDiffStats | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [collapsedSections, setCollapsedSections] = useState<Set<number>>(new Set())
 
+  const [viewMode, setViewMode] = useState<'unified' | 'split'>('unified')
+  const [diffMode, setDiffMode] = useState<'lines' | 'words'>('lines')
+
+  const [fromVn, setFromVn] = useState<number>(initialFrom)
+  const [toVn, setToVn] = useState<number | 'current'>(initialTo)
+  const [versions, setVersions] = useState<VersionMeta[]>([])
+
+  const leftRef = useRef<HTMLDivElement>(null)
+  const rightRef = useRef<HTMLDivElement>(null)
+  const scrollingRef = useRef(false)
+
+  // Reset when props change
+  useEffect(() => {
+    if (open) {
+      setFromVn(initialFrom)
+      setToVn(initialTo)
+    }
+  }, [open, initialFrom, initialTo])
+
+  // Fetch version list
+  useEffect(() => {
+    if (!open) return
+    let cancelled = false
+    async function load() {
+      try {
+        const res = await fetch(
+          `/api/projects/${projectId}/blueprints/${blueprintId}/versions?limit=100`
+        )
+        if (!res.ok) return
+        const data = await res.json()
+        if (!cancelled) setVersions(data.versions || [])
+      } catch { /* ignore */ }
+    }
+    load()
+    return () => { cancelled = true }
+  }, [open, projectId, blueprintId])
+
+  // Fetch diff
   const fetchDiff = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
       const res = await fetch(
-        `/api/projects/${projectId}/blueprints/${blueprintId}/versions/diff?from_version=${fromVersion}&to_version=${toVersion}`
+        `/api/projects/${projectId}/blueprints/${blueprintId}/versions/diff?from_version=${fromVn}&to_version=${toVn}`
       )
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
@@ -52,55 +100,86 @@ export function BlueprintVersionDiff({
       }
       const data = await res.json()
       setDiff(data.diff || [])
-      setStats(data.stats || null)
+      setApiStats(data.stats || null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load diff')
     } finally {
       setLoading(false)
     }
-  }, [projectId, blueprintId, fromVersion, toVersion])
+  }, [projectId, blueprintId, fromVn, toVn])
 
   useEffect(() => {
-    if (open) {
-      fetchDiff()
-    }
+    if (open) fetchDiff()
   }, [open, fetchDiff])
 
-  // Group diff lines into sections: context blocks and change blocks
-  const sections = groupDiffSections(diff)
+  const stats = useMemo(() => computeDiffStats(diff), [diff])
 
-  const toggleSection = useCallback((idx: number) => {
-    setCollapsedSections((prev) => {
-      const next = new Set(prev)
-      if (next.has(idx)) {
-        next.delete(idx)
-      } else {
-        next.add(idx)
-      }
-      return next
-    })
+  const enrichedDiff = useMemo<UnifiedDiffLine[]>(() => {
+    if (diffMode === 'words') return enrichUnifiedDiffWithWords(diff)
+    return diff.map(d => ({ ...d }))
+  }, [diff, diffMode])
+
+  const sideBySidePairs = useMemo<SideBySidePair[]>(() => {
+    if (viewMode !== 'split') return []
+    return buildSideBySide(diff, diffMode === 'words')
+  }, [diff, viewMode, diffMode])
+
+  const handleScroll = useCallback((side: 'left' | 'right') => {
+    if (scrollingRef.current) return
+    scrollingRef.current = true
+    const source = side === 'left' ? leftRef.current : rightRef.current
+    const target = side === 'left' ? rightRef.current : leftRef.current
+    if (source && target) {
+      target.scrollTop = source.scrollTop
+    }
+    requestAnimationFrame(() => { scrollingRef.current = false })
   }, [])
 
   if (!open) return null
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="w-[90vw] max-w-4xl max-h-[85vh] bg-bg-secondary border border-border-default rounded-xl shadow-2xl flex flex-col">
+      <div className={cn(
+        'max-h-[85vh] bg-bg-secondary border border-border-default rounded-xl shadow-2xl flex flex-col',
+        viewMode === 'split' ? 'w-[95vw] max-w-7xl' : 'w-[90vw] max-w-4xl'
+      )}>
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-border-default flex-shrink-0">
-          <div>
-            <h3 className="text-sm font-semibold text-text-primary">
-              Comparing Version {fromVersion} → {toVersion === 'current' ? 'Current' : `Version ${toVersion}`}
-            </h3>
-            {stats && (
-              <p className="text-xs text-text-tertiary mt-0.5">
-                <span className="text-accent-success">+{stats.additions} additions</span>
-                {' / '}
-                <span className="text-accent-error">-{stats.deletions} deletions</span>
-                {' / '}
-                {stats.from_chars} → {stats.to_chars} chars
-              </p>
-            )}
+          <div className="flex items-center gap-2 flex-wrap text-sm">
+            <span className="font-semibold text-text-primary">Compare</span>
+            <select
+              value={fromVn}
+              onChange={(e) => setFromVn(Number(e.target.value))}
+              className="bg-bg-tertiary border border-border-default rounded px-2 py-1 text-text-primary text-xs"
+            >
+              {versions.map(v => (
+                <option key={v.version_number} value={v.version_number}>
+                  v{v.version_number} ({timeAgo(v.created_at)})
+                </option>
+              ))}
+              {!versions.find(v => v.version_number === fromVn) && (
+                <option value={fromVn}>v{fromVn}</option>
+              )}
+            </select>
+            <span className="text-text-tertiary">→</span>
+            <select
+              value={String(toVn)}
+              onChange={(e) => {
+                const val = e.target.value
+                setToVn(val === 'current' ? 'current' : Number(val))
+              }}
+              className="bg-bg-tertiary border border-border-default rounded px-2 py-1 text-text-primary text-xs"
+            >
+              <option value="current">Current</option>
+              {versions.map(v => (
+                <option key={v.version_number} value={v.version_number}>
+                  v{v.version_number} ({timeAgo(v.created_at)})
+                </option>
+              ))}
+              {toVn !== 'current' && !versions.find(v => v.version_number === toVn) && (
+                <option value={toVn}>v{toVn}</option>
+              )}
+            </select>
           </div>
           <button
             onClick={onClose}
@@ -111,8 +190,39 @@ export function BlueprintVersionDiff({
           </button>
         </div>
 
+        {/* Controls bar */}
+        <div className="flex items-center gap-3 px-5 py-2 bg-bg-tertiary border-b border-border-default flex-shrink-0 flex-wrap">
+          <ToggleGroup
+            options={[
+              { value: 'unified', label: 'Unified' },
+              { value: 'split', label: 'Side by Side' },
+            ]}
+            value={viewMode}
+            onChange={(v) => setViewMode(v as 'unified' | 'split')}
+          />
+          <ToggleGroup
+            options={[
+              { value: 'lines', label: 'Lines' },
+              { value: 'words', label: 'Words' },
+            ]}
+            value={diffMode}
+            onChange={(v) => setDiffMode(v as 'lines' | 'words')}
+          />
+          <div className="ml-auto flex items-center gap-3 text-xs">
+            <span className="text-accent-success">+{stats.linesAdded}</span>
+            <span className="text-accent-error">-{stats.linesRemoved}</span>
+            <span className="text-text-tertiary">{stats.percentChanged}%</span>
+            {apiStats && (
+              <span className="text-text-tertiary">{apiStats.from_chars} → {apiStats.to_chars} chars</span>
+            )}
+          </div>
+        </div>
+
         {/* Content */}
-        <div className="flex-1 overflow-y-auto">
+        <div className={cn(
+          'flex-1 min-h-0',
+          viewMode === 'split' ? 'overflow-hidden' : 'overflow-y-auto'
+        )}>
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <p className="text-sm text-text-tertiary">Loading diff...</p>
@@ -125,46 +235,15 @@ export function BlueprintVersionDiff({
             <div className="flex items-center justify-center py-12">
               <p className="text-sm text-text-tertiary">No differences found</p>
             </div>
+          ) : viewMode === 'unified' ? (
+            <UnifiedView diff={enrichedDiff} />
           ) : (
-            <div className="font-mono text-xs">
-              {sections.map((section, sIdx) => {
-                const isContext = section.every((l) => l.type === 'context')
-                const isCollapsed = collapsedSections.has(sIdx)
-
-                // Collapse large unchanged context sections
-                if (isContext && section.length > 6) {
-                  return (
-                    <div key={sIdx}>
-                      {/* Show first 3 lines */}
-                      {section.slice(0, 3).map((line, lIdx) => (
-                        <DiffLineRow key={`${sIdx}-${lIdx}`} line={line} lineNumber={getLineNumber(sections, sIdx, lIdx)} />
-                      ))}
-                      <button
-                        onClick={() => toggleSection(sIdx)}
-                        className="w-full py-1 text-center text-text-tertiary bg-bg-tertiary/50 hover:bg-bg-tertiary transition-colors border-y border-border-default"
-                      >
-                        {isCollapsed ? `▼ Show ${section.length - 6} more lines` : `▲ Hide ${section.length - 6} lines`}
-                      </button>
-                      {!isCollapsed && section.slice(3, -3).map((line, lIdx) => (
-                        <DiffLineRow key={`${sIdx}-m-${lIdx}`} line={line} lineNumber={getLineNumber(sections, sIdx, lIdx + 3)} />
-                      ))}
-                      {/* Show last 3 lines */}
-                      {section.slice(-3).map((line, lIdx) => (
-                        <DiffLineRow key={`${sIdx}-e-${lIdx}`} line={line} lineNumber={getLineNumber(sections, sIdx, section.length - 3 + lIdx)} />
-                      ))}
-                    </div>
-                  )
-                }
-
-                return (
-                  <div key={sIdx}>
-                    {section.map((line, lIdx) => (
-                      <DiffLineRow key={`${sIdx}-${lIdx}`} line={line} lineNumber={getLineNumber(sections, sIdx, lIdx)} />
-                    ))}
-                  </div>
-                )
-              })}
-            </div>
+            <SplitView
+              pairs={sideBySidePairs}
+              leftRef={leftRef}
+              rightRef={rightRef}
+              onScroll={handleScroll}
+            />
           )}
         </div>
       </div>
@@ -172,73 +251,174 @@ export function BlueprintVersionDiff({
   )
 }
 
-function DiffLineRow({ line, lineNumber }: { line: DiffLine; lineNumber: number }) {
+// ── Sub-components ───────────────────────────────────────────────────────
+
+function ToggleGroup({
+  options,
+  value,
+  onChange,
+}: {
+  options: { value: string; label: string }[]
+  value: string
+  onChange: (value: string) => void
+}) {
   return (
-    <div
-      className={cn(
-        'flex items-start px-4 py-0.5 min-h-[1.5em]',
-        line.type === 'addition' && 'bg-accent-success/10',
-        line.type === 'deletion' && 'bg-accent-error/10'
-      )}
-    >
+    <div className="flex rounded-md border border-border-default overflow-hidden text-xs">
+      {options.map((opt, i) => (
+        <button
+          key={opt.value}
+          onClick={() => onChange(opt.value)}
+          className={cn(
+            'px-2.5 py-1 transition-colors',
+            i > 0 && 'border-l border-border-default',
+            value === opt.value
+              ? 'bg-accent-cyan/15 text-accent-cyan'
+              : 'text-text-secondary hover:bg-bg-primary'
+          )}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function UnifiedView({ diff }: { diff: UnifiedDiffLine[] }) {
+  return (
+    <div className="font-mono text-xs leading-6">
+      {diff.map((line, i) => (
+        <div
+          key={i}
+          className={cn(
+            'flex items-start px-4 py-0.5 min-h-[1.5em]',
+            line.type === 'addition' && 'bg-accent-success/10',
+            line.type === 'deletion' && 'bg-accent-error/10',
+          )}
+        >
+          <span className={cn(
+            'w-5 flex-shrink-0 text-center select-none',
+            line.type === 'addition' && 'text-accent-success',
+            line.type === 'deletion' && 'text-accent-error',
+            line.type === 'context' && 'text-text-tertiary',
+          )}>
+            {line.type === 'addition' ? '+' : line.type === 'deletion' ? '-' : ' '}
+          </span>
+          <span className={cn(
+            'flex-1 whitespace-pre-wrap break-all',
+            line.type === 'context' && 'text-text-tertiary',
+            line.type === 'addition' && !line.wordSegments && 'text-accent-success',
+            line.type === 'deletion' && !line.wordSegments && 'text-accent-error',
+          )}>
+            {line.wordSegments ? (
+              <WordHighlight segments={line.wordSegments} baseType={line.type} />
+            ) : (
+              line.text || '\u00A0'
+            )}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function SplitView({
+  pairs,
+  leftRef,
+  rightRef,
+  onScroll,
+}: {
+  pairs: SideBySidePair[]
+  leftRef: React.RefObject<HTMLDivElement | null>
+  rightRef: React.RefObject<HTMLDivElement | null>
+  onScroll: (side: 'left' | 'right') => void
+}) {
+  return (
+    <div className="flex h-full">
+      <div
+        ref={leftRef}
+        onScroll={() => onScroll('left')}
+        className="flex-1 overflow-y-auto border-r border-border-default font-mono text-xs leading-6"
+      >
+        {pairs.map((pair, i) => (
+          <SplitLine key={i} side={pair.left} />
+        ))}
+      </div>
+      <div
+        ref={rightRef}
+        onScroll={() => onScroll('right')}
+        className="flex-1 overflow-y-auto font-mono text-xs leading-6"
+      >
+        {pairs.map((pair, i) => (
+          <SplitLine key={i} side={pair.right} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function SplitLine({ side }: {
+  side: SideBySidePair['left'] | SideBySidePair['right']
+}) {
+  const isDeletion = side.type === 'deletion'
+  const isAddition = side.type === 'addition'
+  const isEmpty = side.type === 'empty'
+
+  return (
+    <div className={cn(
+      'flex items-start px-2 py-0.5 min-h-[1.5em]',
+      isDeletion && 'bg-accent-error/10',
+      isAddition && 'bg-accent-success/10',
+      isEmpty && 'bg-bg-tertiary/30',
+    )}>
       <span className="w-8 text-right pr-2 text-text-tertiary select-none flex-shrink-0">
-        {lineNumber}
-      </span>
-      <span className={cn(
-        'w-5 flex-shrink-0 text-center select-none',
-        line.type === 'addition' && 'text-accent-success',
-        line.type === 'deletion' && 'text-accent-error'
-      )}>
-        {line.type === 'addition' && <Plus className="w-3 h-3 inline" />}
-        {line.type === 'deletion' && <MinusIcon className="w-3 h-3 inline" />}
+        {side.lineNum ?? ''}
       </span>
       <span className={cn(
         'flex-1 whitespace-pre-wrap break-all',
-        line.type === 'context' && 'text-text-tertiary',
-        line.type === 'addition' && 'text-accent-success',
-        line.type === 'deletion' && 'text-accent-error'
+        side.type === 'context' && 'text-text-secondary',
+        isDeletion && !side.wordSegments && 'text-accent-error',
+        isAddition && !side.wordSegments && 'text-accent-success',
       )}>
-        {line.text || '\u00A0'}
+        {side.wordSegments ? (
+          <WordHighlight
+            segments={side.wordSegments}
+            baseType={isDeletion ? 'deletion' : isAddition ? 'addition' : 'context'}
+          />
+        ) : isEmpty ? (
+          '\u00A0'
+        ) : (
+          side.text || '\u00A0'
+        )}
       </span>
     </div>
   )
 }
 
-/**
- * Group diff lines into sections of contiguous same-type or context lines.
- * Changes (additions + deletions) stay together, context lines group together.
- */
-function groupDiffSections(lines: DiffLine[]): DiffLine[][] {
-  if (lines.length === 0) return []
+function WordHighlight({ segments, baseType }: {
+  segments: DiffSegment[]
+  baseType: 'context' | 'addition' | 'deletion'
+}) {
+  const baseColor = baseType === 'addition' ? 'text-accent-success' : baseType === 'deletion' ? 'text-accent-error' : 'text-text-secondary'
 
-  const sections: DiffLine[][] = []
-  let currentSection: DiffLine[] = [lines[0]]
-
-  for (let i = 1; i < lines.length; i++) {
-    const prev = lines[i - 1]
-    const curr = lines[i]
-    const prevIsContext = prev.type === 'context'
-    const currIsContext = curr.type === 'context'
-
-    if (prevIsContext !== currIsContext) {
-      sections.push(currentSection)
-      currentSection = [curr]
-    } else {
-      currentSection.push(curr)
-    }
-  }
-
-  sections.push(currentSection)
-  return sections
-}
-
-/**
- * Get the overall line number for a line within sections.
- */
-function getLineNumber(sections: DiffLine[][], sectionIdx: number, lineIdx: number): number {
-  let count = 0
-  for (let s = 0; s < sectionIdx; s++) {
-    count += sections[s].length
-  }
-  return count + lineIdx + 1
+  return (
+    <>
+      {segments.map((seg, i) => {
+        if (seg.type === 'equal') {
+          return <span key={i} className={baseColor}>{seg.text}</span>
+        }
+        return (
+          <span
+            key={i}
+            className={cn(
+              'rounded-sm px-0.5',
+              seg.type === 'delete' && 'bg-accent-error/30 text-accent-error font-semibold',
+              seg.type === 'insert' && 'bg-accent-success/30 text-accent-success font-semibold',
+            )}
+          >
+            {seg.text}
+          </span>
+        )
+      })}
+    </>
+  )
 }
