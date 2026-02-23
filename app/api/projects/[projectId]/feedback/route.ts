@@ -6,6 +6,7 @@ import type { FeedbackStatus, FeedbackCategory } from '@/types/database'
 
 const VALID_STATUSES: FeedbackStatus[] = ['new', 'triaged', 'converted', 'archived']
 const VALID_CATEGORIES: FeedbackCategory[] = ['bug', 'feature_request', 'ux_issue', 'performance', 'other', 'uncategorized']
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ projectId: string }> }
@@ -14,12 +15,20 @@ export async function GET(
     const user = await requireAuth()
     const { projectId } = await params
     const { searchParams } = new URL(request.url)
-    const status = searchParams.get('status')
-    const category = searchParams.get('category')
+
+    // Single or comma-separated values
+    const statusParam = searchParams.get('status')
+    const categoryParam = searchParams.get('category')
     const search = searchParams.get('search')
+    const tagsParam = searchParams.get('tags')
+    const dateFrom = searchParams.get('dateFrom')
+    const dateTo = searchParams.get('dateTo')
+    const scoreMin = searchParams.get('scoreMin')
+    const scoreMax = searchParams.get('scoreMax')
     const sort = searchParams.get('sort') || 'newest'
     const limit = Math.min(parseInt(searchParams.get('limit') || '20', 10), 100)
     const offset = parseInt(searchParams.get('offset') || '0', 10)
+
     const supabase = createServiceClient()
 
     // Verify project membership
@@ -42,14 +51,60 @@ export async function GET(
       .select('*', { count: 'exact' })
       .eq('project_id', projectId)
 
-    if (status && VALID_STATUSES.includes(status as FeedbackStatus)) {
-      query = query.eq('status', status as FeedbackStatus)
+    // Status filter: single value or comma-separated
+    if (statusParam) {
+      const statuses = statusParam.split(',').filter((s) => VALID_STATUSES.includes(s as FeedbackStatus))
+      if (statuses.length === 1) {
+        query = query.eq('status', statuses[0] as FeedbackStatus)
+      } else if (statuses.length > 1) {
+        query = query.in('status', statuses as FeedbackStatus[])
+      }
     }
-    if (category && VALID_CATEGORIES.includes(category as FeedbackCategory)) {
-      query = query.eq('category', category as FeedbackCategory)
+
+    // Category filter: single value or comma-separated
+    if (categoryParam) {
+      const categories = categoryParam.split(',').filter((c) => VALID_CATEGORIES.includes(c as FeedbackCategory))
+      if (categories.length === 1) {
+        query = query.eq('category', categories[0] as FeedbackCategory)
+      } else if (categories.length > 1) {
+        query = query.in('category', categories as FeedbackCategory[])
+      }
     }
+
+    // Text search on content
     if (search) {
       query = query.ilike('content', `%${search}%`)
+    }
+
+    // Tags filter: OR logic — feedback with ANY of the selected tags
+    if (tagsParam) {
+      const tags = tagsParam.split(',').map((t) => t.trim()).filter(Boolean)
+      if (tags.length > 0) {
+        query = query.overlaps('tags', tags)
+      }
+    }
+
+    // Date range filters
+    if (dateFrom) {
+      query = query.gte('created_at', dateFrom)
+    }
+    if (dateTo) {
+      // Include the entire end date by adding time component
+      query = query.lte('created_at', `${dateTo}T23:59:59.999Z`)
+    }
+
+    // Score range filters
+    if (scoreMin) {
+      const min = parseInt(scoreMin, 10)
+      if (!isNaN(min) && min > 0) {
+        query = query.gte('score', min)
+      }
+    }
+    if (scoreMax) {
+      const max = parseInt(scoreMax, 10)
+      if (!isNaN(max) && max < 100) {
+        query = query.lte('score', max)
+      }
     }
 
     // Apply sort
