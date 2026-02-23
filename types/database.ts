@@ -1856,6 +1856,72 @@ export type Database = {
           },
         ];
       };
+      notifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          project_id: string;
+          type: "mention" | "comment" | "assignment" | "status_change" | "feedback";
+          title: string;
+          body: string | null;
+          link_url: string | null;
+          source_entity_type: string | null;
+          source_entity_id: string | null;
+          triggered_by_user_id: string | null;
+          is_read: boolean;
+          read_at: string | null;
+          created_at: string;
+          expires_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          project_id: string;
+          type: "mention" | "comment" | "assignment" | "status_change" | "feedback";
+          title: string;
+          body?: string | null;
+          link_url?: string | null;
+          source_entity_type?: string | null;
+          source_entity_id?: string | null;
+          triggered_by_user_id?: string | null;
+          is_read?: boolean;
+          read_at?: string | null;
+          created_at?: string;
+          expires_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          project_id?: string;
+          type?: "mention" | "comment" | "assignment" | "status_change" | "feedback";
+          title?: string;
+          body?: string | null;
+          link_url?: string | null;
+          source_entity_type?: string | null;
+          source_entity_id?: string | null;
+          triggered_by_user_id?: string | null;
+          is_read?: boolean;
+          read_at?: string | null;
+          created_at?: string;
+          expires_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notifications_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -2004,3 +2070,6 @@ export type ExtractionStrategy = Project["extraction_strategy"];
 export type WoSyncAlert = Database["public"]["Tables"]["wo_sync_alerts"]["Row"];
 export type WoSyncAlertChangeType = WoSyncAlert["change_type"];
 export type WoSyncAlertStatus = WoSyncAlert["status"];
+
+export type Notification = Database["public"]["Tables"]["notifications"]["Row"];
+export type NotificationType = Notification["type"];

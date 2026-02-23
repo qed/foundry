@@ -3,6 +3,7 @@ import { requireAuth } from '@/lib/auth/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { handleAuthError } from '@/lib/auth/errors'
 import { parseMentions, hasMentions } from '@/lib/mentions/parse'
+import { notifyMentionedUsers } from '@/lib/notifications/create'
 import type { Comment } from '@/types/database'
 
 type EntityType = Comment['entity_type']
@@ -189,6 +190,7 @@ export async function POST(
     }
 
     // Track mentions in comment content
+    const mentionedUserIds: string[] = []
     if (hasMentions(content)) {
       const mentions = parseMentions(content)
       if (mentions.length > 0) {
@@ -200,6 +202,11 @@ export async function POST(
           mentioned_name: m.name,
         }))
         await supabase.from('mention_references').insert(mentionRows)
+
+        // Collect user mentions for notifications
+        for (const m of mentions) {
+          if (m.type === 'user') mentionedUserIds.push(m.id)
+        }
       }
     }
 
@@ -210,11 +217,27 @@ export async function POST(
       .eq('id', user.id)
       .single()
 
+    const authorName = profile?.display_name || 'Unknown'
+
+    // Fire-and-forget: notify mentioned users
+    if (mentionedUserIds.length > 0) {
+      notifyMentionedUsers({
+        projectId,
+        commentId: comment.id,
+        commentAuthorId: user.id,
+        commentAuthorName: authorName,
+        entityType: entityType,
+        entityId: entityId,
+        mentionedUserIds,
+        linkUrl: `/org/_/project/${projectId}/${entityType === 'work_order' ? 'floor' : entityType === 'feedback' ? 'lab' : entityType === 'blueprint' ? 'room' : entityType === 'feature_node' || entityType === 'requirement_doc' ? 'shop' : 'hall'}`,
+      })
+    }
+
     return Response.json({
       ...comment,
       author: {
         id: user.id,
-        name: profile?.display_name || 'Unknown',
+        name: authorName,
       },
       replies: [],
     }, { status: 201 })

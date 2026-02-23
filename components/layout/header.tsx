@@ -6,6 +6,7 @@ import { useProject } from '@/lib/context/project-context'
 import { UserMenu } from './user-menu'
 import { Breadcrumb, type BreadcrumbItem } from './breadcrumb'
 import { HeaderPresence } from '@/components/presence/header-presence'
+import { NotificationBell } from '@/components/notifications/notification-bell'
 import { ArchivedBadge } from '@/components/projects/archived-badge'
 import { Menu } from 'lucide-react'
 
@@ -59,9 +60,10 @@ export function Header({ onMenuClick }: HeaderProps) {
         {project.is_archived && <ArchivedBadge />}
       </div>
 
-      {/* Right side: presence + user menu */}
-      <div className="ml-4 flex items-center gap-3">
+      {/* Right side: presence + notifications + user menu */}
+      <div className="ml-4 flex items-center gap-2">
         <HeaderPresence />
+        <NotificationBell />
         <UserMenu />
       </div>
     </header>
