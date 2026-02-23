@@ -11,6 +11,7 @@ import { FeedbackFilterBar } from './feedback-filter-bar'
 import type { FeedbackFilters } from './feedback-filter-bar'
 import { BulkActionsBar } from './bulk-actions-bar'
 import { ConversionSuggestionsPanel } from './conversion-suggestions-panel'
+import { AnalyticsDashboard } from './analytics-dashboard'
 import type { FeedbackSubmission } from '@/types/database'
 
 interface LabStats {
@@ -74,6 +75,7 @@ export function LabClient({ projectId, initialStats }: LabClientProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [agentPanelOpen, setAgentPanelOpen] = useState(false)
   const [suggestionsActive, setSuggestionsActive] = useState(false)
+  const [analyticsActive, setAnalyticsActive] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [sort, setSort] = useState<FeedbackSort>('newest')
@@ -235,63 +237,80 @@ export function LabClient({ projectId, initialStats }: LabClientProps) {
         agentPanelOpen={agentPanelOpen}
         onToggleAgent={() => setAgentPanelOpen((prev) => !prev)}
         suggestionsActive={suggestionsActive}
-        onToggleSuggestions={() => setSuggestionsActive((prev) => !prev)}
+        onToggleSuggestions={() => {
+          setSuggestionsActive((prev) => !prev)
+          setAnalyticsActive(false)
+        }}
+        analyticsActive={analyticsActive}
+        onToggleAnalytics={() => {
+          setAnalyticsActive((prev) => !prev)
+          setSuggestionsActive(false)
+        }}
       />
 
-      {/* Two-panel layout */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left panel: Filters + Inbox (40%) */}
-        <div className="w-full md:w-[40%] flex-shrink-0 border-r border-border-default bg-bg-secondary flex flex-col">
-          {/* Filter bar */}
-          <FeedbackFilterBar
-            projectId={projectId}
-            filters={filters}
-            onFiltersChange={handleFiltersChange}
-            activeFilterCount={activeFilterCount}
-          />
-
-          {/* Inbox */}
-          <div className="flex-1 overflow-hidden">
-            <LabInbox
-              feedback={feedback}
-              selectedId={selectedId}
-              onSelect={handleSelectFeedback}
-              isLoading={isLoading}
-              total={total}
-              page={page}
-              pageSize={PAGE_SIZE}
-              onPageChange={handlePageChange}
-              sort={sort}
-              onSortChange={handleSortChange}
-              selectedIds={selectedIds}
-              onToggleSelect={handleToggleSelect}
-              onToggleAll={handleToggleAll}
-            />
-          </div>
+      {analyticsActive ? (
+        /* Full-width analytics dashboard */
+        <div className="flex-1 overflow-hidden bg-bg-primary">
+          <AnalyticsDashboard projectId={projectId} />
         </div>
+      ) : (
+        <>
+          {/* Two-panel layout */}
+          <div className="flex flex-1 overflow-hidden">
+            {/* Left panel: Filters + Inbox (40%) */}
+            <div className="w-full md:w-[40%] flex-shrink-0 border-r border-border-default bg-bg-secondary flex flex-col">
+              {/* Filter bar */}
+              <FeedbackFilterBar
+                projectId={projectId}
+                filters={filters}
+                onFiltersChange={handleFiltersChange}
+                activeFilterCount={activeFilterCount}
+              />
 
-        {/* Right panel: Detail or Suggestions (60%) */}
-        <div className="hidden md:flex flex-1 min-w-0 bg-bg-primary">
-          {suggestionsActive ? (
-            <ConversionSuggestionsPanel projectId={projectId} />
-          ) : (
-            <LabDetailPanel
-              feedback={selectedFeedback}
+              {/* Inbox */}
+              <div className="flex-1 overflow-hidden">
+                <LabInbox
+                  feedback={feedback}
+                  selectedId={selectedId}
+                  onSelect={handleSelectFeedback}
+                  isLoading={isLoading}
+                  total={total}
+                  page={page}
+                  pageSize={PAGE_SIZE}
+                  onPageChange={handlePageChange}
+                  sort={sort}
+                  onSortChange={handleSortChange}
+                  selectedIds={selectedIds}
+                  onToggleSelect={handleToggleSelect}
+                  onToggleAll={handleToggleAll}
+                />
+              </div>
+            </div>
+
+            {/* Right panel: Detail or Suggestions (60%) */}
+            <div className="hidden md:flex flex-1 min-w-0 bg-bg-primary">
+              {suggestionsActive ? (
+                <ConversionSuggestionsPanel projectId={projectId} />
+              ) : (
+                <LabDetailPanel
+                  feedback={selectedFeedback}
+                  projectId={projectId}
+                  onUpdate={handleFeedbackUpdate}
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Bulk actions bar — shown when items are selected */}
+          {selectedIds.size > 0 && (
+            <BulkActionsBar
               projectId={projectId}
-              onUpdate={handleFeedbackUpdate}
+              selectedIds={Array.from(selectedIds)}
+              onClear={handleClearSelection}
+              onActionComplete={handleBulkActionComplete}
             />
           )}
-        </div>
-      </div>
-
-      {/* Bulk actions bar — shown when items are selected */}
-      {selectedIds.size > 0 && (
-        <BulkActionsBar
-          projectId={projectId}
-          selectedIds={Array.from(selectedIds)}
-          onClear={handleClearSelection}
-          onActionComplete={handleBulkActionComplete}
-        />
+        </>
       )}
 
       {/* Agent panel overlay */}

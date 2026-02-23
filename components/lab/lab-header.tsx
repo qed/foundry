@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { RefreshCw, Bot, Sparkles } from 'lucide-react'
+import { RefreshCw, Bot, Sparkles, BarChart3 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface LabStats {
@@ -19,6 +19,8 @@ interface LabHeaderProps {
   onToggleAgent: () => void
   suggestionsActive: boolean
   onToggleSuggestions: () => void
+  analyticsActive: boolean
+  onToggleAnalytics: () => void
 }
 
 interface StatBadgeProps {
@@ -44,6 +46,8 @@ export function LabHeader({
   onToggleAgent,
   suggestionsActive,
   onToggleSuggestions,
+  analyticsActive,
+  onToggleAnalytics,
 }: LabHeaderProps) {
   return (
     <div className="h-14 flex items-center gap-3 px-4 border-b border-border-default bg-bg-secondary flex-shrink-0">
@@ -80,6 +84,21 @@ export function LabHeader({
         title="Refresh feedback"
       >
         <RefreshCw className={cn('w-4 h-4', isRefreshing && 'animate-spin')} />
+      </button>
+
+      {/* Analytics toggle */}
+      <button
+        onClick={onToggleAnalytics}
+        className={cn(
+          'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
+          analyticsActive
+            ? 'bg-accent-cyan/10 text-accent-cyan'
+            : 'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary'
+        )}
+        title={analyticsActive ? 'Back to inbox' : 'Feedback analytics'}
+      >
+        <BarChart3 className="w-3.5 h-3.5" />
+        <span className="hidden sm:inline">Analytics</span>
       </button>
 
       {/* Suggestions toggle */}
