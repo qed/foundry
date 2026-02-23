@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { Plus, ChevronLeft, ChevronRight, Pencil, Trash2, Circle } from 'lucide-react'
+import { Plus, ChevronLeft, ChevronRight, Pencil, Trash2, Circle, BarChart3 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -16,6 +16,7 @@ interface PhaseNavigationProps {
   onRenamePhase: (phaseId: string, name: string) => Promise<void>
   onDeletePhase: (phaseId: string) => Promise<void>
   onChangePhaseStatus: (phaseId: string, status: PhaseStatus) => Promise<void>
+  onBurndown?: (phaseId: string) => void
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -39,6 +40,7 @@ export function PhaseNavigation({
   onRenamePhase,
   onDeletePhase,
   onChangePhaseStatus,
+  onBurndown,
 }: PhaseNavigationProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [createOpen, setCreateOpen] = useState(false)
@@ -309,6 +311,15 @@ export function PhaseNavigation({
               ]
             ]}
           </button>
+          {onBurndown && (
+            <button
+              onClick={() => { onBurndown(contextPhase.id); setContextMenu(null) }}
+              className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-text-secondary hover:text-text-primary hover:bg-bg-tertiary transition-colors"
+            >
+              <BarChart3 className="w-3 h-3" />
+              Burndown
+            </button>
+          )}
           <div className="border-t border-border-default my-1" />
           <button
             onClick={() => startDelete(contextPhase)}

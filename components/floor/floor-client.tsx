@@ -5,6 +5,7 @@ import { FloorHeader } from './floor-header'
 import { PhaseNavigation } from './phase-navigation'
 import { FloorContent } from './floor-content'
 import { FloorRightPanel } from './floor-right-panel'
+import { PhaseBurndown } from './phase-burndown'
 import { CreateWorkOrderModal } from './create-work-order-modal'
 import { ExtractWorkOrdersModal } from './extract-work-orders-modal'
 import { SuggestPhasePlanModal } from './suggest-phase-plan-modal'
@@ -35,6 +36,7 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
   const [extractModalOpen, setExtractModalOpen] = useState(false)
   const [suggestPhasesModalOpen, setSuggestPhasesModalOpen] = useState(false)
   const [selectedWorkOrderId, setSelectedWorkOrderId] = useState<string | null>(null)
+  const [burndownPhaseId, setBurndownPhaseId] = useState<string | null>(null)
   const [view, setView] = useState<'kanban' | 'table'>('kanban')
   const [selectedPhaseId, setSelectedPhaseId] = useState<string | null>(null)
   const [myWorkOrdersFilter, setMyWorkOrdersFilter] = useState(false)
@@ -665,6 +667,7 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
         onRenamePhase={handleRenamePhase}
         onDeletePhase={handleDeletePhase}
         onChangePhaseStatus={handleChangePhaseStatus}
+        onBurndown={(phaseId) => setBurndownPhaseId(phaseId)}
       />
 
       {/* Main content + agent panel */}
@@ -690,6 +693,18 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
             onReorder={handleReorder}
             featureProgress={featureProgress}
           />
+        )}
+
+        {/* Burndown panel */}
+        {burndownPhaseId && (
+          <div className="w-80 lg:w-96 border-l border-border-default flex-shrink-0 overflow-hidden">
+            <PhaseBurndown
+              projectId={projectId}
+              phaseId={burndownPhaseId}
+              phaseName={phases.find((p) => p.id === burndownPhaseId)?.name ?? 'Phase'}
+              onClose={() => setBurndownPhaseId(null)}
+            />
+          </div>
         )}
 
         {/* Right panel: Agent chat */}
