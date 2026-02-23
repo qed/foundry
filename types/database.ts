@@ -746,6 +746,75 @@ export type Database = {
           },
         ];
       };
+      mcp_connections: {
+        Row: {
+          id: string;
+          project_id: string;
+          name: string;
+          description: string | null;
+          api_key_hash: string;
+          api_key_preview: string;
+          agent_type: "code_assistant" | "ci_cd" | "github_action" | "custom";
+          status: "active" | "revoked";
+          rate_limit: number;
+          scopes: string[];
+          last_used_at: string | null;
+          created_at: string;
+          created_by: string;
+          revoked_at: string | null;
+          revoked_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          name: string;
+          description?: string | null;
+          api_key_hash: string;
+          api_key_preview: string;
+          agent_type: "code_assistant" | "ci_cd" | "github_action" | "custom";
+          status?: "active" | "revoked";
+          rate_limit?: number;
+          scopes?: string[];
+          last_used_at?: string | null;
+          created_at?: string;
+          created_by: string;
+          revoked_at?: string | null;
+          revoked_by?: string | null;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          name?: string;
+          description?: string | null;
+          api_key_hash?: string;
+          api_key_preview?: string;
+          agent_type?: "code_assistant" | "ci_cd" | "github_action" | "custom";
+          status?: "active" | "revoked";
+          rate_limit?: number;
+          scopes?: string[];
+          last_used_at?: string | null;
+          created_at?: string;
+          created_by?: string;
+          revoked_at?: string | null;
+          revoked_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "mcp_connections_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "mcp_connections_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       artifact_folders: {
         Row: {
           id: string;
@@ -1515,6 +1584,7 @@ export type BlueprintTemplate = Database["public"]["Tables"]["blueprint_template
 export type BlueprintActivity = Database["public"]["Tables"]["blueprint_activities"]["Row"];
 
 export type AppKey = Database["public"]["Tables"]["app_keys"]["Row"];
+export type McpConnection = Database["public"]["Tables"]["mcp_connections"]["Row"];
 export type FeedbackSubmission = Database["public"]["Tables"]["feedback_submissions"]["Row"];
 
 // Status type aliases
