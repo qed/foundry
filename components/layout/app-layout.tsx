@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Sidebar } from './sidebar'
 import { Header } from './header'
 import { MobileNav } from './mobile-nav'
+import { GlobalSearch } from '@/components/search/global-search'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 
 interface AppLayoutProps {
@@ -45,6 +46,8 @@ export function AppLayout({ children }: AppLayoutProps) {
 
         <MobileNav />
       </div>
+
+      <GlobalSearch />
     </div>
   )
 }

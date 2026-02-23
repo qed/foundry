@@ -8,7 +8,8 @@ import { Breadcrumb, type BreadcrumbItem } from './breadcrumb'
 import { HeaderPresence } from '@/components/presence/header-presence'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 import { ArchivedBadge } from '@/components/projects/archived-badge'
-import { Menu } from 'lucide-react'
+import { Menu, Search } from 'lucide-react'
+import { openGlobalSearch } from '@/components/search/global-search'
 
 const MODULE_NAMES: Record<string, string> = {
   hall: 'The Hall',
@@ -60,8 +61,19 @@ export function Header({ onMenuClick }: HeaderProps) {
         {project.is_archived && <ArchivedBadge />}
       </div>
 
-      {/* Right side: presence + notifications + user menu */}
+      {/* Right side: search + presence + notifications + user menu */}
       <div className="ml-4 flex items-center gap-2">
+        <button
+          onClick={openGlobalSearch}
+          className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-bg-tertiary/50 hover:bg-bg-tertiary text-text-tertiary hover:text-text-secondary transition-colors text-xs"
+          title="Search (Ctrl+K)"
+        >
+          <Search className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Search</span>
+          <kbd className="hidden sm:inline px-1 py-0.5 rounded bg-bg-primary/50 text-[10px] font-mono">
+            Ctrl+K
+          </kbd>
+        </button>
         <HeaderPresence />
         <NotificationBell />
         <UserMenu />
