@@ -6,6 +6,7 @@ import {
   PanelLeftOpen,
   PanelRightClose,
   PanelRightOpen,
+  AlertTriangle,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -18,18 +19,22 @@ interface RoomStats {
 
 interface RoomHeaderProps {
   stats: RoomStats
+  driftCount?: number
   leftPanelOpen: boolean
   rightPanelOpen: boolean
   onToggleLeftPanel: () => void
   onToggleRightPanel: () => void
+  onToggleDriftPanel?: () => void
 }
 
 export function RoomHeader({
   stats,
+  driftCount = 0,
   leftPanelOpen,
   rightPanelOpen,
   onToggleLeftPanel,
   onToggleRightPanel,
+  onToggleDriftPanel,
 }: RoomHeaderProps) {
   const total = stats.foundations + stats.systemDiagrams + stats.featureBlueprints
 
@@ -93,6 +98,18 @@ export function RoomHeader({
             {stats.completionPercent}% approved
           </span>
         </div>
+      )}
+
+      {/* Drift alerts indicator */}
+      {driftCount > 0 && (
+        <button
+          onClick={onToggleDriftPanel}
+          className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-accent-warning/10 text-accent-warning hover:bg-accent-warning/15 transition-colors"
+          title={`${driftCount} drift alert${driftCount !== 1 ? 's' : ''}`}
+        >
+          <AlertTriangle className="w-3.5 h-3.5" />
+          <span className="text-xs font-medium">{driftCount}</span>
+        </button>
       )}
 
       {/* Spacer */}

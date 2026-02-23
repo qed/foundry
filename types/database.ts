@@ -1531,6 +1531,79 @@ export type Database = {
           },
         ];
       };
+      drift_alerts: {
+        Row: {
+          id: string;
+          project_id: string;
+          blueprint_id: string;
+          requirement_doc_id: string | null;
+          feature_node_id: string | null;
+          alert_type: "requirement_changed" | "code_changed";
+          severity: "low" | "medium" | "high";
+          description: string;
+          change_summary: string | null;
+          status: "new" | "acknowledged" | "resolved";
+          created_at: string;
+          updated_at: string;
+          resolved_at: string | null;
+          resolved_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          blueprint_id: string;
+          requirement_doc_id?: string | null;
+          feature_node_id?: string | null;
+          alert_type: "requirement_changed" | "code_changed";
+          severity?: "low" | "medium" | "high";
+          description: string;
+          change_summary?: string | null;
+          status?: "new" | "acknowledged" | "resolved";
+          created_at?: string;
+          updated_at?: string;
+          resolved_at?: string | null;
+          resolved_by?: string | null;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          blueprint_id?: string;
+          requirement_doc_id?: string | null;
+          feature_node_id?: string | null;
+          alert_type?: "requirement_changed" | "code_changed";
+          severity?: "low" | "medium" | "high";
+          description?: string;
+          change_summary?: string | null;
+          status?: "new" | "acknowledged" | "resolved";
+          created_at?: string;
+          updated_at?: string;
+          resolved_at?: string | null;
+          resolved_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "drift_alerts_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "drift_alerts_blueprint_id_fkey";
+            columns: ["blueprint_id"];
+            isOneToOne: false;
+            referencedRelation: "blueprints";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "drift_alerts_requirement_doc_id_fkey";
+            columns: ["requirement_doc_id"];
+            isOneToOne: false;
+            referencedRelation: "requirements_documents";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -1662,3 +1735,7 @@ export type FeedbackStatus = FeedbackSubmission["status"];
 export type ActivityLog = Database["public"]["Tables"]["activity_log"]["Row"];
 export type MentionReference = Database["public"]["Tables"]["mention_references"]["Row"];
 export type MentionType = MentionReference["mentioned_type"];
+export type DriftAlert = Database["public"]["Tables"]["drift_alerts"]["Row"];
+export type DriftAlertType = DriftAlert["alert_type"];
+export type DriftSeverity = DriftAlert["severity"];
+export type DriftStatus = DriftAlert["status"];

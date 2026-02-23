@@ -6,6 +6,7 @@ import { RoomLeftPanel } from './room-left-panel'
 import type { FeatureTreeNode } from './room-left-panel'
 import { RoomCenterPanel } from './room-center-panel'
 import { RoomRightPanel } from './room-right-panel'
+import { DriftAlertsPanel } from './drift-alerts-panel'
 import { CreateBlueprintModal } from './create-blueprint-modal'
 import { Spinner } from '@/components/ui/spinner'
 import type { Blueprint, BlueprintStatus } from '@/types/database'
@@ -31,6 +32,8 @@ export function RoomClient({ projectId, initialStats }: RoomClientProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [fetchKey, setFetchKey] = useState(0)
   const [createModalOpen, setCreateModalOpen] = useState(false)
+  const [driftPanelOpen, setDriftPanelOpen] = useState(false)
+  const [driftCount, setDriftCount] = useState(0)
 
   // Fetch blueprints and feature tree
   useEffect(() => {
@@ -67,6 +70,29 @@ export function RoomClient({ projectId, initialStats }: RoomClientProps) {
 
     load()
     return () => { cancelled = true }
+  }, [projectId, fetchKey])
+
+  // Fetch drift alert count
+  useEffect(() => {
+    async function fetchDriftCount() {
+      try {
+        const res = await fetch(`/api/projects/${projectId}/drift-alerts?status=new`)
+        if (!res.ok) return
+        const data = await res.json()
+        const newCount = (data.alerts || []).length
+        // Also count acknowledged
+        const res2 = await fetch(`/api/projects/${projectId}/drift-alerts?status=acknowledged`)
+        if (res2.ok) {
+          const data2 = await res2.json()
+          setDriftCount(newCount + (data2.alerts || []).length)
+        } else {
+          setDriftCount(newCount)
+        }
+      } catch {
+        // Silently ignore
+      }
+    }
+    fetchDriftCount()
   }, [projectId, fetchKey])
 
   // Auto-collapse right panel on narrow screens
@@ -169,10 +195,12 @@ export function RoomClient({ projectId, initialStats }: RoomClientProps) {
       {/* Header */}
       <RoomHeader
         stats={initialStats}
+        driftCount={driftCount}
         leftPanelOpen={leftPanelOpen}
         rightPanelOpen={rightPanelOpen}
         onToggleLeftPanel={() => setLeftPanelOpen((prev) => !prev)}
         onToggleRightPanel={() => setRightPanelOpen((prev) => !prev)}
+        onToggleDriftPanel={() => setDriftPanelOpen((prev) => !prev)}
       />
 
       {/* Three-panel layout */}
@@ -203,7 +231,22 @@ export function RoomClient({ projectId, initialStats }: RoomClientProps) {
           blueprint={selectedBlueprint}
           onStatusChange={handleStatusChange}
           onContentRefresh={handleApplyDraft}
+          onToggleDriftPanel={() => setDriftPanelOpen((prev) => !prev)}
         />
+
+        {/* Drift alerts panel */}
+        {driftPanelOpen && (
+          <div className="w-[320px] flex-shrink-0 border-l border-border-default overflow-hidden">
+            <DriftAlertsPanel
+              projectId={projectId}
+              onClose={() => setDriftPanelOpen(false)}
+              onNavigateBlueprint={(bpId) => {
+                setSelectedBlueprintId(bpId)
+                setDriftPanelOpen(false)
+              }}
+            />
+          </div>
+        )}
 
         {/* Right panel: Agent chat */}
         <RoomRightPanel open={rightPanelOpen} projectId={projectId} selectedBlueprintId={selectedBlueprintId} onApplyDraft={handleApplyDraft} onStatusChange={handleStatusChange} />

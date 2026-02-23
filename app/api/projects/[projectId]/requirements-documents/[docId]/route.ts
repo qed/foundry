@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { requireAuth } from '@/lib/auth/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { handleAuthError } from '@/lib/auth/errors'
+import { checkAndCreateDriftAlerts } from '@/lib/drift/detect'
 
 export async function GET(
   _request: NextRequest,
@@ -75,7 +76,7 @@ export async function PUT(
     // Verify doc exists and belongs to project
     const { data: existing } = await supabase
       .from('requirements_documents')
-      .select('id')
+      .select('id, title, feature_node_id')
       .eq('id', docId)
       .eq('project_id', projectId)
       .single()
@@ -118,6 +119,17 @@ export async function PUT(
         { error: 'Failed to update document' },
         { status: 500 }
       )
+    }
+
+    // Fire-and-forget drift detection for content changes on feature-linked docs
+    if (body.content !== undefined && existing.feature_node_id) {
+      checkAndCreateDriftAlerts({
+        projectId,
+        featureNodeId: existing.feature_node_id,
+        requirementDocId: docId,
+        requirementTitle: existing.title,
+        changeSummary: body.title ? `Title and content updated` : `Content updated`,
+      })
     }
 
     return Response.json(updated)

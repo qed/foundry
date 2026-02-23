@@ -7,6 +7,7 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { BlueprintEditor } from './blueprint-editor'
 import { SystemDiagramEditor } from './system-diagram-editor'
 import { CommentsPanel } from '@/components/shop/comments-panel'
+import { DriftAlertBanner } from './drift-alert-banner'
 import { BlueprintActivityTimeline } from './blueprint-activity-timeline'
 import { BlueprintVersionHistory } from './blueprint-version-history'
 import type { BlueprintVersionEntry } from './blueprint-version-history'
@@ -23,6 +24,7 @@ interface RoomCenterPanelProps {
   blueprint: Blueprint | null
   onStatusChange?: (blueprintId: string, status: BlueprintStatus) => void
   onContentRefresh?: () => void
+  onToggleDriftPanel?: () => void
 }
 
 const STATUS_OPTIONS: { value: BlueprintStatus; label: string; description: string }[] = [
@@ -55,7 +57,7 @@ const TYPE_LABELS: Record<string, string> = {
 // Confirmation is required for approved/implemented (final states)
 const CONFIRM_STATUSES: BlueprintStatus[] = ['approved', 'implemented']
 
-export function RoomCenterPanel({ projectId, blueprint, onStatusChange, onContentRefresh }: RoomCenterPanelProps) {
+export function RoomCenterPanel({ projectId, blueprint, onStatusChange, onContentRefresh, onToggleDriftPanel }: RoomCenterPanelProps) {
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false)
   const [confirmDialog, setConfirmDialog] = useState<{ status: BlueprintStatus } | null>(null)
   const [versionRefreshKey, setVersionRefreshKey] = useState(0)
@@ -225,6 +227,15 @@ export function RoomCenterPanel({ projectId, blueprint, onStatusChange, onConten
           )}
         </div>
       </div>
+
+      {/* Drift alert banner */}
+      {blueprint.blueprint_type === 'feature' && blueprint.feature_node_id && (
+        <DriftAlertBanner
+          projectId={projectId}
+          blueprintId={blueprint.id}
+          onViewAlerts={onToggleDriftPanel}
+        />
+      )}
 
       {/* Editor */}
       {blueprint.blueprint_type === 'system_diagram' ? (
