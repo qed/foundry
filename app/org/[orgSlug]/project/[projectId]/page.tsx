@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
+import { DashboardClient } from '@/components/dashboard/dashboard-client'
 
 const MODULES = [
   {
@@ -56,7 +57,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
   return (
     <div className="p-6 md:p-8">
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-2xl font-bold text-text-primary">
           {project.name}
         </h1>
@@ -64,7 +65,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       </div>
 
       {/* Module cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
         {MODULES.map((mod) => (
           <Link
             key={mod.slug}
@@ -89,6 +90,9 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           </Link>
         ))}
       </div>
+
+      {/* Progress Dashboard */}
+      <DashboardClient projectId={projectId} />
     </div>
   )
 }
