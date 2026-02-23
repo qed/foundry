@@ -15,9 +15,9 @@
 
 ---
 
-### Completed Phases (73/150)
+### Completed Phases (74/150)
 
-001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–082 (Lab schema + feedback API), 083–085 (Lab layout/inbox/detail), 096–101 (Artifacts full stack), 105 (Comments schema), 109 (Knowledge schema), 113 (Org console), 117 (Realtime presence), 119 (Audit trail)
+001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–086 (Lab schema + feedback API + categorization), 083–085 (Lab layout/inbox/detail), 096–101 (Artifacts full stack), 105 (Comments schema), 109 (Knowledge schema), 113 (Org console), 117 (Realtime presence), 119 (Audit trail)
 
 ---
 
@@ -403,8 +403,8 @@ After this initial update, stay in this session. I will come back to you after e
 | 083 | Insights Lab Page Layout | `done` | — | 006, 010, 081 | Lab | `components/lab/`, `app/.../lab/` |
 | 084 | Feedback Inbox Display | `done` | — | 081, 083 | Lab | `components/lab/` |
 | 085 | Feedback Detail View | `done` | — | 081, 083, 084 | Lab | `components/lab/` |
-| 086 | Feedback Categorization | `ready` | — | 081, 084, 085 | Lab | `components/lab/` |
-| 087 | Feedback Search & Filter | `blocked` | — | 083, 084, 086 | Lab | `components/lab/` |
+| 086 | Feedback Categorization | `done` | — | 081, 084, 085 | Lab | `components/lab/` |
+| 087 | Feedback Search & Filter | `ready` | — | 083, 084, 086 | Lab | `components/lab/` |
 | 088 | Convert Feedback → Work Order | `ready` | — | 061, 081, 085 | Lab ⚠️ | `components/lab/`, `app/api/lab/` |
 | 089 | Convert Feedback → Feature | `ready` | — | 026, 081, 085 | Lab ⚠️ | `components/lab/`, `app/api/lab/` |
 | 090 | Insights Lab Agent Infra | `ready` | — | 081, 083 | Lab | `components/lab/`, `app/api/lab/agent/` |
@@ -704,10 +704,10 @@ These phases require work from **multiple module tracks** to be complete before 
 | Pattern Shop (026–045) | 20 | 20 | 0 | 0 | 0 |
 | Control Room (046–060) | 15 | 14 | 0 | 1 | 0 |
 | Assembly Floor (061–080) | 20 | 17 | 0 | 3 | 0 |
-| Insights Lab (081–095) | 15 | 5 | 0 | 5 | 5 |
+| Insights Lab (081–095) | 15 | 6 | 0 | 5 | 4 |
 | Cross-Cutting (096–120) | 25 | 10 | 0 | 6 | 9 |
 | Advanced (121–135) | 15 | 0 | 0 | 8 | 7 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **91** | **0** | **23** | **36** |
+| **TOTAL** | **150** | **92** | **0** | **23** | **35** |
 
-**Currently ready to start**: 060, 086, 088, 089, 090, 094, 101, 102, 106, 110, 118, 120, 121, 122, 123, 124, 127, 128, 129, 131, 132
+**Currently ready to start**: 060, 087, 088, 089, 090, 094, 101, 102, 106, 110, 118, 120, 121, 122, 123, 124, 127, 128, 129, 131, 132

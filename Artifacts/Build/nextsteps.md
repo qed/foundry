@@ -36,7 +36,7 @@ Where XXX is the phase number (e.g., 017, 026, 113). This sets the Claude Code s
 | Artifacts | `PhaseHistory/artifacts.md` | 096–101 | `components/artifacts/`, `app/api/projects/*/artifacts/`, `lib/artifacts/` |
 | Cross-Cutting | `PhaseHistory/cross-cutting.md` | 105–119 | `lib/activity/`, `lib/realtime/`, `components/presence/` |
 
-**94 phases complete** (001–059, 061–082, 083–085, 096–100, 105, 109, 113, 117, 119).
+**95 phases complete** (001–059, 061–086, 096–100, 105, 109, 113, 117, 119).
 
 _Previously this was a single giant paragraph. Migrated to per-module files on 2026-02-22._
 
@@ -233,6 +233,7 @@ After building, run `npm run build` and `npm run lint` to verify zero errors. Th
 - Phase 079: Leader Progress Dashboard (Floor/Dashboard) -- done
 - Phase 080: MCP Connection Schema & API (Floor/MCP) -- done
 - Phase 082: Feedback Collection API (Lab) -- done
+- Phase 086: Feedback Categorization (Lab) -- done
 
 **Next up** (sequential order):
-086, 088, 089, 090, 101, 102, 106, 110, 118, 120, 128...
+088, 089, 090, 101, 102, 106, 110, 118, 120, 128...
