@@ -15,7 +15,7 @@
 
 ---
 
-### Completed Phases (133/150)
+### Completed Phases (134/150)
 
 001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 059–060 (Blueprint versioning + comments), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–091 (Lab full stack + auto-categorization), 092 (Feedback enrichment), 094–095 (App key management + bulk ops), 096–104 (Artifacts full stack + folders + versioning complete), 105 (Comments schema), 106 (@Mentions), 107–108 (Notifications + Email), 109–111 (Knowledge schema + explorer + auto-connections), 112 (Manual entity linking), 113 (Org console), 117 (Realtime presence), 118 (Collaborative editing), 119 (Audit trail), 120 (Project archive), 121–123 (Idea maturity + agent instructions + aggregate export), 124 (Drift detection), 125 (Cross-doc suggestions), 126 (Org templates), 127 (Extraction strategy), 128 (Phase burndown), 129 (MCP implementation), 130 (WO sync alerts), 131–133 (Slack integration + feedback analytics + priority scoring), 114–116 (Team invitations + billing + user profile)
 
@@ -462,13 +462,13 @@ After this initial update, stay in this session. I will come back to you after e
 | 132 | Feedback Analytics | `done` | — | 081 | Lab | `components/lab/` |
 | 133 | Priority Scoring | `done` | — | 081, 090 | Lab | `components/lab/` |
 | 134 | Global Search | `done` | — | all 001–133 | Cross ⚠️ | `components/search/`, `app/api/search/` |
-| 135 | Dark/Light Theme Toggle | `ready` | — | 001, 116 | Cross | `app/globals.css`, `lib/theme/` |
+| 135 | Dark/Light Theme Toggle | `done` | — | 001, 116 | Cross | `app/globals.css`, `lib/theme/` |
 
 ### Section 9: Polish & Deployment (136–150)
 
 | Phase | Name | Status | Branch | Prerequisites | Track | File Areas |
 |-------|------|--------|--------|---------------|-------|------------|
-| 136 | Error Boundaries & Fallback UI | `blocked` | — | all 001–135 | Quality | `components/error/`, `app/` |
+| 136 | Error Boundaries & Fallback UI | `ready` | — | all 001–135 | Quality | `components/error/`, `app/` |
 | 137 | Loading States & Skeletons | `blocked` | — | all prior | Quality | `components/`, `app/` |
 | 138 | Form Validation (Zod) | `blocked` | — | all forms | Quality | `lib/schemas/`, `components/` |
 | 139 | Responsive Design Audit | `blocked` | — | all 001–138 | Quality | all component dirs |
@@ -706,8 +706,8 @@ These phases require work from **multiple module tracks** to be complete before 
 | Assembly Floor (061–080) | 20 | 20 | 0 | 0 | 0 |
 | Insights Lab (081–095) | 15 | 15 | 0 | 0 | 0 |
 | Cross-Cutting (096–120) | 25 | 25 | 0 | 0 | 0 |
-| Advanced (121–135) | 15 | 14 | 0 | 1 | 0 |
-| Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **133** | **0** | **1** | **16** |
+| Advanced (121–135) | 15 | 15 | 0 | 0 | 0 |
+| Polish (136–150) | 15 | 0 | 0 | 1 | 14 |
+| **TOTAL** | **150** | **134** | **0** | **1** | **15** |
 
-**Currently ready to start**: 135
+**Currently ready to start**: 136
