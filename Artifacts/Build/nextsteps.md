@@ -246,6 +246,7 @@ After building, run `npm run build` and `npm run lint` to verify zero errors. Th
 - Phase 128: Sprint/Phase Burndown (Floor) -- done
 - Phase 060: Blueprint Comments (Room) -- done
 - Phase 124: Drift Detection (Room/Shop) -- done
+- Phase 126: Org-Level Blueprint Templates (Room/Admin) -- done
 
 **Next up** (sequential order):
 ...
