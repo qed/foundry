@@ -832,6 +832,7 @@ export function WorkOrderDetail({
               {discussionTab === 'comments' && (
                 <div className="space-y-3">
                   <CommentForm
+                    projectId={projectId}
                     placeholder="Add a comment..."
                     onSubmit={handleCreateComment}
                   />

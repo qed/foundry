@@ -1432,6 +1432,51 @@ export type Database = {
           },
         ];
       };
+      mention_references: {
+        Row: {
+          id: string;
+          project_id: string;
+          comment_id: string | null;
+          mentioned_type: "user" | "requirement_doc" | "blueprint" | "work_order" | "artifact";
+          mentioned_id: string;
+          mentioned_name: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          comment_id?: string | null;
+          mentioned_type: "user" | "requirement_doc" | "blueprint" | "work_order" | "artifact";
+          mentioned_id: string;
+          mentioned_name: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          comment_id?: string | null;
+          mentioned_type?: "user" | "requirement_doc" | "blueprint" | "work_order" | "artifact";
+          mentioned_id?: string;
+          mentioned_name?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "mention_references_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "mention_references_comment_id_fkey";
+            columns: ["comment_id"];
+            isOneToOne: false;
+            referencedRelation: "comments";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       requirement_versions: {
         Row: {
           id: string;
@@ -1606,3 +1651,5 @@ export type FeedbackCategory = FeedbackSubmission["category"];
 export type FeedbackStatus = FeedbackSubmission["status"];
 
 export type ActivityLog = Database["public"]["Tables"]["activity_log"]["Row"];
+export type MentionReference = Database["public"]["Tables"]["mention_references"]["Row"];
+export type MentionType = MentionReference["mentioned_type"];

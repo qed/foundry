@@ -3,8 +3,10 @@
 import { useState, useCallback } from 'react'
 import { MessageSquareQuote } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { MentionInput } from '@/components/mentions/mention-input'
 
 interface CommentFormProps {
+  projectId: string
   selectedText?: string
   onSubmit: (content: string, anchorData?: { selectedText: string }) => Promise<void>
   onCancel?: () => void
@@ -12,10 +14,11 @@ interface CommentFormProps {
 }
 
 export function CommentForm({
+  projectId,
   selectedText,
   onSubmit,
   onCancel,
-  placeholder = 'Add a comment...',
+  placeholder = 'Add a comment... (type @ to mention)',
 }: CommentFormProps) {
   const [content, setContent] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -43,9 +46,10 @@ export function CommentForm({
         </div>
       )}
 
-      <textarea
+      <MentionInput
         value={content}
-        onChange={(e) => setContent(e.target.value)}
+        onChange={setContent}
+        projectId={projectId}
         placeholder={placeholder}
         rows={3}
         className="w-full px-2 py-1.5 text-sm bg-bg-primary border border-border-default rounded text-text-primary placeholder:text-text-tertiary resize-none focus:outline-none focus:ring-1 focus:ring-accent-cyan/50"
@@ -55,7 +59,7 @@ export function CommentForm({
       />
 
       <div className="flex items-center justify-between mt-2">
-        <span className="text-[10px] text-text-tertiary">Ctrl+Enter to post</span>
+        <span className="text-[10px] text-text-tertiary">Ctrl+Enter to post &middot; @ to mention</span>
         <div className="flex gap-1.5">
           {onCancel && (
             <Button variant="ghost" size="sm" onClick={onCancel}>

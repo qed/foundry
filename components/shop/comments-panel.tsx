@@ -135,6 +135,7 @@ export function CommentsPanel({
       {/* Comment form */}
       <div className="px-3 py-2 border-b border-border-default">
         <CommentForm
+          projectId={projectId}
           selectedText={selectedText}
           onSubmit={handleCreateComment}
           onCancel={selectedText ? onClearSelection : undefined}

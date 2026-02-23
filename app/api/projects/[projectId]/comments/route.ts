@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { requireAuth } from '@/lib/auth/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { handleAuthError } from '@/lib/auth/errors'
+import { parseMentions, hasMentions } from '@/lib/mentions/parse'
 import type { Comment } from '@/types/database'
 
 type EntityType = Comment['entity_type']
@@ -185,6 +186,21 @@ export async function POST(
     if (error) {
       console.error('Error creating comment:', error)
       return Response.json({ error: 'Failed to create comment' }, { status: 500 })
+    }
+
+    // Track mentions in comment content
+    if (hasMentions(content)) {
+      const mentions = parseMentions(content)
+      if (mentions.length > 0) {
+        const mentionRows = mentions.map((m) => ({
+          project_id: projectId,
+          comment_id: comment.id,
+          mentioned_type: m.type,
+          mentioned_id: m.id,
+          mentioned_name: m.name,
+        }))
+        await supabase.from('mention_references').insert(mentionRows)
+      }
     }
 
     // Fetch author profile

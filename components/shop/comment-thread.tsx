@@ -5,6 +5,8 @@ import { CheckCircle2, Circle, Trash2, Reply, ChevronDown, ChevronRight, Message
 import { cn, timeAgo } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth/context'
+import { RenderMentions } from '@/components/mentions/render-mentions'
+import { MentionInput } from '@/components/mentions/mention-input'
 
 interface CommentAuthor {
   id: string
@@ -40,7 +42,7 @@ interface CommentThreadProps {
 
 export function CommentThread({
   comment,
-  projectId: _projectId,
+  projectId,
   onResolveToggle,
   onDelete,
   onReply,
@@ -120,7 +122,9 @@ export function CommentThread({
 
       {/* Comment content */}
       <div className="px-3 pb-2">
-        <p className="text-sm text-text-primary whitespace-pre-wrap break-words">{comment.content}</p>
+        <p className="text-sm text-text-primary whitespace-pre-wrap break-words">
+          <RenderMentions content={comment.content} />
+        </p>
       </div>
 
       {/* Actions */}
@@ -167,7 +171,7 @@ export function CommentThread({
                 <span className="text-[10px] text-text-tertiary">{timeAgo(reply.created_at)}</span>
               </div>
               <p className="text-xs text-text-secondary whitespace-pre-wrap break-words pl-5.5">
-                {reply.content}
+                <RenderMentions content={reply.content} />
               </p>
             </div>
           ))}
@@ -177,10 +181,11 @@ export function CommentThread({
       {/* Reply form */}
       {showReplyForm && (
         <div className="mx-3 mb-2 p-2 rounded bg-bg-tertiary">
-          <textarea
+          <MentionInput
             value={replyContent}
-            onChange={(e) => setReplyContent(e.target.value)}
-            placeholder="Write a reply..."
+            onChange={setReplyContent}
+            projectId={projectId}
+            placeholder="Write a reply... (@ to mention)"
             rows={2}
             className="w-full px-2 py-1.5 text-xs bg-bg-primary border border-border-default rounded text-text-primary placeholder:text-text-tertiary resize-none focus:outline-none focus:ring-1 focus:ring-accent-cyan/50"
             onKeyDown={(e) => {
