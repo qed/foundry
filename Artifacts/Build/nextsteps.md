@@ -36,7 +36,7 @@ Where XXX is the phase number (e.g., 017, 026, 113). This sets the Claude Code s
 | Artifacts | `PhaseHistory/artifacts.md` | 096–101 | `components/artifacts/`, `app/api/projects/*/artifacts/`, `lib/artifacts/` |
 | Cross-Cutting | `PhaseHistory/cross-cutting.md` | 105–119 | `lib/activity/`, `lib/realtime/`, `components/presence/` |
 
-**118 phases complete** (001–060, 061–091, 094, 095, 096–102, 105, 106, 109, 110, 112, 113, 117–120, 124–130).
+**119 phases complete** (001–060, 061–092, 094, 095, 096–102, 105, 106, 109, 110, 112, 113, 117–120, 124–130).
 
 _Previously this was a single giant paragraph. Migrated to per-module files on 2026-02-22._
 
@@ -256,6 +256,7 @@ After building, run `npm run build` and `npm run lint` to verify zero errors. Th
 - Phase 094: App Key Management (Lab) -- done
 - Phase 091: Agent Auto-Categorization (Lab) -- done
 - Phase 095: Feedback Bulk Operations (Lab) -- done
+- Phase 092: Agent Feedback Enrichment (Lab) -- done
 
 **Next up** (sequential order):
 ...
