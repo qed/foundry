@@ -165,6 +165,39 @@ export async function PATCH(
       }).then()
     }
 
+    // Sync alert detection: notify work orders extracted from this blueprint
+    if (updates.content !== undefined) {
+      ;(async () => {
+        try {
+          // Find active work orders linked to this blueprint
+          const { data: linkedWOs } = await supabase
+            .from('work_orders')
+            .select('id, project_id, status')
+            .eq('source_blueprint_id', blueprintId)
+            .neq('status', 'done')
+
+          if (linkedWOs && linkedWOs.length > 0) {
+            const changeSize = calculateBlueprintChangeSize(existing.content, updates.content)
+            // Only alert if change is significant (>5% threshold)
+            if (changeSize >= 5) {
+              const changeSummary = generateBlueprintChangeSummary(existing.content, updates.content)
+              const alertInserts = linkedWOs.map((wo) => ({
+                project_id: wo.project_id,
+                work_order_id: wo.id,
+                blueprint_id: blueprintId,
+                change_type: 'content_changed' as const,
+                change_summary: changeSummary || 'Blueprint content was updated',
+              }))
+
+              await supabase.from('wo_sync_alerts').insert(alertInserts)
+            }
+          }
+        } catch (syncErr) {
+          console.error('Error creating sync alerts:', syncErr)
+        }
+      })()
+    }
+
     // Auto-versioning on content change
     if (updates.content !== undefined) {
       // Fire-and-forget: create version if change is significant and enough time has passed

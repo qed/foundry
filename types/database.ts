@@ -587,6 +587,7 @@ export type Database = {
           project_id: string;
           feature_node_id: string | null;
           phase_id: string | null;
+          source_blueprint_id: string | null;
           title: string;
           description: string | null;
           description_json: Json | null;
@@ -606,6 +607,7 @@ export type Database = {
           project_id: string;
           feature_node_id?: string | null;
           phase_id?: string | null;
+          source_blueprint_id?: string | null;
           title: string;
           description?: string | null;
           description_json?: Json | null;
@@ -625,6 +627,7 @@ export type Database = {
           project_id?: string;
           feature_node_id?: string | null;
           phase_id?: string | null;
+          source_blueprint_id?: string | null;
           title?: string;
           description?: string | null;
           description_json?: Json | null;
@@ -1768,6 +1771,70 @@ export type Database = {
           },
         ];
       };
+      wo_sync_alerts: {
+        Row: {
+          id: string;
+          project_id: string;
+          work_order_id: string;
+          blueprint_id: string;
+          change_type: "content_changed" | "requirements_changed" | "acceptance_criteria_changed";
+          change_summary: string;
+          status: "new" | "acknowledged" | "resolved";
+          created_at: string;
+          updated_at: string;
+          resolved_at: string | null;
+          resolved_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          work_order_id: string;
+          blueprint_id: string;
+          change_type: "content_changed" | "requirements_changed" | "acceptance_criteria_changed";
+          change_summary: string;
+          status?: "new" | "acknowledged" | "resolved";
+          created_at?: string;
+          updated_at?: string;
+          resolved_at?: string | null;
+          resolved_by?: string | null;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          work_order_id?: string;
+          blueprint_id?: string;
+          change_type?: "content_changed" | "requirements_changed" | "acceptance_criteria_changed";
+          change_summary?: string;
+          status?: "new" | "acknowledged" | "resolved";
+          created_at?: string;
+          updated_at?: string;
+          resolved_at?: string | null;
+          resolved_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "wo_sync_alerts_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "wo_sync_alerts_work_order_id_fkey";
+            columns: ["work_order_id"];
+            isOneToOne: false;
+            referencedRelation: "work_orders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "wo_sync_alerts_blueprint_id_fkey";
+            columns: ["blueprint_id"];
+            isOneToOne: false;
+            referencedRelation: "blueprints";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -1911,3 +1978,7 @@ export type CrossDocSuggestionItem = Database["public"]["Tables"]["cross_doc_sug
 export type CrossDocSuggestionStatus = CrossDocSuggestion["status"];
 export type CrossDocSuggestionType = CrossDocSuggestionItem["suggestion_type"];
 export type ExtractionStrategy = Project["extraction_strategy"];
+
+export type WoSyncAlert = Database["public"]["Tables"]["wo_sync_alerts"]["Row"];
+export type WoSyncAlertChangeType = WoSyncAlert["change_type"];
+export type WoSyncAlertStatus = WoSyncAlert["status"];

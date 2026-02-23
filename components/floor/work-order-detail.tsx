@@ -21,6 +21,8 @@ import { Spinner } from '@/components/ui/spinner'
 import { Avatar } from '@/components/ui/avatar'
 import { CommentThread, type CommentData } from '@/components/shop/comment-thread'
 import { CommentForm } from '@/components/shop/comment-form'
+import { SyncAlertsBanner } from '@/components/floor/sync-alerts-banner'
+import { SyncAlertsPanel } from '@/components/floor/sync-alerts-panel'
 
 function getInitials(name: string): string {
   return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
@@ -102,6 +104,7 @@ export function WorkOrderDetail({
   const [generatedPlan, setGeneratedPlan] = useState<string | null>(null)
   const [discussionTab, setDiscussionTab] = useState<'comments' | 'activity'>('comments')
   const [comments, setComments] = useState<CommentData[]>([])
+  const [syncAlertsPanelOpen, setSyncAlertsPanelOpen] = useState(false)
 
   // Dropdown states
   const [statusOpen, setStatusOpen] = useState(false)
@@ -167,6 +170,7 @@ export function WorkOrderDetail({
       setPriorityOpen(false)
       setAssigneeOpen(false)
       setPhaseOpen(false)
+      setSyncAlertsPanelOpen(false)
     }
   }, [open, workOrderId, fetchWorkOrder])
 
@@ -631,6 +635,15 @@ export function WorkOrderDetail({
               </MetadataItem>
             </div>
 
+            {/* Sync Alerts Banner */}
+            {workOrder.source_blueprint_id && (
+              <SyncAlertsBanner
+                projectId={projectId}
+                workOrderId={workOrder.id}
+                onViewAlerts={() => setSyncAlertsPanelOpen(true)}
+              />
+            )}
+
             <div className="border-t border-border-default" />
 
             {/* Description */}
@@ -874,6 +887,16 @@ export function WorkOrderDetail({
           </div>
         ) : null}
       </div>
+
+      {/* Sync Alerts Panel */}
+      {workOrderId && (
+        <SyncAlertsPanel
+          projectId={projectId}
+          workOrderId={workOrderId}
+          open={syncAlertsPanelOpen}
+          onClose={() => setSyncAlertsPanelOpen(false)}
+        />
+      )}
     </div>
   )
 }

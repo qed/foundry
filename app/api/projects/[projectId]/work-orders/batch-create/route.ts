@@ -90,6 +90,7 @@ export async function POST(
         priority: priority as WorkOrderPriority,
         phase_id: item.phase_id || null,
         feature_node_id: item.feature_node_id || null,
+        source_blueprint_id: item.source_blueprint_id || null,
         status: 'backlog' as const,
         position: nextPosition++,
         created_by: user.id,
