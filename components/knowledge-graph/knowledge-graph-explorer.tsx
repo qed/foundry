@@ -1,10 +1,14 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { X, Search, ChevronDown, ChevronRight, ArrowUpRight, ArrowDownLeft, Trash2, Sparkles } from 'lucide-react'
+import { X, Search, ChevronDown, ChevronRight, ArrowUpRight, ArrowDownLeft, Trash2, Sparkles, Plus } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { useToast } from '@/components/ui/toast-container'
 import { ConnectionTypeIcon, CONNECTION_TYPE_CONFIG } from './connection-type-icon'
 import { EntityTypeIcon, getEntityTypeLabel } from './entity-type-icon'
+import { LinkEntityDialog } from './link-entity-dialog'
 import type { EntityConnectionType, GraphEntityType } from '@/types/database'
 
 interface EnrichedConnection {
@@ -19,11 +23,18 @@ interface EnrichedConnection {
 interface KnowledgeGraphExplorerProps {
   entityType: GraphEntityType
   entityId: string
+  entityName?: string
   projectId: string
   isOpen: boolean
   onClose: () => void
   onNavigate?: (entityType: string, entityId: string) => void
   editable?: boolean
+}
+
+interface DeleteTarget {
+  connectionId: string
+  entityName: string
+  connectionType: EntityConnectionType
 }
 
 const TYPE_ORDER: EntityConnectionType[] = [
@@ -50,6 +61,7 @@ function groupByType(connections: EnrichedConnection[]): Map<EntityConnectionTyp
 export function KnowledgeGraphExplorer({
   entityType,
   entityId,
+  entityName = 'Entity',
   projectId,
   isOpen,
   onClose,
@@ -61,6 +73,10 @@ export function KnowledgeGraphExplorer({
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const { addToast } = useToast()
 
   const fetchConnections = useCallback(async () => {
     setIsLoading(true)
@@ -84,16 +100,32 @@ export function KnowledgeGraphExplorer({
     if (isOpen) fetchConnections()
   }, [isOpen, fetchConnections])
 
-  const handleDelete = useCallback(async (connectionId: string) => {
+  const handleRequestDelete = useCallback((connectionId: string, name: string, connType: EntityConnectionType) => {
+    setDeleteTarget({ connectionId, entityName: name, connectionType: connType })
+  }, [])
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!deleteTarget) return
+    setIsDeleting(true)
     try {
-      const res = await fetch(`/api/projects/${projectId}/connections/${connectionId}`, {
+      const res = await fetch(`/api/projects/${projectId}/connections/${deleteTarget.connectionId}`, {
         method: 'DELETE',
       })
-      if (res.ok) fetchConnections()
+      if (res.ok) {
+        addToast('Connection removed', 'success')
+        fetchConnections()
+      }
     } catch {
-      // Ignore
+      addToast('Failed to remove connection', 'error')
+    } finally {
+      setIsDeleting(false)
+      setDeleteTarget(null)
     }
-  }, [projectId, fetchConnections])
+  }, [deleteTarget, projectId, fetchConnections, addToast])
+
+  const handleLinkCreated = useCallback(() => {
+    fetchConnections()
+  }, [fetchConnections])
 
   const toggleGroup = useCallback((key: string) => {
     setCollapsedGroups(prev => {
@@ -139,12 +171,23 @@ export function KnowledgeGraphExplorer({
           <span className="text-sm font-medium text-text-primary">Knowledge Graph</span>
           <span className="text-xs text-text-tertiary">({totalAll})</span>
         </div>
-        <button
-          onClick={onClose}
-          className="p-1 rounded text-text-tertiary hover:text-text-secondary hover:bg-bg-tertiary transition-colors"
-        >
-          <X className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-1">
+          {editable && (
+            <button
+              onClick={() => setLinkDialogOpen(true)}
+              className="p-1 rounded text-accent-cyan hover:bg-accent-cyan/10 transition-colors"
+              title="Link entity"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            className="p-1 rounded text-text-tertiary hover:text-text-secondary hover:bg-bg-tertiary transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Search */}
@@ -178,9 +221,15 @@ export function KnowledgeGraphExplorer({
               <Search className="w-5 h-5 text-text-tertiary" />
             </div>
             <p className="text-sm text-text-secondary mb-1">No connections yet</p>
-            <p className="text-xs text-text-tertiary">
+            <p className="text-xs text-text-tertiary mb-3">
               Connections will appear here as entities are linked together.
             </p>
+            {editable && (
+              <Button variant="secondary" size="sm" onClick={() => setLinkDialogOpen(true)}>
+                <Plus className="w-3 h-3 mr-1" />
+                Link Entity
+              </Button>
+            )}
           </div>
         ) : (
           <div className="py-1">
@@ -194,7 +243,7 @@ export function KnowledgeGraphExplorer({
                 collapsedGroups={collapsedGroups}
                 onToggleGroup={toggleGroup}
                 onNavigate={onNavigate}
-                onDelete={editable ? handleDelete : undefined}
+                onRequestDelete={editable ? handleRequestDelete : undefined}
               />
             )}
 
@@ -208,7 +257,7 @@ export function KnowledgeGraphExplorer({
                 collapsedGroups={collapsedGroups}
                 onToggleGroup={toggleGroup}
                 onNavigate={onNavigate}
-                onDelete={editable ? handleDelete : undefined}
+                onRequestDelete={editable ? handleRequestDelete : undefined}
               />
             )}
 
@@ -222,6 +271,40 @@ export function KnowledgeGraphExplorer({
           </div>
         )}
       </div>
+
+      {/* Link entity dialog */}
+      <LinkEntityDialog
+        sourceType={entityType}
+        sourceId={entityId}
+        sourceName={entityName}
+        projectId={projectId}
+        open={linkDialogOpen}
+        onOpenChange={setLinkDialogOpen}
+        onCreated={handleLinkCreated}
+      />
+
+      {/* Delete confirmation dialog */}
+      <Dialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Remove Connection</DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            <p className="text-sm text-text-secondary">
+              Remove the <span className="font-medium text-text-primary">{deleteTarget && CONNECTION_TYPE_CONFIG[deleteTarget.connectionType].label}</span> connection to <span className="font-medium text-text-primary">{deleteTarget?.entityName}</span>?
+            </p>
+            <p className="text-xs text-text-tertiary mt-2">This action cannot be undone.</p>
+          </div>
+          <DialogFooter>
+            <Button variant="secondary" size="sm" onClick={() => setDeleteTarget(null)} disabled={isDeleting}>
+              Cancel
+            </Button>
+            <Button variant="primary" size="sm" onClick={handleConfirmDelete} isLoading={isDeleting}>
+              Remove
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
@@ -236,7 +319,7 @@ function ConnectionSection({
   collapsedGroups,
   onToggleGroup,
   onNavigate,
-  onDelete,
+  onRequestDelete,
 }: {
   title: string
   icon: React.ReactNode
@@ -245,7 +328,7 @@ function ConnectionSection({
   collapsedGroups: Set<string>
   onToggleGroup: (key: string) => void
   onNavigate?: (entityType: string, entityId: string) => void
-  onDelete?: (connectionId: string) => void
+  onRequestDelete?: (connectionId: string, entityName: string, connectionType: EntityConnectionType) => void
 }) {
   return (
     <div className="mb-2">
@@ -301,11 +384,11 @@ function ConnectionSection({
                           <Sparkles className="w-3 h-3 text-accent-warning flex-shrink-0" />
                         </span>
                       )}
-                      {onDelete && (
+                      {onRequestDelete && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
-                            onDelete(item.connection_id)
+                            onRequestDelete(item.connection_id, entity.name, item.connection_type)
                           }}
                           className="p-0.5 rounded text-text-tertiary hover:text-accent-error opacity-0 group-hover:opacity-100 transition-all flex-shrink-0"
                           title="Remove connection"
