@@ -15,9 +15,9 @@
 
 ---
 
-### Completed Phases (114/150)
+### Completed Phases (115/150)
 
-001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 059–060 (Blueprint versioning + comments), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–086 + 088–090 (Lab schema/API/categorization/convert-to-WO/convert-to-feature/agent), 083–085 (Lab layout/inbox/detail), 096–104 (Artifacts full stack + folders + versioning complete), 105 (Comments schema), 106 (@Mentions), 109–110 (Knowledge schema + explorer), 112 (Manual entity linking), 113 (Org console), 117 (Realtime presence), 118 (Collaborative editing), 119 (Audit trail), 120 (Project archive), 124 (Drift detection), 125 (Cross-doc suggestions), 126 (Org templates), 127 (Extraction strategy), 128 (Phase burndown), 129 (MCP implementation), 130 (WO sync alerts)
+001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 059–060 (Blueprint versioning + comments), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–086 + 088–090 (Lab schema/API/categorization/convert-to-WO/convert-to-feature/agent), 083–085 (Lab layout/inbox/detail), 096–104 (Artifacts full stack + folders + versioning complete), 105 (Comments schema), 106 (@Mentions), 109–110 (Knowledge schema + explorer), 112 (Manual entity linking), 113 (Org console), 117 (Realtime presence), 118 (Collaborative editing), 119 (Audit trail), 120 (Project archive), 124 (Drift detection), 125 (Cross-doc suggestions), 126 (Org templates), 127 (Extraction strategy), 128 (Phase burndown), 129 (MCP implementation), 130 (WO sync alerts), 087 (Feedback search & filter)
 
 ---
 
@@ -404,7 +404,7 @@ After this initial update, stay in this session. I will come back to you after e
 | 084 | Feedback Inbox Display | `done` | — | 081, 083 | Lab | `components/lab/` |
 | 085 | Feedback Detail View | `done` | — | 081, 083, 084 | Lab | `components/lab/` |
 | 086 | Feedback Categorization | `done` | — | 081, 084, 085 | Lab | `components/lab/` |
-| 087 | Feedback Search & Filter | `ready` | — | 083, 084, 086 | Lab | `components/lab/` |
+| 087 | Feedback Search & Filter | `done` | — | 083, 084, 086 | Lab | `components/lab/` |
 | 088 | Convert Feedback → Work Order | `done` | — | 061, 081, 085 | Lab ⚠️ | `components/lab/`, `app/api/projects/` |
 | 089 | Convert Feedback → Feature | `ready` | — | 026, 081, 085 | Lab ⚠️ | `components/lab/`, `app/api/lab/` |
 | 090 | Insights Lab Agent Infra | `ready` | — | 081, 083 | Lab | `components/lab/`, `app/api/lab/agent/` |
