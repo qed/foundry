@@ -13,6 +13,7 @@ import {
   SlidersHorizontal,
   X,
   Sparkles,
+  Wand2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -33,6 +34,7 @@ interface FloorHeaderProps {
   filterPanelOpen: boolean
   onToggleFilterPanel: () => void
   onExtractFromBlueprints: () => void
+  onSuggestPhases: () => void
 }
 
 export function FloorHeader({
@@ -52,6 +54,7 @@ export function FloorHeader({
   filterPanelOpen,
   onToggleFilterPanel,
   onExtractFromBlueprints,
+  onSuggestPhases,
 }: FloorHeaderProps) {
   const searchInputRef = useRef<HTMLInputElement>(null)
   const completionPercent =
@@ -209,7 +212,15 @@ export function FloorHeader({
         </button>
       </div>
 
-      {/* Extract from blueprints */}
+      {/* AI actions */}
+      <button
+        onClick={onSuggestPhases}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border border-accent-purple/30 text-accent-purple hover:bg-accent-purple/10"
+        title="Suggest phase plan using AI"
+      >
+        <Wand2 className="w-3.5 h-3.5" />
+        <span className="hidden lg:inline">Plan</span>
+      </button>
       <button
         onClick={onExtractFromBlueprints}
         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border border-accent-purple/30 text-accent-purple hover:bg-accent-purple/10"

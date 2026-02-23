@@ -7,6 +7,7 @@ import { FloorContent } from './floor-content'
 import { FloorRightPanel } from './floor-right-panel'
 import { CreateWorkOrderModal } from './create-work-order-modal'
 import { ExtractWorkOrdersModal } from './extract-work-orders-modal'
+import { SuggestPhasePlanModal } from './suggest-phase-plan-modal'
 import { WorkOrderDetail } from './work-order-detail'
 import { FilterPanel } from './filter-panel'
 import { FilterBadges } from './filter-badges'
@@ -31,6 +32,7 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
   const [rightPanelOpen, setRightPanelOpen] = useState(false)
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [extractModalOpen, setExtractModalOpen] = useState(false)
+  const [suggestPhasesModalOpen, setSuggestPhasesModalOpen] = useState(false)
   const [selectedWorkOrderId, setSelectedWorkOrderId] = useState<string | null>(null)
   const [view, setView] = useState<'kanban' | 'table'>('kanban')
   const [selectedPhaseId, setSelectedPhaseId] = useState<string | null>(null)
@@ -540,6 +542,7 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
         filterPanelOpen={filterPanelOpen}
         onToggleFilterPanel={() => setFilterPanelOpen((prev) => !prev)}
         onExtractFromBlueprints={() => setExtractModalOpen(true)}
+        onSuggestPhases={() => setSuggestPhasesModalOpen(true)}
       />
 
       {/* Filter panel popover — positioned relative to header */}
@@ -625,6 +628,15 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
         onOpenChange={setExtractModalOpen}
         projectId={projectId}
         onCreated={() => setFetchKey((k) => k + 1)}
+      />
+
+      {/* Suggest Phase Plan Modal */}
+      <SuggestPhasePlanModal
+        open={suggestPhasesModalOpen}
+        onOpenChange={setSuggestPhasesModalOpen}
+        projectId={projectId}
+        workOrders={workOrders}
+        onApplied={() => setFetchKey((k) => k + 1)}
       />
 
       {/* Work Order Detail Slide-Over */}
