@@ -245,6 +245,7 @@ After building, run `npm run build` and `npm run lint` to verify zero errors. Th
 - Phase 120: Project Archive & Cleanup (Admin) -- done
 - Phase 128: Sprint/Phase Burndown (Floor) -- done
 - Phase 060: Blueprint Comments (Room) -- done
+- Phase 124: Drift Detection (Room/Shop) -- done
 
 **Next up** (sequential order):
 ...

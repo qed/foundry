@@ -15,9 +15,9 @@
 
 ---
 
-### Completed Phases (106/150)
+### Completed Phases (107/150)
 
-001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 059–060 (Blueprint versioning + comments), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–086 + 088–090 (Lab schema/API/categorization/convert-to-WO/convert-to-feature/agent), 083–085 (Lab layout/inbox/detail), 096–101 (Artifacts full stack + folders), 105 (Comments schema), 106 (@Mentions), 109–110 (Knowledge schema + explorer), 113 (Org console), 117 (Realtime presence), 118 (Collaborative editing), 119 (Audit trail), 120 (Project archive), 128 (Phase burndown)
+001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 059–060 (Blueprint versioning + comments), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–086 + 088–090 (Lab schema/API/categorization/convert-to-WO/convert-to-feature/agent), 083–085 (Lab layout/inbox/detail), 096–101 (Artifacts full stack + folders), 105 (Comments schema), 106 (@Mentions), 109–110 (Knowledge schema + explorer), 113 (Org console), 117 (Realtime presence), 118 (Collaborative editing), 119 (Audit trail), 120 (Project archive), 124 (Drift detection), 128 (Phase burndown)
 
 ---
 
@@ -451,7 +451,7 @@ After this initial update, stay in this session. I will come back to you after e
 | 121 | Idea Maturity Scoring | `ready` | — | 011, 023 | Hall ⚠️ | `components/hall/` |
 | 122 | Agent Writing Instructions | `ready` | — | 037, 113 | Shop ⚠️ | `components/shop/`, `components/admin/` |
 | 123 | Aggregate Export | `ready` | — | 037, 042 | Shop | `components/shop/` |
-| 124 | Drift Detection | `ready` | — | 026, 037, 046 | Room ⚠️ | `components/room/` |
+| 124 | Drift Detection | `done` | — | 026, 037, 046 | Room ⚠️ | `components/room/` |
 | 125 | Cross-Document Suggestions | `blocked` | — | 037, 046, 057, 124 | Room ⚠️ | `components/room/` |
 | 126 | Org-Level Blueprint Templates | `blocked` | — | 053, 113 | Room ⚠️ | `components/room/`, `components/admin/` |
 | 127 | Extraction Strategy Config | `ready` | — | 073, 113 | Floor ⚠️ | `components/floor/`, `components/admin/` |
