@@ -12,6 +12,7 @@ import {
   Search,
   SlidersHorizontal,
   X,
+  Sparkles,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -31,6 +32,7 @@ interface FloorHeaderProps {
   activeFilterCount: number
   filterPanelOpen: boolean
   onToggleFilterPanel: () => void
+  onExtractFromBlueprints: () => void
 }
 
 export function FloorHeader({
@@ -49,6 +51,7 @@ export function FloorHeader({
   activeFilterCount,
   filterPanelOpen,
   onToggleFilterPanel,
+  onExtractFromBlueprints,
 }: FloorHeaderProps) {
   const searchInputRef = useRef<HTMLInputElement>(null)
   const completionPercent =
@@ -205,6 +208,16 @@ export function FloorHeader({
           <span className="hidden sm:inline">Table</span>
         </button>
       </div>
+
+      {/* Extract from blueprints */}
+      <button
+        onClick={onExtractFromBlueprints}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border border-accent-purple/30 text-accent-purple hover:bg-accent-purple/10"
+        title="Extract work orders from blueprints"
+      >
+        <Sparkles className="w-3.5 h-3.5" />
+        <span className="hidden lg:inline">Extract</span>
+      </button>
 
       {/* New Work Order button */}
       <button
