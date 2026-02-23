@@ -14,6 +14,7 @@ import {
   X,
   Sparkles,
   Wand2,
+  Settings2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -35,6 +36,7 @@ interface FloorHeaderProps {
   onToggleFilterPanel: () => void
   onExtractFromBlueprints: () => void
   onSuggestPhases: () => void
+  onOpenStrategyConfig: () => void
 }
 
 export function FloorHeader({
@@ -55,6 +57,7 @@ export function FloorHeader({
   onToggleFilterPanel,
   onExtractFromBlueprints,
   onSuggestPhases,
+  onOpenStrategyConfig,
 }: FloorHeaderProps) {
   const searchInputRef = useRef<HTMLInputElement>(null)
   const completionPercent =
@@ -211,6 +214,15 @@ export function FloorHeader({
           <span className="hidden sm:inline">Table</span>
         </button>
       </div>
+
+      {/* Settings */}
+      <button
+        onClick={onOpenStrategyConfig}
+        className="p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-tertiary transition-colors"
+        title="Extraction strategy settings"
+      >
+        <Settings2 className="w-4 h-4" />
+      </button>
 
       {/* AI actions */}
       <button

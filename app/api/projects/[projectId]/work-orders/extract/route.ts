@@ -49,6 +49,16 @@ export async function POST(
       return Response.json({ error: 'Not authorized' }, { status: 403 })
     }
 
+    // Fetch project extraction strategy
+    const { data: project } = await supabase
+      .from('projects')
+      .select('extraction_strategy, extraction_instructions')
+      .eq('id', projectId)
+      .single()
+
+    const extractionStrategy = project?.extraction_strategy || 'feature-slice'
+    const extractionInstructions = project?.extraction_instructions || null
+
     // Fetch blueprints
     const { data: blueprints, error: bpError } = await supabase
       .from('blueprints')
@@ -77,10 +87,12 @@ export async function POST(
     // Call Claude to extract work orders
     const client = new Anthropic({ apiKey })
 
+    const systemPrompt = buildExtractionPrompt(extractionStrategy, extractionInstructions)
+
     const response = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 4000,
-      system: EXTRACTION_PROMPT,
+      system: systemPrompt,
       messages: [
         { role: 'user', content: blueprintTexts },
       ],
@@ -150,7 +162,7 @@ interface ExtractedWorkOrder {
 
 /* ── Helpers ───────────────────────────────────────────────────── */
 
-const EXTRACTION_PROMPT = `You are a work order extraction assistant for a product development tool. Your job is to analyze blueprint documents and extract discrete, actionable work orders.
+const BASE_EXTRACTION_PROMPT = `You are a work order extraction assistant for a product development tool. Your job is to analyze blueprint documents and extract discrete, actionable work orders.
 
 For each work order, provide:
 - title: Short, actionable title (5-15 words)
@@ -173,6 +185,41 @@ Return ONLY a JSON array of objects. No markdown fences, no explanation. Example
 ]
 
 Extract ALL actionable items. Be thorough but avoid duplicates. Each work order should be a single discrete task, not an epic.`
+
+const STRATEGY_ADDENDUMS: Record<string, string> = {
+  'feature-slice': `
+
+Extraction Strategy: Feature-Slice
+
+Create ONE work order per feature found in the blueprint. Each work order should cover all implementation aspects (frontend, backend, database, testing) for that feature. Do not split a single feature into multiple work orders by specialist area.`,
+  'specialist': `
+
+Extraction Strategy: Specialist Split
+
+For each feature in the blueprint, create SEPARATE work orders split by specialist area:
+- Frontend: UI implementation, components, styling
+- Backend: API endpoints, server logic, business rules
+- Database: Schema changes, migrations, queries
+- QA: Test cases, test plans, validation
+
+Prefix each work order title with the specialist area (e.g., "FE: Build login form", "BE: Implement auth API", "DB: Create sessions table").`,
+}
+
+function buildExtractionPrompt(
+  strategy: string,
+  customInstructions: string | null
+): string {
+  if (strategy === 'custom' && customInstructions) {
+    return `${BASE_EXTRACTION_PROMPT}
+
+Extraction Strategy: Custom
+
+Follow these instructions for how to split work orders:
+${customInstructions}`
+  }
+
+  return BASE_EXTRACTION_PROMPT + (STRATEGY_ADDENDUMS[strategy] || STRATEGY_ADDENDUMS['feature-slice'])
+}
 
 /**
  * Recursively extract plain text from TipTap/ProseMirror JSON content.

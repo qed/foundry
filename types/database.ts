@@ -117,6 +117,9 @@ export type Database = {
           is_archived: boolean;
           archived_at: string | null;
           archived_by: string | null;
+          extraction_strategy: "feature-slice" | "specialist" | "custom";
+          extraction_instructions: string | null;
+          extraction_strategy_updated_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -128,6 +131,9 @@ export type Database = {
           is_archived?: boolean;
           archived_at?: string | null;
           archived_by?: string | null;
+          extraction_strategy?: "feature-slice" | "specialist" | "custom";
+          extraction_instructions?: string | null;
+          extraction_strategy_updated_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -139,6 +145,9 @@ export type Database = {
           is_archived?: boolean;
           archived_at?: string | null;
           archived_by?: string | null;
+          extraction_strategy?: "feature-slice" | "specialist" | "custom";
+          extraction_instructions?: string | null;
+          extraction_strategy_updated_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -1901,3 +1910,4 @@ export type CrossDocSuggestion = Database["public"]["Tables"]["cross_doc_suggest
 export type CrossDocSuggestionItem = Database["public"]["Tables"]["cross_doc_suggestion_items"]["Row"];
 export type CrossDocSuggestionStatus = CrossDocSuggestion["status"];
 export type CrossDocSuggestionType = CrossDocSuggestionItem["suggestion_type"];
+export type ExtractionStrategy = Project["extraction_strategy"];

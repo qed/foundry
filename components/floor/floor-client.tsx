@@ -8,6 +8,7 @@ import { FloorRightPanel } from './floor-right-panel'
 import { PhaseBurndown } from './phase-burndown'
 import { CreateWorkOrderModal } from './create-work-order-modal'
 import { ExtractWorkOrdersModal } from './extract-work-orders-modal'
+import { ExtractionStrategyConfig } from './extraction-strategy-config'
 import { SuggestPhasePlanModal } from './suggest-phase-plan-modal'
 import { WorkOrderDetail } from './work-order-detail'
 import { BulkActionBar } from './bulk-action-bar'
@@ -34,6 +35,7 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
   const [rightPanelOpen, setRightPanelOpen] = useState(false)
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [extractModalOpen, setExtractModalOpen] = useState(false)
+  const [strategyConfigOpen, setStrategyConfigOpen] = useState(false)
   const [suggestPhasesModalOpen, setSuggestPhasesModalOpen] = useState(false)
   const [selectedWorkOrderId, setSelectedWorkOrderId] = useState<string | null>(null)
   const [burndownPhaseId, setBurndownPhaseId] = useState<string | null>(null)
@@ -615,6 +617,7 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
         onToggleFilterPanel={() => setFilterPanelOpen((prev) => !prev)}
         onExtractFromBlueprints={() => setExtractModalOpen(true)}
         onSuggestPhases={() => setSuggestPhasesModalOpen(true)}
+        onOpenStrategyConfig={() => setStrategyConfigOpen(true)}
       />
 
       {/* Filter panel popover — positioned relative to header */}
@@ -726,6 +729,13 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
         onOpenChange={setExtractModalOpen}
         projectId={projectId}
         onCreated={() => setFetchKey((k) => k + 1)}
+      />
+
+      {/* Extraction Strategy Config Modal */}
+      <ExtractionStrategyConfig
+        open={strategyConfigOpen}
+        onOpenChange={setStrategyConfigOpen}
+        projectId={projectId}
       />
 
       {/* Suggest Phase Plan Modal */}
