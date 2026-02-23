@@ -19,6 +19,7 @@ import {
 import { cn } from '@/lib/utils'
 import { EmptyState } from '@/components/ui/empty-state'
 import { CategoryBadge } from '@/components/lab/category-badge'
+import { ConvertToWoModal } from '@/components/lab/convert-to-wo-modal'
 import type { FeedbackSubmission, FeedbackStatus, FeedbackCategory } from '@/types/database'
 
 interface LabDetailPanelProps {
@@ -82,6 +83,7 @@ export function LabDetailPanel({ feedback, projectId, onUpdate }: LabDetailPanel
   const [uaExpanded, setUaExpanded] = useState(false)
   const [newTag, setNewTag] = useState('')
   const [isSaving, setIsSaving] = useState(false)
+  const [convertModalOpen, setConvertModalOpen] = useState(false)
   const [projectTags, setProjectTags] = useState<string[]>([])
   const [tagSuggestions, setTagSuggestions] = useState<string[]>([])
   const [tagSuggestionsOpen, setTagSuggestionsOpen] = useState(false)
@@ -552,8 +554,8 @@ export function LabDetailPanel({ feedback, projectId, onUpdate }: LabDetailPanel
                 </span>
               ) : (
                 <button
-                  disabled
-                  className="px-3 py-1.5 bg-accent-cyan/10 text-accent-cyan rounded-lg text-xs font-medium opacity-50 cursor-not-allowed"
+                  onClick={() => setConvertModalOpen(true)}
+                  className="px-3 py-1.5 bg-accent-cyan/10 text-accent-cyan rounded-lg text-xs font-medium hover:bg-accent-cyan/20 transition-colors"
                 >
                   Convert to Work Order
                 </button>
@@ -566,17 +568,25 @@ export function LabDetailPanel({ feedback, projectId, onUpdate }: LabDetailPanel
                 <button
                   disabled
                   className="px-3 py-1.5 bg-accent-purple/10 text-accent-purple rounded-lg text-xs font-medium opacity-50 cursor-not-allowed"
+                  title="Coming in Phase 089"
                 >
                   Convert to Feature
                 </button>
               )}
             </div>
-            <p className="text-[10px] text-text-tertiary mt-1.5">
-              Conversion actions coming in Phase 088 &amp; 089
-            </p>
           </section>
         </div>
       </div>
+
+      {/* Convert to Work Order modal */}
+      {convertModalOpen && feedback && (
+        <ConvertToWoModal
+          feedback={feedback}
+          projectId={projectId}
+          onClose={() => setConvertModalOpen(false)}
+          onConverted={onUpdate}
+        />
+      )}
     </div>
   )
 }
