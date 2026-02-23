@@ -128,6 +128,7 @@ export function LabClient({ projectId, initialStats }: LabClientProps) {
 
       {/* Agent panel overlay */}
       <LabAgentPanel
+        projectId={projectId}
         open={agentPanelOpen}
         onClose={() => setAgentPanelOpen(false)}
       />
