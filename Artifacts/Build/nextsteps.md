@@ -242,6 +242,7 @@ After building, run `npm run build` and `npm run lint` to verify zero errors. Th
 - Phase 106: @Mentions System (Cross) -- done
 - Phase 110: Knowledge Graph Explorer Panel (Cross) -- done
 - Phase 118: Real-Time Collaborative Editing (Realtime) -- done
+- Phase 120: Project Archive & Cleanup (Admin) -- done
 
 **Next up** (sequential order):
-120, 128...
+128...
