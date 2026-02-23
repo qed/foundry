@@ -15,7 +15,7 @@
 
 ---
 
-### Completed Phases (119/150)
+### Completed Phases (120/150)
 
 001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 059–060 (Blueprint versioning + comments), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–091 (Lab full stack + auto-categorization), 092 (Feedback enrichment), 094–095 (App key management + bulk ops), 096–104 (Artifacts full stack + folders + versioning complete), 105 (Comments schema), 106 (@Mentions), 109–110 (Knowledge schema + explorer), 112 (Manual entity linking), 113 (Org console), 117 (Realtime presence), 118 (Collaborative editing), 119 (Audit trail), 120 (Project archive), 124 (Drift detection), 125 (Cross-doc suggestions), 126 (Org templates), 127 (Extraction strategy), 128 (Phase burndown), 129 (MCP implementation), 130 (WO sync alerts)
 
@@ -410,7 +410,7 @@ After this initial update, stay in this session. I will come back to you after e
 | 090 | Insights Lab Agent Infra | `done` | — | 081, 083 | Lab | `components/lab/`, `app/api/lab/agent/` |
 | 091 | Agent: Auto-Categorization | `done` | — | 081, 086, 090 | Lab | `components/lab/` |
 | 092 | Agent: Feedback Enrichment | `done` | — | 026, 085, 090, 091 | Lab ⚠️ | `components/lab/` |
-| 093 | Agent: Conversion Suggestions | `ready` | — | 088, 089, 090, 091 | Lab ⚠️ | `components/lab/` |
+| 093 | Agent: Conversion Suggestions | `done` | — | 088, 089, 090, 091 | Lab ⚠️ | `components/lab/` |
 | 094 | App Key Management | `done` | — | 006, 081, 082 | Lab | `components/lab/`, `app/api/lab/` |
 | 095 | Feedback Bulk Operations | `done` | — | 084, 086, 088 | Lab | `components/lab/` |
 
@@ -704,10 +704,10 @@ These phases require work from **multiple module tracks** to be complete before 
 | Pattern Shop (026–045) | 20 | 20 | 0 | 0 | 0 |
 | Control Room (046–060) | 15 | 15 | 0 | 0 | 0 |
 | Assembly Floor (061–080) | 20 | 17 | 0 | 3 | 0 |
-| Insights Lab (081–095) | 15 | 7 | 0 | 5 | 3 |
-| Cross-Cutting (096–120) | 25 | 10 | 0 | 6 | 9 |
-| Advanced (121–135) | 15 | 0 | 0 | 8 | 7 |
+| Insights Lab (081–095) | 15 | 15 | 0 | 0 | 0 |
+| Cross-Cutting (096–120) | 25 | 19 | 0 | 2 | 4 |
+| Advanced (121–135) | 15 | 7 | 0 | 6 | 2 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **93** | **0** | **23** | **34** |
+| **TOTAL** | **150** | **120** | **0** | **9** | **21** |
 
-**Currently ready to start**: 092, 093, 107, 108, 111, 114, 115, 116, 121, 122, 123, 131, 132, 133, 134, 135, 136–150
+**Currently ready to start**: 107, 111, 121, 122, 123, 131, 132, 133
