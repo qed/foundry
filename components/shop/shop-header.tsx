@@ -6,6 +6,7 @@ import {
   PanelLeftOpen,
   PanelRightClose,
   PanelRightOpen,
+  FileDown,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -31,6 +32,7 @@ interface ShopHeaderProps {
   rightPanelOpen: boolean
   onToggleLeftPanel: () => void
   onToggleRightPanel: () => void
+  onExportProject?: () => void
 }
 
 export function ShopHeader({
@@ -39,6 +41,7 @@ export function ShopHeader({
   rightPanelOpen,
   onToggleLeftPanel,
   onToggleRightPanel,
+  onExportProject,
 }: ShopHeaderProps) {
   const totalNodes =
     stats.epics + stats.features + stats.subFeatures + stats.tasks
@@ -135,6 +138,18 @@ export function ShopHeader({
 
       {/* Spacer */}
       <div className="flex-1" />
+
+      {/* Export project button */}
+      {totalNodes > 0 && onExportProject && (
+        <button
+          onClick={onExportProject}
+          className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-bg-tertiary transition-colors"
+          title="Export full project"
+        >
+          <FileDown className="w-3.5 h-3.5" />
+          Export
+        </button>
+      )}
 
       {/* Right panel toggle */}
       <button

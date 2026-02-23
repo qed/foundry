@@ -7,6 +7,7 @@ import { ShopLeftPanel } from './shop-left-panel'
 import { ShopCenterPanel } from './shop-center-panel'
 import { ShopRightPanel } from './shop-right-panel'
 import { ShopGettingStarted } from './shop-getting-started'
+import { ExportProjectDialog } from './export-project-dialog'
 
 interface ShopClientProps {
   projectId: string
@@ -26,6 +27,7 @@ export function ShopClient({
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
   const [stats, setStats] = useState<ShopStats>(initialStats)
   const [treeRefreshTrigger, setTreeRefreshTrigger] = useState(0)
+  const [showExportProject, setShowExportProject] = useState(false)
 
   // Auto-collapse right panel on narrow screens
   useEffect(() => {
@@ -136,6 +138,7 @@ export function ShopClient({
         rightPanelOpen={rightPanelOpen}
         onToggleLeftPanel={() => setLeftPanelOpen((prev) => !prev)}
         onToggleRightPanel={() => setRightPanelOpen((prev) => !prev)}
+        onExportProject={() => setShowExportProject(true)}
       />
 
       {/* Getting started banner for empty projects */}
@@ -161,6 +164,13 @@ export function ShopClient({
         {/* Right panel: Agent chat */}
         <ShopRightPanel open={rightPanelOpen} projectId={projectId} selectedNodeId={selectedNodeId} onTreeInserted={handleTreeInserted} />
       </div>
+
+      {/* Export Project Dialog */}
+      <ExportProjectDialog
+        open={showExportProject}
+        onOpenChange={setShowExportProject}
+        projectId={projectId}
+      />
     </div>
   )
 }
