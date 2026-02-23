@@ -386,8 +386,8 @@ After this initial update, stay in this session. I will come back to you after e
 | 071 | Progress Tracking & Rollup | `done` | — | 026, 061, 069 | Floor | `components/floor/` |
 | 072 | Work Order Search & Filter | `done` | — | 061, 062, 067, 069 | Floor | `components/floor/` |
 | 073 | Assembly Floor Agent Infra | `done` | — | 002, 061, 062 | Floor | `components/floor/`, `app/api/floor/agent/` |
-| 074 | Agent: WO Extraction | `ready` | — | 046, 061, 073 | Floor ⚠️ | `components/floor/` |
-| 075 | Agent: Phase Planning | `blocked` | — | 061, 069, 073, 074 | Floor | `components/floor/` |
+| 074 | Agent: WO Extraction | `done` | — | 046, 061, 073 | Floor | `components/floor/` |
+| 075 | Agent: Phase Planning | `ready` | — | 061, 069, 073, 074 | Floor | `components/floor/` |
 | 076 | Implementation Plans | `ready` | — | 061, 064, 073 | Floor | `components/floor/` |
 | 077 | Bulk Operations | `ready` | — | 061, 065, 067 | Floor | `components/floor/` |
 | 078 | Floor Comments | `ready` | — | 010, 061, 064 | Floor | `components/floor/` |
@@ -703,11 +703,11 @@ These phases require work from **multiple module tracks** to be complete before 
 | The Hall (011–025) | 15 | 15 | 0 | 0 | 0 |
 | Pattern Shop (026–045) | 20 | 20 | 0 | 0 | 0 |
 | Control Room (046–060) | 15 | 14 | 0 | 1 | 0 |
-| Assembly Floor (061–080) | 20 | 13 | 0 | 6 | 1 |
+| Assembly Floor (061–080) | 20 | 14 | 0 | 6 | 0 |
 | Insights Lab (081–095) | 15 | 4 | 0 | 5 | 6 |
 | Cross-Cutting (096–120) | 25 | 10 | 0 | 6 | 9 |
 | Advanced (121–135) | 15 | 0 | 0 | 8 | 7 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **86** | **0** | **26** | **38** |
+| **TOTAL** | **150** | **87** | **0** | **26** | **37** |
 
-**Currently ready to start**: 060, 074, 076, 077, 078, 079, 080, 082, 086, 088, 089, 090, 101, 102, 106, 110, 118, 120, 121, 122, 123, 124, 127, 128, 131, 132
+**Currently ready to start**: 060, 075, 076, 077, 078, 079, 080, 082, 086, 088, 089, 090, 101, 102, 106, 110, 118, 120, 121, 122, 123, 124, 127, 128, 131, 132
