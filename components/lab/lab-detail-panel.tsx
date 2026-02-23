@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils'
 import { EmptyState } from '@/components/ui/empty-state'
 import { CategoryBadge } from '@/components/lab/category-badge'
 import { ConvertToWoModal } from '@/components/lab/convert-to-wo-modal'
+import { ConvertToFeatureModal } from '@/components/lab/convert-to-feature-modal'
 import type { FeedbackSubmission, FeedbackStatus, FeedbackCategory } from '@/types/database'
 
 interface LabDetailPanelProps {
@@ -83,7 +84,8 @@ export function LabDetailPanel({ feedback, projectId, onUpdate }: LabDetailPanel
   const [uaExpanded, setUaExpanded] = useState(false)
   const [newTag, setNewTag] = useState('')
   const [isSaving, setIsSaving] = useState(false)
-  const [convertModalOpen, setConvertModalOpen] = useState(false)
+  const [convertWoModalOpen, setConvertWoModalOpen] = useState(false)
+  const [convertFeatureModalOpen, setConvertFeatureModalOpen] = useState(false)
   const [projectTags, setProjectTags] = useState<string[]>([])
   const [tagSuggestions, setTagSuggestions] = useState<string[]>([])
   const [tagSuggestionsOpen, setTagSuggestionsOpen] = useState(false)
@@ -554,7 +556,7 @@ export function LabDetailPanel({ feedback, projectId, onUpdate }: LabDetailPanel
                 </span>
               ) : (
                 <button
-                  onClick={() => setConvertModalOpen(true)}
+                  onClick={() => setConvertWoModalOpen(true)}
                   className="px-3 py-1.5 bg-accent-cyan/10 text-accent-cyan rounded-lg text-xs font-medium hover:bg-accent-cyan/20 transition-colors"
                 >
                   Convert to Work Order
@@ -566,9 +568,8 @@ export function LabDetailPanel({ feedback, projectId, onUpdate }: LabDetailPanel
                 </span>
               ) : (
                 <button
-                  disabled
-                  className="px-3 py-1.5 bg-accent-purple/10 text-accent-purple rounded-lg text-xs font-medium opacity-50 cursor-not-allowed"
-                  title="Coming in Phase 089"
+                  onClick={() => setConvertFeatureModalOpen(true)}
+                  className="px-3 py-1.5 bg-accent-purple/10 text-accent-purple rounded-lg text-xs font-medium hover:bg-accent-purple/20 transition-colors"
                 >
                   Convert to Feature
                 </button>
@@ -579,11 +580,21 @@ export function LabDetailPanel({ feedback, projectId, onUpdate }: LabDetailPanel
       </div>
 
       {/* Convert to Work Order modal */}
-      {convertModalOpen && feedback && (
+      {convertWoModalOpen && feedback && (
         <ConvertToWoModal
           feedback={feedback}
           projectId={projectId}
-          onClose={() => setConvertModalOpen(false)}
+          onClose={() => setConvertWoModalOpen(false)}
+          onConverted={onUpdate}
+        />
+      )}
+
+      {/* Convert to Feature modal */}
+      {convertFeatureModalOpen && feedback && (
+        <ConvertToFeatureModal
+          feedback={feedback}
+          projectId={projectId}
+          onClose={() => setConvertFeatureModalOpen(false)}
           onConverted={onUpdate}
         />
       )}
