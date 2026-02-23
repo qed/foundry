@@ -15,9 +15,9 @@
 
 ---
 
-### Completed Phases (104/150)
+### Completed Phases (105/150)
 
-001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–086 + 088–090 (Lab schema/API/categorization/convert-to-WO/convert-to-feature/agent), 083–085 (Lab layout/inbox/detail), 096–101 (Artifacts full stack + folders), 105 (Comments schema), 106 (@Mentions), 109–110 (Knowledge schema + explorer), 113 (Org console), 117 (Realtime presence), 118 (Collaborative editing), 119 (Audit trail), 120 (Project archive)
+001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–086 + 088–090 (Lab schema/API/categorization/convert-to-WO/convert-to-feature/agent), 083–085 (Lab layout/inbox/detail), 096–101 (Artifacts full stack + folders), 105 (Comments schema), 106 (@Mentions), 109–110 (Knowledge schema + explorer), 113 (Org console), 117 (Realtime presence), 118 (Collaborative editing), 119 (Audit trail), 120 (Project archive), 128 (Phase burndown)
 
 ---
 
@@ -455,7 +455,7 @@ After this initial update, stay in this session. I will come back to you after e
 | 125 | Cross-Document Suggestions | `blocked` | — | 037, 046, 057, 124 | Room ⚠️ | `components/room/` |
 | 126 | Org-Level Blueprint Templates | `blocked` | — | 053, 113 | Room ⚠️ | `components/room/`, `components/admin/` |
 | 127 | Extraction Strategy Config | `ready` | — | 073, 113 | Floor ⚠️ | `components/floor/`, `components/admin/` |
-| 128 | Sprint/Phase Burndown | `ready` | — | 061, 071 | Floor | `components/floor/` |
+| 128 | Sprint/Phase Burndown | `done` | — | 061, 071 | Floor | `components/floor/` |
 | 129 | MCP Implementation | `ready` | — | 080 | Floor | `lib/mcp/`, `app/api/v1/` |
 | 130 | Work Order Sync Alerts | `blocked` | — | 046, 061, 124 | Floor ⚠️ | `components/floor/` |
 | 131 | Slack Integration | `ready` | — | 081 | Lab | `lib/integrations/`, `app/api/lab/` |
