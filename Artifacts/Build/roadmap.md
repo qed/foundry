@@ -15,9 +15,9 @@
 
 ---
 
-### Completed Phases (117/150)
+### Completed Phases (118/150)
 
-001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 059–060 (Blueprint versioning + comments), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–091 (Lab full stack + auto-categorization), 094 (App key management), 096–104 (Artifacts full stack + folders + versioning complete), 105 (Comments schema), 106 (@Mentions), 109–110 (Knowledge schema + explorer), 112 (Manual entity linking), 113 (Org console), 117 (Realtime presence), 118 (Collaborative editing), 119 (Audit trail), 120 (Project archive), 124 (Drift detection), 125 (Cross-doc suggestions), 126 (Org templates), 127 (Extraction strategy), 128 (Phase burndown), 129 (MCP implementation), 130 (WO sync alerts)
+001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 059–060 (Blueprint versioning + comments), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–091 (Lab full stack + auto-categorization), 094–095 (App key management + bulk ops), 096–104 (Artifacts full stack + folders + versioning complete), 105 (Comments schema), 106 (@Mentions), 109–110 (Knowledge schema + explorer), 112 (Manual entity linking), 113 (Org console), 117 (Realtime presence), 118 (Collaborative editing), 119 (Audit trail), 120 (Project archive), 124 (Drift detection), 125 (Cross-doc suggestions), 126 (Org templates), 127 (Extraction strategy), 128 (Phase burndown), 129 (MCP implementation), 130 (WO sync alerts)
 
 ---
 
@@ -412,7 +412,7 @@ After this initial update, stay in this session. I will come back to you after e
 | 092 | Agent: Feedback Enrichment | `ready` | — | 026, 085, 090, 091 | Lab ⚠️ | `components/lab/` |
 | 093 | Agent: Conversion Suggestions | `ready` | — | 088, 089, 090, 091 | Lab ⚠️ | `components/lab/` |
 | 094 | App Key Management | `done` | — | 006, 081, 082 | Lab | `components/lab/`, `app/api/lab/` |
-| 095 | Feedback Bulk Operations | `ready` | — | 084, 086, 088 | Lab | `components/lab/` |
+| 095 | Feedback Bulk Operations | `done` | — | 084, 086, 088 | Lab | `components/lab/` |
 
 ### Section 7: Cross-Cutting Enhancements (096–120)
 
@@ -710,4 +710,4 @@ These phases require work from **multiple module tracks** to be complete before 
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
 | **TOTAL** | **150** | **93** | **0** | **23** | **34** |
 
-**Currently ready to start**: 087, 089, 090, 094, 095, 101, 102, 106, 110, 118, 120, 121, 122, 123, 124, 127, 128, 129, 131, 132
+**Currently ready to start**: 092, 093, 107, 108, 111, 114, 115, 116, 121, 122, 123, 131, 132, 133, 134, 135, 136–150
