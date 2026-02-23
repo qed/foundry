@@ -12,6 +12,9 @@ import { VersionCompareModal } from './version-compare-modal'
 import { RestoreVersionDialog } from './restore-version-dialog'
 import { CommentsPanel } from './comments-panel'
 import { BlueprintStatusCard } from './blueprint-status-card'
+import { AutoConnectionDialog } from '@/components/knowledge-graph/auto-connection-dialog'
+import { useAutoConnections } from '@/lib/knowledge-graph/use-auto-connections'
+import { useToast } from '@/components/ui/toast-container'
 
 interface RequirementsDocument {
   id: string
@@ -44,11 +47,19 @@ export function FeatureRequirementEditor({
   featureNodeId,
   orgSlug,
 }: FeatureRequirementEditorProps) {
+  const { addToast } = useToast()
   const [doc, setDoc] = useState<RequirementsDocument | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showExport, setShowExport] = useState(false)
   const [showImport, setShowImport] = useState(false)
+
+  // Auto-connection detection (source is the feature node)
+  const autoConn = useAutoConnections({
+    projectId,
+    sourceType: 'feature',
+    sourceId: featureNodeId,
+  })
 
   // Versioning state
   const [versionRefreshKey, setVersionRefreshKey] = useState(0)
@@ -131,7 +142,9 @@ export function FeatureRequirementEditor({
       }
     )
     if (!res.ok) throw new Error('Save failed')
-  }, [projectId, doc])
+    // Trigger auto-connection scan (debounced)
+    autoConn.scan(html, doc.title)
+  }, [projectId, doc, autoConn])
 
   const handleImportSuccess = useCallback(() => {
     window.location.reload()
@@ -296,6 +309,17 @@ export function FeatureRequirementEditor({
             onClearSelection={onClearSelection}
           />
         )}
+      />
+      {/* Auto-connection detection dialog */}
+      <AutoConnectionDialog
+        suggestions={autoConn.suggestions}
+        isOpen={autoConn.isDialogOpen}
+        isLoading={autoConn.isAccepting}
+        onAccept={async (selected) => {
+          const ok = await autoConn.accept(selected)
+          if (ok) addToast(`${selected.length} connection${selected.length !== 1 ? 's' : ''} created`, 'success')
+        }}
+        onDismiss={autoConn.dismiss}
       />
     </div>
   )

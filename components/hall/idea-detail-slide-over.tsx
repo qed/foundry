@@ -14,6 +14,9 @@ import { IdeaInfoPanel } from './idea-info-panel'
 import { IdeaActionButtons } from './idea-action-buttons'
 import { IdeaEditForm } from './idea-edit-form'
 import { PromotionWizard } from './promotion-wizard'
+import { AutoConnectionDialog } from '@/components/knowledge-graph/auto-connection-dialog'
+import { useAutoConnections } from '@/lib/knowledge-graph/use-auto-connections'
+import { useToast } from '@/components/ui/toast-container'
 import type { IdeaWithDetails } from './types'
 
 interface IdeaDetailSlideOverProps {
@@ -37,6 +40,7 @@ export function IdeaDetailSlideOver({
   onIdeaUpdated,
   onIdeaArchived,
 }: IdeaDetailSlideOverProps) {
+  const { addToast } = useToast()
   const [idea, setIdea] = useState<IdeaWithDetails | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -44,6 +48,13 @@ export function IdeaDetailSlideOver({
   const [isEditing, setIsEditing] = useState(false)
   const [showPromotionWizard, setShowPromotionWizard] = useState(false)
   const [connectionsKey, setConnectionsKey] = useState(0)
+
+  // Auto-connection detection
+  const autoConn = useAutoConnections({
+    projectId,
+    sourceType: 'idea',
+    sourceId: ideaId || '',
+  })
 
   // Fetch idea detail
   const fetchIdea = useCallback(async (id: string) => {
@@ -134,7 +145,10 @@ export function IdeaDetailSlideOver({
   const handleSaved = useCallback((updatedIdea: IdeaWithDetails) => {
     setIdea(updatedIdea)
     onIdeaUpdated?.(updatedIdea)
-  }, [onIdeaUpdated])
+    // Trigger auto-connection scan
+    const content = [updatedIdea.title, updatedIdea.body].filter(Boolean).join(' ')
+    if (content.length > 10) autoConn.scanNow(content, updatedIdea.title)
+  }, [onIdeaUpdated, autoConn])
 
   // Handle archive
   const handleArchive = useCallback(async () => {
@@ -283,6 +297,21 @@ export function IdeaDetailSlideOver({
           projectId={projectId}
         />
       )}
+
+      {/* Auto-connection detection dialog */}
+      <AutoConnectionDialog
+        suggestions={autoConn.suggestions}
+        isOpen={autoConn.isDialogOpen}
+        isLoading={autoConn.isAccepting}
+        onAccept={async (selected) => {
+          const ok = await autoConn.accept(selected)
+          if (ok) {
+            addToast(`${selected.length} connection${selected.length !== 1 ? 's' : ''} created`, 'success')
+            setConnectionsKey((k) => k + 1)
+          }
+        }}
+        onDismiss={autoConn.dismiss}
+      />
     </>
   )
 }

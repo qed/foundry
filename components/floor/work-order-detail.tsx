@@ -23,6 +23,9 @@ import { CommentThread, type CommentData } from '@/components/shop/comment-threa
 import { CommentForm } from '@/components/shop/comment-form'
 import { SyncAlertsBanner } from '@/components/floor/sync-alerts-banner'
 import { SyncAlertsPanel } from '@/components/floor/sync-alerts-panel'
+import { AutoConnectionDialog } from '@/components/knowledge-graph/auto-connection-dialog'
+import { useAutoConnections } from '@/lib/knowledge-graph/use-auto-connections'
+import { useToast } from '@/components/ui/toast-container'
 
 function getInitials(name: string): string {
   return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
@@ -85,11 +88,19 @@ export function WorkOrderDetail({
   phases,
   onWorkOrderUpdated,
 }: WorkOrderDetailProps) {
+  const { addToast } = useToast()
   const [workOrder, setWorkOrder] = useState<EnrichedWorkOrder | null>(null)
   const [activities, setActivities] = useState<ActivityEntry[]>([])
   const [members, setMembers] = useState<ProjectMember[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Auto-connection detection
+  const autoConn = useAutoConnections({
+    projectId,
+    sourceType: 'work_order',
+    sourceId: workOrderId || '',
+  })
 
   // Inline edit states
   const [editingTitle, setEditingTitle] = useState(false)
@@ -270,9 +281,12 @@ export function WorkOrderDetail({
     if (descriptionDraft !== (workOrder?.description || '')) {
       setWorkOrder((prev) => prev ? { ...prev, description: descriptionDraft || null } : prev)
       patchWorkOrder({ description: descriptionDraft || null })
+      // Trigger auto-connection scan with combined text content
+      const combinedText = [workOrder?.title, descriptionDraft, workOrder?.acceptance_criteria, workOrder?.implementation_plan].filter(Boolean).join(' ')
+      autoConn.scan(combinedText, workOrder?.title)
     }
     setEditingDescription(false)
-  }, [descriptionDraft, workOrder?.description, patchWorkOrder])
+  }, [descriptionDraft, workOrder?.description, workOrder?.title, workOrder?.acceptance_criteria, workOrder?.implementation_plan, patchWorkOrder, autoConn])
 
   const handleCriteriaSave = useCallback(() => {
     if (criteriaDraft !== (workOrder?.acceptance_criteria || '')) {
@@ -897,6 +911,18 @@ export function WorkOrderDetail({
           onClose={() => setSyncAlertsPanelOpen(false)}
         />
       )}
+
+      {/* Auto-connection detection dialog */}
+      <AutoConnectionDialog
+        suggestions={autoConn.suggestions}
+        isOpen={autoConn.isDialogOpen}
+        isLoading={autoConn.isAccepting}
+        onAccept={async (selected) => {
+          const ok = await autoConn.accept(selected)
+          if (ok) addToast(`${selected.length} connection${selected.length !== 1 ? 's' : ''} created`, 'success')
+        }}
+        onDismiss={autoConn.dismiss}
+      />
     </div>
   )
 }

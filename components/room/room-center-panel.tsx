@@ -16,6 +16,8 @@ import { BlueprintVersionView } from './blueprint-version-view'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/toast-container'
+import { AutoConnectionDialog } from '@/components/knowledge-graph/auto-connection-dialog'
+import { useAutoConnections } from '@/lib/knowledge-graph/use-auto-connections'
 import { timeAgo } from '@/lib/utils'
 import type { Blueprint, BlueprintStatus } from '@/types/database'
 import type { JSONContent } from '@tiptap/react'
@@ -72,6 +74,13 @@ export function RoomCenterPanel({ projectId, blueprint, onStatusChange, onConten
   const [restoreDialog, setRestoreDialog] = useState<BlueprintVersionEntry | null>(null)
   const [restoring, setRestoring] = useState(false)
 
+  // Auto-connection detection
+  const autoConn = useAutoConnections({
+    projectId,
+    sourceType: 'blueprint',
+    sourceId: blueprint?.id || '',
+  })
+
   const handleSave = useCallback(async (content: JSONContent) => {
     if (!blueprint) return
     const res = await fetch(`/api/projects/${projectId}/blueprints/${blueprint.id}`, {
@@ -82,7 +91,9 @@ export function RoomCenterPanel({ projectId, blueprint, onStatusChange, onConten
     if (!res.ok) throw new Error('Save failed')
     // Bump version refresh so history panel picks up new versions
     setVersionRefreshKey((k) => k + 1)
-  }, [projectId, blueprint])
+    // Trigger auto-connection scan (debounced)
+    autoConn.scan(content, blueprint.title)
+  }, [projectId, blueprint, autoConn])
 
   const handleDiagramSave = useCallback(async (content: MermaidContent) => {
     if (!blueprint) return
@@ -379,6 +390,18 @@ export function RoomCenterPanel({ projectId, blueprint, onStatusChange, onConten
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Auto-connection detection dialog */}
+      <AutoConnectionDialog
+        suggestions={autoConn.suggestions}
+        isOpen={autoConn.isDialogOpen}
+        isLoading={autoConn.isAccepting}
+        onAccept={async (selected) => {
+          const ok = await autoConn.accept(selected)
+          if (ok) addToast(`${selected.length} connection${selected.length !== 1 ? 's' : ''} created`, 'success')
+        }}
+        onDismiss={autoConn.dismiss}
+      />
     </div>
   )
 }
