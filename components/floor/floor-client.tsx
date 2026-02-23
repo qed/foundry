@@ -9,6 +9,7 @@ import { CreateWorkOrderModal } from './create-work-order-modal'
 import { ExtractWorkOrdersModal } from './extract-work-orders-modal'
 import { SuggestPhasePlanModal } from './suggest-phase-plan-modal'
 import { WorkOrderDetail } from './work-order-detail'
+import { BulkActionBar } from './bulk-action-bar'
 import { FilterPanel } from './filter-panel'
 import { FilterBadges } from './filter-badges'
 import { Spinner } from '@/components/ui/spinner'
@@ -522,6 +523,75 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
     }
   }, [projectId])
 
+  // Bulk action handlers
+  const selectedIds = tableSelectedIds
+  const selectedArray = useMemo(() => Array.from(selectedIds), [selectedIds])
+
+  const handleBulkStatusChange = useCallback(async (status: WorkOrderStatus) => {
+    setWorkOrders((prev) => prev.map((wo) => selectedIds.has(wo.id) ? { ...wo, status } : wo))
+    try {
+      const res = await fetch(`/api/projects/${projectId}/work-orders/bulk-update`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ work_order_ids: selectedArray, updates: { status } }),
+      })
+      if (!res.ok) setFetchKey((k) => k + 1)
+      else setTableSelectedIds(new Set())
+    } catch { setFetchKey((k) => k + 1) }
+  }, [projectId, selectedIds, selectedArray])
+
+  const handleBulkPriorityChange = useCallback(async (priority: WorkOrderPriority) => {
+    setWorkOrders((prev) => prev.map((wo) => selectedIds.has(wo.id) ? { ...wo, priority } : wo))
+    try {
+      const res = await fetch(`/api/projects/${projectId}/work-orders/bulk-update`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ work_order_ids: selectedArray, updates: { priority } }),
+      })
+      if (!res.ok) setFetchKey((k) => k + 1)
+      else setTableSelectedIds(new Set())
+    } catch { setFetchKey((k) => k + 1) }
+  }, [projectId, selectedIds, selectedArray])
+
+  const handleBulkAssign = useCallback(async (assigneeId: string | null) => {
+    setWorkOrders((prev) => prev.map((wo) => selectedIds.has(wo.id) ? { ...wo, assignee_id: assigneeId } : wo))
+    try {
+      const res = await fetch(`/api/projects/${projectId}/work-orders/bulk-update`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ work_order_ids: selectedArray, updates: { assignee_id: assigneeId } }),
+      })
+      if (!res.ok) setFetchKey((k) => k + 1)
+      else setTableSelectedIds(new Set())
+    } catch { setFetchKey((k) => k + 1) }
+  }, [projectId, selectedIds, selectedArray])
+
+  const handleBulkPhaseChange = useCallback(async (phaseId: string | null) => {
+    setWorkOrders((prev) => prev.map((wo) => selectedIds.has(wo.id) ? { ...wo, phase_id: phaseId } : wo))
+    try {
+      const res = await fetch(`/api/projects/${projectId}/work-orders/bulk-update`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ work_order_ids: selectedArray, updates: { phase_id: phaseId } }),
+      })
+      if (!res.ok) setFetchKey((k) => k + 1)
+      else setTableSelectedIds(new Set())
+    } catch { setFetchKey((k) => k + 1) }
+  }, [projectId, selectedIds, selectedArray])
+
+  const handleBulkDelete = useCallback(async () => {
+    setWorkOrders((prev) => prev.filter((wo) => !selectedIds.has(wo.id)))
+    try {
+      const res = await fetch(`/api/projects/${projectId}/work-orders/bulk-delete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ work_order_ids: selectedArray }),
+      })
+      if (!res.ok) setFetchKey((k) => k + 1)
+      setTableSelectedIds(new Set())
+    } catch { setFetchKey((k) => k + 1) }
+  }, [projectId, selectedIds, selectedArray])
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -570,6 +640,19 @@ export function FloorClient({ projectId, initialStats }: FloorClientProps) {
         onRemoveFilter={handleRemoveFilter}
         onClearSearch={() => { setSearchQuery(''); setDebouncedSearch('') }}
         onClearAll={handleClearAllFilters}
+      />
+
+      {/* Bulk action bar */}
+      <BulkActionBar
+        selectedCount={tableSelectedIds.size}
+        onClearSelection={() => setTableSelectedIds(new Set())}
+        onBulkStatusChange={handleBulkStatusChange}
+        onBulkPriorityChange={handleBulkPriorityChange}
+        onBulkAssign={handleBulkAssign}
+        onBulkPhaseChange={handleBulkPhaseChange}
+        onBulkDelete={handleBulkDelete}
+        phases={phases}
+        members={members}
       />
 
       {/* Phase navigation */}
