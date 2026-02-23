@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils'
 import { timeAgo } from '@/lib/utils'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Spinner } from '@/components/ui/spinner'
+import { CategoryBadge } from '@/components/lab/category-badge'
 import type { FeedbackSubmission } from '@/types/database'
 
 export type FeedbackSort = 'newest' | 'oldest' | 'highest_score'
@@ -29,23 +30,6 @@ interface LabInboxProps {
   onSortChange: (sort: FeedbackSort) => void
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  bug: 'Bug',
-  feature_request: 'Feature',
-  ux_issue: 'UX',
-  performance: 'Perf',
-  other: 'Other',
-  uncategorized: 'Uncat.',
-}
-
-const CATEGORY_COLORS: Record<string, string> = {
-  bug: 'bg-accent-error/10 text-accent-error',
-  feature_request: 'bg-accent-purple/10 text-accent-purple',
-  ux_issue: 'bg-accent-warning/10 text-accent-warning',
-  performance: 'bg-accent-cyan/10 text-accent-cyan',
-  other: 'bg-bg-tertiary text-text-tertiary',
-  uncategorized: 'bg-bg-tertiary text-text-tertiary',
-}
 
 const STATUS_DOTS: Record<string, string> = {
   new: 'bg-accent-cyan',
@@ -235,14 +219,7 @@ function FeedbackInboxItem({ item, isSelected, onSelect }: FeedbackInboxItemProp
           {/* Meta row */}
           <div className="flex items-center gap-2 mt-1.5">
             {/* Category badge */}
-            <span
-              className={cn(
-                'text-[9px] font-medium px-1.5 py-0.5 rounded-full',
-                CATEGORY_COLORS[item.category] || ''
-              )}
-            >
-              {CATEGORY_LABELS[item.category] || item.category}
-            </span>
+            <CategoryBadge category={item.category} size="sm" />
 
             {/* Priority score */}
             {item.score != null && (

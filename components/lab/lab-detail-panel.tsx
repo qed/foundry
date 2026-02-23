@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import {
   MessageSquare,
   Copy,
@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { EmptyState } from '@/components/ui/empty-state'
+import { CategoryBadge } from '@/components/lab/category-badge'
 import type { FeedbackSubmission, FeedbackStatus, FeedbackCategory } from '@/types/database'
 
 interface LabDetailPanelProps {
@@ -40,13 +41,8 @@ const STATUS_LABELS: Record<string, string> = {
   archived: 'Archived',
 }
 
-const CATEGORY_OPTIONS: { value: FeedbackCategory; label: string }[] = [
-  { value: 'bug', label: 'Bug Report' },
-  { value: 'feature_request', label: 'Feature Request' },
-  { value: 'ux_issue', label: 'UX Issue' },
-  { value: 'performance', label: 'Performance' },
-  { value: 'other', label: 'Other' },
-  { value: 'uncategorized', label: 'Uncategorized' },
+const ALL_CATEGORIES: FeedbackCategory[] = [
+  'bug', 'feature_request', 'ux_issue', 'performance', 'other', 'uncategorized',
 ]
 
 const STATUS_OPTIONS: { value: FeedbackStatus; label: string }[] = [
@@ -86,6 +82,43 @@ export function LabDetailPanel({ feedback, projectId, onUpdate }: LabDetailPanel
   const [uaExpanded, setUaExpanded] = useState(false)
   const [newTag, setNewTag] = useState('')
   const [isSaving, setIsSaving] = useState(false)
+  const [projectTags, setProjectTags] = useState<string[]>([])
+  const [tagSuggestions, setTagSuggestions] = useState<string[]>([])
+  const [tagSuggestionsOpen, setTagSuggestionsOpen] = useState(false)
+  const tagInputRef = useRef<HTMLInputElement>(null)
+
+  // Fetch existing project tags for autocomplete
+  useEffect(() => {
+    async function loadTags() {
+      try {
+        const res = await fetch(`/api/projects/${projectId}/feedback/tags`)
+        if (res.ok) {
+          const data = await res.json()
+          setProjectTags(data.tags || [])
+        }
+      } catch {
+        // Silently fail — suggestions are optional
+      }
+    }
+    loadTags()
+  }, [projectId])
+
+  // Update tag suggestions when input changes
+  useEffect(() => {
+    if (newTag.length >= 2) {
+      const currentTags = (feedback?.tags || []).map((t) => t.toLowerCase())
+      const filtered = projectTags.filter(
+        (t) =>
+          t.toLowerCase().includes(newTag.toLowerCase()) &&
+          !currentTags.includes(t.toLowerCase())
+      )
+      setTagSuggestions(filtered.slice(0, 5))
+      setTagSuggestionsOpen(filtered.length > 0)
+    } else {
+      setTagSuggestions([])
+      setTagSuggestionsOpen(false)
+    }
+  }, [newTag, projectTags, feedback?.tags])
 
   const patchFeedback = useCallback(async (updates: Record<string, unknown>) => {
     if (!feedback) return
@@ -116,15 +149,20 @@ export function LabDetailPanel({ feedback, projectId, onUpdate }: LabDetailPanel
     setTimeout(() => setCopied(false), 2000)
   }, [feedback])
 
-  const handleAddTag = useCallback(() => {
-    if (!feedback || !newTag.trim()) return
+  const handleAddTag = useCallback((tagValue?: string) => {
+    if (!feedback) return
+    const tag = (tagValue || newTag).trim().slice(0, 50)
+    if (tag.length < 2) return
     const currentTags = feedback.tags || []
-    if (currentTags.includes(newTag.trim())) {
+    // Case-insensitive duplicate check
+    if (currentTags.some((t) => t.toLowerCase() === tag.toLowerCase())) {
       setNewTag('')
+      setTagSuggestionsOpen(false)
       return
     }
-    patchFeedback({ tags: [...currentTags, newTag.trim()] })
+    patchFeedback({ tags: [...currentTags, tag] })
     setNewTag('')
+    setTagSuggestionsOpen(false)
   }, [feedback, newTag, patchFeedback])
 
   const handleRemoveTag = useCallback((tag: string) => {
@@ -204,31 +242,34 @@ export function LabDetailPanel({ feedback, projectId, onUpdate }: LabDetailPanel
           <button
             onClick={() => setCategoryOpen(!categoryOpen)}
             disabled={isSaving}
-            className="flex items-center gap-1 text-[10px] text-text-tertiary hover:text-text-secondary transition-colors"
+            className="flex items-center gap-1 hover:opacity-80 transition-opacity"
           >
-            {CATEGORY_OPTIONS.find((c) => c.value === feedback.category)?.label || feedback.category}
-            <ChevronDown className="w-2.5 h-2.5" />
+            <CategoryBadge category={feedback.category} size="sm" />
+            <ChevronDown className="w-2.5 h-2.5 text-text-tertiary" />
           </button>
 
           {categoryOpen && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setCategoryOpen(false)} />
-              <div className="absolute left-0 top-full mt-1 z-20 bg-bg-secondary border border-border-default rounded-lg shadow-lg py-1 min-w-[140px]">
-                {CATEGORY_OPTIONS.map((opt) => (
+              <div className="absolute left-0 top-full mt-1 z-20 bg-bg-secondary border border-border-default rounded-lg shadow-lg py-1 min-w-[160px]">
+                {ALL_CATEGORIES.map((cat) => (
                   <button
-                    key={opt.value}
+                    key={cat}
                     onClick={() => {
-                      patchFeedback({ category: opt.value })
+                      patchFeedback({ category: cat })
                       setCategoryOpen(false)
                     }}
                     className={cn(
-                      'w-full text-left px-3 py-1.5 text-xs transition-colors',
-                      feedback.category === opt.value
-                        ? 'text-accent-cyan bg-accent-cyan/5'
-                        : 'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary'
+                      'w-full text-left px-3 py-1.5 flex items-center justify-between transition-colors',
+                      feedback.category === cat
+                        ? 'bg-accent-cyan/5'
+                        : 'hover:bg-bg-tertiary'
                     )}
                   >
-                    {opt.label}
+                    <CategoryBadge category={cat} size="sm" />
+                    {feedback.category === cat && (
+                      <Check className="w-3.5 h-3.5 text-accent-cyan" />
+                    )}
                   </button>
                 ))}
               </div>
@@ -315,11 +356,11 @@ export function LabDetailPanel({ feedback, projectId, onUpdate }: LabDetailPanel
           {/* ── Tags ─────────────────────────────────────────── */}
           <section>
             <h3 className="text-xs font-medium text-text-tertiary uppercase tracking-wider mb-2">Tags</h3>
-            <div className="flex flex-wrap items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-1.5 mb-2">
               {(feedback.tags || []).map((tag) => (
                 <span
                   key={tag}
-                  className="inline-flex items-center gap-1 text-[10px] text-text-secondary bg-bg-tertiary px-2 py-0.5 rounded-full group"
+                  className="inline-flex items-center gap-1 text-[10px] text-accent-purple bg-accent-purple/10 px-2 py-0.5 rounded-full group"
                 >
                   {tag}
                   <button
@@ -332,21 +373,35 @@ export function LabDetailPanel({ feedback, projectId, onUpdate }: LabDetailPanel
                   </button>
                 </span>
               ))}
-              {/* Inline add tag */}
+            </div>
+            {/* Tag input with autocomplete */}
+            <div className="relative">
               <div className="inline-flex items-center gap-1">
                 <input
+                  ref={tagInputRef}
                   type="text"
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleAddTag()
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      handleAddTag()
+                    }
+                    if (e.key === 'Escape') {
+                      setTagSuggestionsOpen(false)
+                    }
+                  }}
+                  onBlur={() => {
+                    // Delay to allow click on suggestion
+                    setTimeout(() => setTagSuggestionsOpen(false), 200)
                   }}
                   placeholder="Add tag..."
-                  className="w-20 text-[10px] bg-transparent border-b border-border-default text-text-secondary placeholder:text-text-tertiary/50 focus:border-accent-cyan focus:outline-none py-0.5 px-1 transition-colors"
+                  maxLength={50}
+                  className="w-28 text-[10px] bg-transparent border-b border-border-default text-text-secondary placeholder:text-text-tertiary/50 focus:border-accent-cyan focus:outline-none py-0.5 px-1 transition-colors"
                 />
-                {newTag.trim() && (
+                {newTag.trim().length >= 2 && (
                   <button
-                    onClick={handleAddTag}
+                    onClick={() => handleAddTag()}
                     disabled={isSaving}
                     className="text-accent-cyan hover:text-accent-cyan/80 transition-colors"
                   >
@@ -354,6 +409,24 @@ export function LabDetailPanel({ feedback, projectId, onUpdate }: LabDetailPanel
                   </button>
                 )}
               </div>
+              {newTag.length > 0 && newTag.length < 2 && (
+                <p className="text-[9px] text-text-tertiary mt-0.5">Min 2 characters</p>
+              )}
+              {/* Tag suggestions dropdown */}
+              {tagSuggestionsOpen && tagSuggestions.length > 0 && (
+                <div className="absolute left-0 top-full mt-1 z-20 bg-bg-secondary border border-border-default rounded-lg shadow-lg py-0.5 min-w-[140px]">
+                  {tagSuggestions.map((tag) => (
+                    <button
+                      key={tag}
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => handleAddTag(tag)}
+                      className="w-full text-left px-3 py-1.5 text-[10px] text-text-secondary hover:text-text-primary hover:bg-bg-tertiary transition-colors"
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </section>
 
