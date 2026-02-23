@@ -15,9 +15,9 @@
 
 ---
 
-### Completed Phases (121/150)
+### Completed Phases (122/150)
 
-001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 059–060 (Blueprint versioning + comments), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–091 (Lab full stack + auto-categorization), 092 (Feedback enrichment), 094–095 (App key management + bulk ops), 096–104 (Artifacts full stack + folders + versioning complete), 105 (Comments schema), 106 (@Mentions), 109–110 (Knowledge schema + explorer), 112 (Manual entity linking), 113 (Org console), 117 (Realtime presence), 118 (Collaborative editing), 119 (Audit trail), 120 (Project archive), 124 (Drift detection), 125 (Cross-doc suggestions), 126 (Org templates), 127 (Extraction strategy), 128 (Phase burndown), 129 (MCP implementation), 130 (WO sync alerts)
+001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 059–060 (Blueprint versioning + comments), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–091 (Lab full stack + auto-categorization), 092 (Feedback enrichment), 094–095 (App key management + bulk ops), 096–104 (Artifacts full stack + folders + versioning complete), 105 (Comments schema), 106 (@Mentions), 107–108 (Notifications + Email), 109–110 (Knowledge schema + explorer), 112 (Manual entity linking), 113 (Org console), 117 (Realtime presence), 118 (Collaborative editing), 119 (Audit trail), 120 (Project archive), 124 (Drift detection), 125 (Cross-doc suggestions), 126 (Org templates), 127 (Extraction strategy), 128 (Phase burndown), 129 (MCP implementation), 130 (WO sync alerts)
 
 ---
 
@@ -172,7 +172,7 @@
 | # | Phase | Name | Notes |
 |---|-------|------|-------|
 | 71 | 120 | Project Archive & Cleanup | ready now |
-| 72 | 114 | Team Invitation System | needs 108 |
+| 72 | 114 | Team Invitation System | ready now |
 | 73 | 116 | User Profile & Settings | needs 107 |
 | 74 | 115 | Seat Management & Billing | needs 114 |
 
@@ -430,13 +430,13 @@ After this initial update, stay in this session. I will come back to you after e
 | 105 | Comments System Foundation | `done` | — | 002 | Comments | `supabase/migrations/`, `components/comments/` |
 | 106 | @Mentions System | `done` | — | 099, 105 | Comments ⚠️ | `components/mentions/` |
 | 107 | Notification System | `done` | — | 105, 106 | Notifications | `components/notifications/`, `app/api/notifications/` |
-| 108 | Email Notifications | `ready` | — | 107 | Notifications | `lib/email/`, `app/api/notifications/` |
+| 108 | Email Notifications | `done` | — | 107 | Notifications | `lib/email/`, `app/api/notifications/` |
 | 109 | Knowledge Graph Schema | `done` | — | 002 | Knowledge | `supabase/migrations/`, `types/database.ts` |
 | 110 | Knowledge Graph Explorer | `done` | — | 002, 109 | Knowledge | `components/knowledge-graph/` |
 | 111 | Auto-Connection Detection | `ready` | — | 106, 109, 110 | Knowledge ⚠️ | `components/knowledge/` |
 | 112 | Manual Entity Linking | `done` | — | 109, 110 | Knowledge | `components/knowledge/` |
 | 113 | Organization Console | `done` | — | 005, 009 | Admin | `components/admin/`, `app/.../admin/` |
-| 114 | Team Invitation System | `blocked` | — | 108, 113 | Admin ⚠️ | `components/admin/` |
+| 114 | Team Invitation System | `ready` | — | 108, 113 | Admin ⚠️ | `components/admin/` |
 | 115 | Seat Management & Billing | `blocked` | — | 005, 113, 114 | Admin | `components/admin/` |
 | 116 | User Profile & Settings | `ready` | — | 004, 107 | Admin | `components/settings/`, `app/.../settings/` |
 | 117 | Real-Time Presence | `done` | — | 002 | Realtime | `lib/realtime/`, `components/layout/` |
@@ -705,9 +705,9 @@ These phases require work from **multiple module tracks** to be complete before 
 | Control Room (046–060) | 15 | 15 | 0 | 0 | 0 |
 | Assembly Floor (061–080) | 20 | 17 | 0 | 3 | 0 |
 | Insights Lab (081–095) | 15 | 15 | 0 | 0 | 0 |
-| Cross-Cutting (096–120) | 25 | 20 | 0 | 3 | 2 |
+| Cross-Cutting (096–120) | 25 | 21 | 0 | 3 | 1 |
 | Advanced (121–135) | 15 | 7 | 0 | 6 | 2 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **121** | **0** | **10** | **19** |
+| **TOTAL** | **150** | **122** | **0** | **10** | **18** |
 
 **Currently ready to start**: 108, 111, 116, 121, 122, 123, 131, 132, 133
