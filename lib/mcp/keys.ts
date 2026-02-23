@@ -26,11 +26,13 @@ export function hashApiKey(key: string): string {
  */
 export const VALID_SCOPES = [
   'read:work-orders',
+  'read:blueprints',
+  'read:requirements',
+  'read:features',
+  'read:phases',
   'write:status',
   'write:assignment',
   'write:priority',
-  'read:features',
-  'read:phases',
   'write:create-work-orders',
   'admin:project',
 ] as const

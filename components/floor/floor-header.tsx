@@ -15,6 +15,7 @@ import {
   Sparkles,
   Wand2,
   Settings2,
+  Key,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -37,6 +38,7 @@ interface FloorHeaderProps {
   onExtractFromBlueprints: () => void
   onSuggestPhases: () => void
   onOpenStrategyConfig: () => void
+  onOpenConnections: () => void
 }
 
 export function FloorHeader({
@@ -58,6 +60,7 @@ export function FloorHeader({
   onExtractFromBlueprints,
   onSuggestPhases,
   onOpenStrategyConfig,
+  onOpenConnections,
 }: FloorHeaderProps) {
   const searchInputRef = useRef<HTMLInputElement>(null)
   const completionPercent =
@@ -216,6 +219,13 @@ export function FloorHeader({
       </div>
 
       {/* Settings */}
+      <button
+        onClick={onOpenConnections}
+        className="p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-tertiary transition-colors"
+        title="API connections"
+      >
+        <Key className="w-4 h-4" />
+      </button>
       <button
         onClick={onOpenStrategyConfig}
         className="p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-tertiary transition-colors"
