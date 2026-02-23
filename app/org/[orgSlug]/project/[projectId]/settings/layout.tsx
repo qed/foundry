@@ -19,6 +19,7 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
   const tabs = [
     { href: `${baseUrl}/settings/insights`, label: 'API Keys' },
     { href: `${baseUrl}/settings/agent`, label: 'Agent Config' },
+    { href: `${baseUrl}/settings/integrations`, label: 'Integrations' },
   ]
 
   return (

@@ -5,6 +5,7 @@ import { validateEmail, sanitizeContent } from '@/lib/feedback/validation'
 import { getUserAgentInfo, getDeviceType } from '@/lib/feedback/browser-utils'
 import { checkRateLimit, rateLimitHeaders } from '@/lib/mcp/rate-limit'
 import { categorizeFeedback } from '@/lib/agent/categorize-feedback'
+import { notifySlackOnFeedback } from '@/lib/slack/notifications'
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -180,6 +181,13 @@ export async function POST(request: NextRequest) {
         console.error('Auto-categorization failed:', err)
       )
     }, 2000)
+
+    // Fire-and-forget: Slack notification (after categorization has time to complete)
+    setTimeout(() => {
+      notifySlackOnFeedback(feedback.id).catch((err) =>
+        console.error('Slack notification failed:', err)
+      )
+    }, 5000)
 
     return Response.json(
       {

@@ -2140,6 +2140,94 @@ export type Database = {
         };
         Relationships: [];
       };
+      slack_integrations: {
+        Row: {
+          id: string;
+          project_id: string;
+          webhook_url: string;
+          channel_name: string | null;
+          notify_critical: boolean;
+          notify_high_score: boolean;
+          high_score_threshold: number;
+          notify_categories: string[];
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          webhook_url: string;
+          channel_name?: string | null;
+          notify_critical?: boolean;
+          notify_high_score?: boolean;
+          high_score_threshold?: number;
+          notify_categories?: string[];
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          webhook_url?: string;
+          channel_name?: string | null;
+          notify_critical?: boolean;
+          notify_high_score?: boolean;
+          high_score_threshold?: number;
+          notify_categories?: string[];
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "slack_integrations_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: true;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      slack_notifications_sent: {
+        Row: {
+          id: string;
+          project_id: string;
+          feedback_id: string;
+          message_type: string;
+          response_status: string | null;
+          error_message: string | null;
+          sent_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          feedback_id: string;
+          message_type?: string;
+          response_status?: string | null;
+          error_message?: string | null;
+          sent_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          feedback_id?: string;
+          message_type?: string;
+          response_status?: string | null;
+          error_message?: string | null;
+          sent_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "slack_notifications_sent_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -2300,3 +2388,6 @@ export type InvitationStatus = "pending" | "accepted" | "expired" | "revoked";
 export type OrgSubscription = Database["public"]["Tables"]["org_subscriptions"]["Row"];
 export type PlanType = "free" | "pro" | "enterprise";
 export type BillingStatus = "active" | "past_due" | "unpaid" | "cancelled" | "trialing";
+
+export type SlackIntegration = Database["public"]["Tables"]["slack_integrations"]["Row"];
+export type SlackNotificationSent = Database["public"]["Tables"]["slack_notifications_sent"]["Row"];
