@@ -129,6 +129,7 @@ export function CreateBlueprintModal({
           title: trimmedTitle,
           ...(type === 'system_diagram' && { diagram_type: diagramType }),
           ...(templateContent && { template_content: templateContent }),
+          ...(selectedTemplateId && { template_id: selectedTemplateId }),
         }),
       })
 

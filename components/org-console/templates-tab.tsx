@@ -1,12 +1,13 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Plus, Lock, Pencil, Trash2, Star, ChevronDown, ChevronRight } from 'lucide-react'
+import { Plus, Lock, Pencil, Trash2, Star, ChevronDown, ChevronRight, Archive, ArchiveRestore, Copy, BarChart3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { useToast } from '@/components/ui/toast-container'
 import { Spinner } from '@/components/ui/spinner'
-import type { BlueprintTemplate, BlueprintType } from '@/types/database'
+import { cn } from '@/lib/utils'
+import type { BlueprintTemplate, BlueprintType, BlueprintTemplateCategory } from '@/types/database'
 import type { TemplateOutline, TemplateSection } from '@/lib/blueprints/system-templates'
 
 interface TemplatesTabProps {
@@ -21,6 +22,20 @@ const TYPE_LABELS: Record<string, string> = {
 
 const TYPE_OPTIONS: BlueprintType[] = ['foundation', 'system_diagram', 'feature']
 
+const CATEGORY_OPTIONS: { value: BlueprintTemplateCategory; label: string }[] = [
+  { value: 'architecture', label: 'Architecture' },
+  { value: 'api', label: 'API' },
+  { value: 'database', label: 'Database' },
+  { value: 'feature', label: 'Feature' },
+  { value: 'devops', label: 'DevOps' },
+  { value: 'security', label: 'Security' },
+  { value: 'general', label: 'General' },
+]
+
+const CATEGORY_LABELS: Record<string, string> = Object.fromEntries(
+  CATEGORY_OPTIONS.map((c) => [c.value, c.label])
+)
+
 function emptySection(): TemplateSection {
   return { id: `s-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, title: '', placeholder: '', required: false }
 }
@@ -30,6 +45,7 @@ export function TemplatesTab({ orgId }: TemplatesTabProps) {
   const [orgTemplates, setOrgTemplates] = useState<BlueprintTemplate[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [expandedType, setExpandedType] = useState<string | null>(null)
+  const [viewTab, setViewTab] = useState<'active' | 'archived'>('active')
   const { addToast } = useToast()
 
   // Modal state
@@ -39,6 +55,7 @@ export function TemplatesTab({ orgId }: TemplatesTabProps) {
     name: string
     blueprintType: BlueprintType
     description: string
+    category: BlueprintTemplateCategory | ''
     sections: TemplateSection[]
     isDefault: boolean
   } | null>(null)
@@ -51,10 +68,15 @@ export function TemplatesTab({ orgId }: TemplatesTabProps) {
   // Preview state
   const [previewTemplate, setPreviewTemplate] = useState<BlueprintTemplate | null>(null)
 
+  // Usage panel state
+  const [usageTarget, setUsageTarget] = useState<{ id: string; name: string } | null>(null)
+  const [usageData, setUsageData] = useState<{ blueprints: { id: string; title: string; blueprint_type: string; status: string; project_name: string; created_at: string }[]; total: number; project_count: number } | null>(null)
+  const [usageLoading, setUsageLoading] = useState(false)
+
   const fetchTemplates = useCallback(async () => {
     try {
       setIsLoading(true)
-      const res = await fetch(`/api/orgs/${orgId}/blueprint-templates`)
+      const res = await fetch(`/api/orgs/${orgId}/blueprint-templates?include_archived=true`)
       if (!res.ok) return
       const data = await res.json()
       setSystemTemplates(data.system_templates || [])
@@ -76,6 +98,7 @@ export function TemplatesTab({ orgId }: TemplatesTabProps) {
       name: '',
       blueprintType: 'foundation',
       description: '',
+      category: '',
       sections: [emptySection()],
       isDefault: false,
     })
@@ -88,7 +111,8 @@ export function TemplatesTab({ orgId }: TemplatesTabProps) {
       templateId: template.id,
       name: template.name,
       blueprintType: template.blueprint_type,
-      description: outline?.description || '',
+      description: template.description || outline?.description || '',
+      category: template.category || '',
       sections: outline?.sections || [emptySection()],
       isDefault: template.is_default,
     })
@@ -124,6 +148,8 @@ export function TemplatesTab({ orgId }: TemplatesTabProps) {
           blueprint_type: editModal.blueprintType,
           outline_content: outline,
           is_default: editModal.isDefault,
+          description: editModal.description.trim() || null,
+          category: editModal.category || null,
         }),
       })
 
@@ -178,6 +204,57 @@ export function TemplatesTab({ orgId }: TemplatesTabProps) {
     }
   }, [orgId, addToast, fetchTemplates])
 
+  const handleArchive = useCallback(async (templateId: string, archive: boolean) => {
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/blueprint-templates/${templateId}/archive`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_archived: archive }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Failed')
+      }
+      addToast(archive ? 'Template archived' : 'Template restored', 'success')
+      await fetchTemplates()
+    } catch (err) {
+      addToast(err instanceof Error ? err.message : 'Failed to update', 'error')
+    }
+  }, [orgId, addToast, fetchTemplates])
+
+  const handleDuplicate = useCallback(async (templateId: string) => {
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/blueprint-templates/${templateId}/duplicate`, {
+        method: 'POST',
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Failed to duplicate')
+      }
+      addToast('Template duplicated', 'success')
+      await fetchTemplates()
+    } catch (err) {
+      addToast(err instanceof Error ? err.message : 'Failed to duplicate', 'error')
+    }
+  }, [orgId, addToast, fetchTemplates])
+
+  const handleViewUsage = useCallback(async (templateId: string, templateName: string) => {
+    setUsageTarget({ id: templateId, name: templateName })
+    setUsageLoading(true)
+    setUsageData(null)
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/blueprint-templates/${templateId}/usage`)
+      if (!res.ok) throw new Error('Failed')
+      const data = await res.json()
+      setUsageData(data)
+    } catch {
+      addToast('Failed to load usage data', 'error')
+      setUsageTarget(null)
+    } finally {
+      setUsageLoading(false)
+    }
+  }, [orgId, addToast])
+
   if (isLoading) {
     return (
       <div className="flex justify-center py-12">
@@ -186,19 +263,24 @@ export function TemplatesTab({ orgId }: TemplatesTabProps) {
     )
   }
 
-  const allTemplates = [
-    ...systemTemplates.map((t) => ({ ...t, isSystem: true })),
-    ...orgTemplates.map((t) => ({ ...t, isSystem: false })),
-  ]
+  const activeOrg = orgTemplates.filter((t) => !t.is_archived)
+  const archivedOrg = orgTemplates.filter((t) => t.is_archived)
 
-  const groupedByType = TYPE_OPTIONS.reduce<Record<string, typeof allTemplates>>((acc, t) => {
-    acc[t] = allTemplates.filter((tpl) => tpl.blueprint_type === t)
+  const displayTemplates = viewTab === 'active'
+    ? [
+        ...systemTemplates.map((t) => ({ ...t, isSystem: true })),
+        ...activeOrg.map((t) => ({ ...t, isSystem: false })),
+      ]
+    : archivedOrg.map((t) => ({ ...t, isSystem: false }))
+
+  const groupedByType = TYPE_OPTIONS.reduce<Record<string, typeof displayTemplates>>((acc, t) => {
+    acc[t] = displayTemplates.filter((tpl) => tpl.blueprint_type === t)
     return acc
   }, {})
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="text-lg font-semibold text-text-primary">Blueprint Templates</h2>
           <p className="text-xs text-text-tertiary mt-1">
@@ -211,10 +293,37 @@ export function TemplatesTab({ orgId }: TemplatesTabProps) {
         </Button>
       </div>
 
+      {/* Active / Archived tabs */}
+      <div className="flex items-center gap-1 mb-4 border-b border-border-default">
+        <button
+          onClick={() => setViewTab('active')}
+          className={cn(
+            'px-3 py-2 text-xs font-medium transition-colors border-b-2 -mb-px',
+            viewTab === 'active'
+              ? 'border-accent-cyan text-accent-cyan'
+              : 'border-transparent text-text-tertiary hover:text-text-secondary'
+          )}
+        >
+          Active ({systemTemplates.length + activeOrg.length})
+        </button>
+        <button
+          onClick={() => setViewTab('archived')}
+          className={cn(
+            'px-3 py-2 text-xs font-medium transition-colors border-b-2 -mb-px',
+            viewTab === 'archived'
+              ? 'border-accent-warning text-accent-warning'
+              : 'border-transparent text-text-tertiary hover:text-text-secondary'
+          )}
+        >
+          Archived ({archivedOrg.length})
+        </button>
+      </div>
+
       {/* Templates grouped by type */}
       <div className="space-y-2">
         {TYPE_OPTIONS.map((typeKey) => {
           const templates = groupedByType[typeKey] || []
+          if (templates.length === 0 && viewTab === 'archived') return null
           const isExpanded = expandedType === typeKey || expandedType === null
           return (
             <div key={typeKey} className="glass-panel rounded-lg overflow-hidden">
@@ -237,7 +346,7 @@ export function TemplatesTab({ orgId }: TemplatesTabProps) {
                     <p className="text-xs text-text-tertiary px-4 py-3">No templates for this type.</p>
                   ) : (
                     templates.map((tpl) => {
-                      const outline = tpl.outline_content as TemplateOutline | null
+                      const desc = tpl.description || (tpl.outline_content as TemplateOutline | null)?.description
                       return (
                         <div
                           key={tpl.id}
@@ -251,14 +360,23 @@ export function TemplatesTab({ orgId }: TemplatesTabProps) {
 
                           <button
                             onClick={() => setPreviewTemplate(tpl)}
-                            className="text-sm text-text-primary hover:text-accent-cyan transition-colors text-left truncate flex-1"
+                            className={cn(
+                              'text-sm hover:text-accent-cyan transition-colors text-left truncate flex-1',
+                              tpl.is_archived ? 'text-text-tertiary' : 'text-text-primary'
+                            )}
                           >
                             {tpl.name}
                           </button>
 
-                          {outline?.description && (
-                            <span className="text-[10px] text-text-tertiary truncate max-w-[200px] hidden sm:block">
-                              {outline.description}
+                          {tpl.category && (
+                            <span className="text-[9px] text-text-tertiary border border-border-default rounded px-1.5 py-0.5 flex-shrink-0 hidden sm:block">
+                              {CATEGORY_LABELS[tpl.category] || tpl.category}
+                            </span>
+                          )}
+
+                          {desc && !tpl.category && (
+                            <span className="text-[10px] text-text-tertiary truncate max-w-[180px] hidden sm:block">
+                              {desc}
                             </span>
                           )}
 
@@ -268,30 +386,84 @@ export function TemplatesTab({ orgId }: TemplatesTabProps) {
                             </span>
                           )}
 
+                          {tpl.is_archived && (
+                            <span className="text-[9px] text-accent-warning border border-accent-warning/30 rounded px-1.5 py-0.5 flex-shrink-0">
+                              archived
+                            </span>
+                          )}
+
+                          {/* Actions */}
                           {!tpl.isSystem && (
                             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                              {!tpl.is_default && (
+                              <button
+                                onClick={() => handleViewUsage(tpl.id, tpl.name)}
+                                title="View usage"
+                                className="p-1 rounded hover:bg-bg-primary transition-colors text-text-tertiary hover:text-accent-purple"
+                              >
+                                <BarChart3 className="w-3 h-3" />
+                              </button>
+                              <button
+                                onClick={() => handleDuplicate(tpl.id)}
+                                title="Duplicate"
+                                className="p-1 rounded hover:bg-bg-primary transition-colors text-text-tertiary hover:text-accent-cyan"
+                              >
+                                <Copy className="w-3 h-3" />
+                              </button>
+                              {!tpl.is_archived && (
+                                <>
+                                  {!tpl.is_default && (
+                                    <button
+                                      onClick={() => handleSetDefault(tpl.id)}
+                                      title="Set as default"
+                                      className="p-1 rounded hover:bg-bg-primary transition-colors text-text-tertiary hover:text-accent-cyan"
+                                    >
+                                      <Star className="w-3 h-3" />
+                                    </button>
+                                  )}
+                                  <button
+                                    onClick={() => handleEdit(tpl)}
+                                    title="Edit"
+                                    className="p-1 rounded hover:bg-bg-primary transition-colors text-text-tertiary hover:text-text-primary"
+                                  >
+                                    <Pencil className="w-3 h-3" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleArchive(tpl.id, true)}
+                                    title="Archive"
+                                    className="p-1 rounded hover:bg-bg-primary transition-colors text-text-tertiary hover:text-accent-warning"
+                                  >
+                                    <Archive className="w-3 h-3" />
+                                  </button>
+                                </>
+                              )}
+                              {tpl.is_archived && (
                                 <button
-                                  onClick={() => handleSetDefault(tpl.id)}
-                                  title="Set as default"
-                                  className="p-1 rounded hover:bg-bg-primary transition-colors text-text-tertiary hover:text-accent-cyan"
+                                  onClick={() => handleArchive(tpl.id, false)}
+                                  title="Restore"
+                                  className="p-1 rounded hover:bg-bg-primary transition-colors text-text-tertiary hover:text-accent-success"
                                 >
-                                  <Star className="w-3 h-3" />
+                                  <ArchiveRestore className="w-3 h-3" />
                                 </button>
                               )}
-                              <button
-                                onClick={() => handleEdit(tpl)}
-                                title="Edit"
-                                className="p-1 rounded hover:bg-bg-primary transition-colors text-text-tertiary hover:text-text-primary"
-                              >
-                                <Pencil className="w-3 h-3" />
-                              </button>
                               <button
                                 onClick={() => setDeleteTarget({ id: tpl.id, name: tpl.name })}
                                 title="Delete"
                                 className="p-1 rounded hover:bg-bg-primary transition-colors text-text-tertiary hover:text-accent-error"
                               >
                                 <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
+                          )}
+
+                          {/* System template: allow duplicate */}
+                          {tpl.isSystem && (
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                              <button
+                                onClick={() => handleDuplicate(tpl.id)}
+                                title="Duplicate to org"
+                                className="p-1 rounded hover:bg-bg-primary transition-colors text-text-tertiary hover:text-accent-cyan"
+                              >
+                                <Copy className="w-3 h-3" />
                               </button>
                             </div>
                           )}
@@ -343,6 +515,21 @@ export function TemplatesTab({ orgId }: TemplatesTabProps) {
                   </select>
                 </div>
               )}
+
+              {/* Category */}
+              <div>
+                <label className="text-xs font-medium text-text-secondary mb-1.5 block">Category (optional)</label>
+                <select
+                  value={editModal.category}
+                  onChange={(e) => setEditModal({ ...editModal, category: e.target.value as BlueprintTemplateCategory | '' })}
+                  className="w-full px-3 py-2 bg-bg-primary border border-border-default rounded-lg text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-cyan focus:border-transparent"
+                >
+                  <option value="">No category</option>
+                  {CATEGORY_OPTIONS.map((c) => (
+                    <option key={c.value} value={c.value}>{c.label}</option>
+                  ))}
+                </select>
+              </div>
 
               {/* Description */}
               <div>
@@ -485,18 +672,27 @@ export function TemplatesTab({ orgId }: TemplatesTabProps) {
           </DialogHeader>
           {previewTemplate && (() => {
             const outline = previewTemplate.outline_content as TemplateOutline | null
+            const desc = previewTemplate.description || outline?.description
             return (
               <div className="py-2">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-[10px] text-text-tertiary border border-border-default rounded px-1.5 py-0.5">
                     {TYPE_LABELS[previewTemplate.blueprint_type]}
                   </span>
+                  {previewTemplate.category && (
+                    <span className="text-[10px] text-text-tertiary border border-border-default rounded px-1.5 py-0.5">
+                      {CATEGORY_LABELS[previewTemplate.category] || previewTemplate.category}
+                    </span>
+                  )}
                   {previewTemplate.is_default && (
                     <span className="text-[10px] text-accent-cyan border border-accent-cyan/30 rounded px-1.5 py-0.5">default</span>
                   )}
+                  {previewTemplate.is_archived && (
+                    <span className="text-[10px] text-accent-warning border border-accent-warning/30 rounded px-1.5 py-0.5">archived</span>
+                  )}
                 </div>
-                {outline?.description && (
-                  <p className="text-xs text-text-tertiary mb-3">{outline.description}</p>
+                {desc && (
+                  <p className="text-xs text-text-tertiary mb-3">{desc}</p>
                 )}
                 <div className="space-y-2">
                   {outline?.sections?.map((section, i) => (
@@ -519,6 +715,43 @@ export function TemplatesTab({ orgId }: TemplatesTabProps) {
           })()}
           <DialogFooter>
             <Button variant="secondary" size="sm" onClick={() => setPreviewTemplate(null)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Usage modal */}
+      <Dialog open={usageTarget !== null} onOpenChange={(open) => { if (!open) { setUsageTarget(null); setUsageData(null) } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Template Usage: {usageTarget?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            {usageLoading ? (
+              <div className="flex justify-center py-6"><Spinner size="md" /></div>
+            ) : usageData ? (
+              <>
+                <div className="flex items-center gap-4 mb-3">
+                  <span className="text-xs text-text-secondary">{usageData.total} blueprint{usageData.total !== 1 ? 's' : ''}</span>
+                  <span className="text-xs text-text-tertiary">across {usageData.project_count} project{usageData.project_count !== 1 ? 's' : ''}</span>
+                </div>
+                {usageData.blueprints.length === 0 ? (
+                  <p className="text-xs text-text-tertiary">No blueprints have been created from this template yet.</p>
+                ) : (
+                  <div className="space-y-1.5 max-h-[300px] overflow-y-auto">
+                    {usageData.blueprints.map((bp) => (
+                      <div key={bp.id} className="flex items-center gap-2 p-2 bg-bg-primary border border-border-default rounded text-xs">
+                        <span className="text-text-primary font-medium truncate flex-1">{bp.title}</span>
+                        <span className="text-[9px] text-text-tertiary border border-border-default rounded px-1.5 py-0.5 flex-shrink-0">{bp.status}</span>
+                        <span className="text-[10px] text-text-tertiary truncate max-w-[120px] flex-shrink-0">{bp.project_name}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : null}
+          </div>
+          <DialogFooter>
+            <Button variant="secondary" size="sm" onClick={() => { setUsageTarget(null); setUsageData(null) }}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

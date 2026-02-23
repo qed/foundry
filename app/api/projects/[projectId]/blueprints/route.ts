@@ -80,7 +80,7 @@ export async function POST(
     const user = await requireAuth()
     const { projectId } = await params
     const body = await request.json()
-    const { blueprint_type, feature_node_id, title, diagram_type, template_content } = body
+    const { blueprint_type, feature_node_id, title, diagram_type, template_content, template_id } = body
 
     if (!blueprint_type || !VALID_TYPES.includes(blueprint_type)) {
       return Response.json(
@@ -178,6 +178,7 @@ export async function POST(
         project_id: projectId,
         blueprint_type,
         feature_node_id: blueprint_type === 'feature' ? feature_node_id : null,
+        template_id: template_id || null,
         title: blueprintTitle,
         content,
         status: 'draft' as const,

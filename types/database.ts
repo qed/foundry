@@ -1117,6 +1117,7 @@ export type Database = {
           id: string;
           project_id: string;
           feature_node_id: string | null;
+          template_id: string | null;
           blueprint_type: "foundation" | "system_diagram" | "feature";
           title: string;
           content: Json;
@@ -1130,6 +1131,7 @@ export type Database = {
           id?: string;
           project_id: string;
           feature_node_id?: string | null;
+          template_id?: string | null;
           blueprint_type: "foundation" | "system_diagram" | "feature";
           title: string;
           content: Json;
@@ -1143,6 +1145,7 @@ export type Database = {
           id?: string;
           project_id?: string;
           feature_node_id?: string | null;
+          template_id?: string | null;
           blueprint_type?: "foundation" | "system_diagram" | "feature";
           title?: string;
           content?: Json;
@@ -1172,6 +1175,13 @@ export type Database = {
             columns: ["created_by"];
             isOneToOne: false;
             referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "blueprints_template_id_fkey";
+            columns: ["template_id"];
+            isOneToOne: false;
+            referencedRelation: "blueprint_templates";
             referencedColumns: ["id"];
           },
         ];
@@ -1232,7 +1242,12 @@ export type Database = {
           blueprint_type: "foundation" | "system_diagram" | "feature";
           outline_content: Json;
           is_default: boolean;
+          description: string | null;
+          category: "architecture" | "api" | "database" | "feature" | "devops" | "security" | "general" | null;
+          is_archived: boolean;
+          created_by: string | null;
           created_at: string;
+          updated_at: string;
         };
         Insert: {
           id?: string;
@@ -1241,7 +1256,12 @@ export type Database = {
           blueprint_type: "foundation" | "system_diagram" | "feature";
           outline_content: Json;
           is_default?: boolean;
+          description?: string | null;
+          category?: "architecture" | "api" | "database" | "feature" | "devops" | "security" | "general" | null;
+          is_archived?: boolean;
+          created_by?: string | null;
           created_at?: string;
+          updated_at?: string;
         };
         Update: {
           id?: string;
@@ -1250,7 +1270,12 @@ export type Database = {
           blueprint_type?: "foundation" | "system_diagram" | "feature";
           outline_content?: Json;
           is_default?: boolean;
+          description?: string | null;
+          category?: "architecture" | "api" | "database" | "feature" | "devops" | "security" | "general" | null;
+          is_archived?: boolean;
+          created_by?: string | null;
           created_at?: string;
+          updated_at?: string;
         };
         Relationships: [
           {
@@ -1258,6 +1283,13 @@ export type Database = {
             columns: ["org_id"];
             isOneToOne: false;
             referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "blueprint_templates_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
             referencedColumns: ["id"];
           },
         ];
@@ -1708,6 +1740,7 @@ export type ArtifactEntityType = ArtifactEntityLink["entity_type"];
 export type Blueprint = Database["public"]["Tables"]["blueprints"]["Row"];
 export type BlueprintVersion = Database["public"]["Tables"]["blueprint_versions"]["Row"];
 export type BlueprintTemplate = Database["public"]["Tables"]["blueprint_templates"]["Row"];
+export type BlueprintTemplateCategory = NonNullable<BlueprintTemplate["category"]>;
 export type BlueprintActivity = Database["public"]["Tables"]["blueprint_activities"]["Row"];
 
 export type AppKey = Database["public"]["Tables"]["app_keys"]["Row"];

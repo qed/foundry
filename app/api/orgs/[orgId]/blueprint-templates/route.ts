@@ -19,6 +19,7 @@ export async function GET(
     const { orgId } = await params
     const { searchParams } = new URL(request.url)
     const typeFilter = searchParams.get('type')
+    const includeArchived = searchParams.get('include_archived') === 'true'
     const supabase = createServiceClient()
 
     // Verify org membership
@@ -57,6 +58,10 @@ export async function GET(
       orgQuery = orgQuery.eq('blueprint_type', typeFilter as BlueprintType)
     }
 
+    if (!includeArchived) {
+      orgQuery = orgQuery.eq('is_archived', false)
+    }
+
     const { data: orgTemplates } = await orgQuery
 
     return Response.json({
@@ -80,7 +85,7 @@ export async function POST(
     const user = await requireAuth()
     const { orgId } = await params
     const body = await request.json()
-    const { name, blueprint_type, outline_content, is_default } = body
+    const { name, blueprint_type, outline_content, is_default, description, category } = body
     const supabase = createServiceClient()
 
     // Verify admin
@@ -119,6 +124,12 @@ export async function POST(
       }
     }
 
+    // Validate category if provided
+    const VALID_CATEGORIES = ['architecture', 'api', 'database', 'feature', 'devops', 'security', 'general']
+    if (category && !VALID_CATEGORIES.includes(category)) {
+      return Response.json({ error: 'Invalid category' }, { status: 400 })
+    }
+
     // Check name uniqueness within org + type
     const { data: existing } = await supabase
       .from('blueprint_templates')
@@ -150,6 +161,9 @@ export async function POST(
         blueprint_type: blueprint_type as BlueprintType,
         outline_content,
         is_default: is_default || false,
+        description: description?.trim() || null,
+        category: category || null,
+        created_by: user.id,
       })
       .select()
       .single()

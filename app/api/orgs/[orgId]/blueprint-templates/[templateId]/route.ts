@@ -15,7 +15,7 @@ export async function PATCH(
     const user = await requireAuth()
     const { orgId, templateId } = await params
     const body = await request.json()
-    const { name, outline_content, is_default } = body
+    const { name, outline_content, is_default, description, category } = body
     const supabase = createServiceClient()
 
     // Verify admin
@@ -100,6 +100,18 @@ export async function PATCH(
           .eq('is_default', true)
       }
       updates.is_default = is_default
+    }
+
+    if (description !== undefined) {
+      updates.description = description?.trim() || null
+    }
+
+    if (category !== undefined) {
+      const VALID_CATEGORIES = ['architecture', 'api', 'database', 'feature', 'devops', 'security', 'general']
+      if (category !== null && category !== '' && !VALID_CATEGORIES.includes(category)) {
+        return Response.json({ error: 'Invalid category' }, { status: 400 })
+      }
+      updates.category = category || null
     }
 
     if (Object.keys(updates).length === 0) {

@@ -58,11 +58,12 @@ export async function GET(
 
     const { data: systemTemplates } = await systemQuery
 
-    // Fetch org templates
+    // Fetch org templates (exclude archived from the picker)
     let orgQuery = supabase
       .from('blueprint_templates')
       .select('*')
       .eq('org_id', project.org_id)
+      .eq('is_archived', false)
       .order('name')
 
     if (typeFilter && VALID_TYPES.includes(typeFilter as BlueprintType)) {
@@ -83,7 +84,12 @@ export async function GET(
           blueprint_type: t.blueprint_type,
           outline_content: t.outline as unknown as BlueprintTemplate['outline_content'],
           is_default: true,
+          description: null,
+          category: null,
+          is_archived: false,
+          created_by: null,
           created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         }))
     }
 
