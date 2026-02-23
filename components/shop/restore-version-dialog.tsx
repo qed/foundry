@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { RotateCcw } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter, DialogClose } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { useToast } from '@/components/ui/toast-container'
 import { timeAgo } from '@/lib/utils'
 
 interface RestoreVersionDialogProps {
@@ -20,6 +21,11 @@ interface RestoreVersionDialogProps {
   onRestoreComplete: (content: string) => void
 }
 
+interface DiffStats {
+  additions: number
+  deletions: number
+}
+
 export function RestoreVersionDialog({
   open,
   onOpenChange,
@@ -30,6 +36,44 @@ export function RestoreVersionDialog({
 }: RestoreVersionDialogProps) {
   const [restoring, setRestoring] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [diffStats, setDiffStats] = useState<DiffStats | null>(null)
+  const { addToast } = useToast()
+
+  // Fetch compact diff stats when dialog opens
+  useEffect(() => {
+    if (!open || !version) {
+      setDiffStats(null)
+      return
+    }
+    let cancelled = false
+    async function loadStats() {
+      try {
+        // Compare current (latest) version to the target version
+        const versionsRes = await fetch(
+          `/api/projects/${projectId}/requirements-documents/${docId}/versions?limit=1`
+        )
+        if (!versionsRes.ok) return
+        const versionsData = await versionsRes.json()
+        const latest = versionsData.versions?.[0]
+        if (!latest || latest.version_number === version!.version_number) return
+
+        const diffRes = await fetch(
+          `/api/projects/${projectId}/requirements-documents/${docId}/versions/compare?from=${latest.version_number}&to=${version!.version_number}`
+        )
+        if (!diffRes.ok) return
+        const diffData = await diffRes.json()
+        const diff = diffData.diff || []
+        if (!cancelled) {
+          setDiffStats({
+            additions: diff.filter((d: { type: string }) => d.type === 'addition').length,
+            deletions: diff.filter((d: { type: string }) => d.type === 'deletion').length,
+          })
+        }
+      } catch { /* ignore */ }
+    }
+    loadStats()
+    return () => { cancelled = true }
+  }, [open, version, projectId, docId])
 
   const handleRestore = useCallback(async () => {
     if (!version) return
@@ -56,13 +100,14 @@ export function RestoreVersionDialog({
         onRestoreComplete(versionData.content)
       }
 
+      addToast(`Restored to version ${version.version_number}`, 'success')
       onOpenChange(false)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Restore failed')
     } finally {
       setRestoring(false)
     }
-  }, [version, projectId, docId, onRestoreComplete, onOpenChange])
+  }, [version, projectId, docId, onRestoreComplete, onOpenChange, addToast])
 
   if (!version) return null
 
@@ -86,8 +131,21 @@ export function RestoreVersionDialog({
               {timeAgo(version.created_at)} by {version.created_by.name || 'Unknown'}
             </p>
           </div>
+
+          {diffStats && (diffStats.additions > 0 || diffStats.deletions > 0) && (
+            <div className="flex items-center gap-3 text-xs">
+              <span className="text-text-tertiary">Changes:</span>
+              {diffStats.additions > 0 && (
+                <span className="text-accent-success">+{diffStats.additions} lines</span>
+              )}
+              {diffStats.deletions > 0 && (
+                <span className="text-accent-error">-{diffStats.deletions} lines</span>
+              )}
+            </div>
+          )}
+
           <p className="text-xs text-text-tertiary">
-            A new version will be created recording this restoration. No content will be permanently lost.
+            Current content will be saved as a new version. No content will be permanently lost.
           </p>
 
           {error && <p className="text-sm text-accent-error">{error}</p>}

@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { requireAuth } from '@/lib/auth/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { handleAuthError } from '@/lib/auth/errors'
+import { logActivity } from '@/lib/activity/logging'
 import type { Json } from '@/types/database'
 
 /**
@@ -105,6 +106,15 @@ export async function POST(
       action: 'content_updated' as const,
       action_details: { source: 'restore', restored_from_version: versionNumber },
     }).then()
+
+    logActivity({
+      projectId,
+      userId: user.id,
+      entityType: 'blueprint',
+      entityId: blueprintId,
+      action: 'restored_version',
+      details: { restored_from_version: versionNumber, new_version_number: nextVersionNumber },
+    })
 
     return Response.json({
       message: `Restored to version ${versionNumber}`,

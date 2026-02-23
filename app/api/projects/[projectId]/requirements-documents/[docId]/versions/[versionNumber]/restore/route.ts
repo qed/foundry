@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { requireAuth } from '@/lib/auth/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { handleAuthError } from '@/lib/auth/errors'
+import { logActivity } from '@/lib/activity/logging'
 
 /**
  * POST /api/projects/[projectId]/requirements-documents/[docId]/versions/[versionNumber]/restore
@@ -104,6 +105,16 @@ export async function POST(
         change_summary: summary,
       })
     }
+
+    // Log activity (fire-and-forget)
+    logActivity({
+      projectId,
+      userId: user.id,
+      entityType: 'requirement_doc',
+      entityId: docId,
+      action: 'restored_version',
+      details: { restored_from_version: versionNumber, new_version_number: newVersionNumber },
+    })
 
     return Response.json({
       restored_version: versionNumber,

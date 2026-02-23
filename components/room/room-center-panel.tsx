@@ -13,8 +13,10 @@ import { BlueprintVersionHistory } from './blueprint-version-history'
 import type { BlueprintVersionEntry } from './blueprint-version-history'
 import { BlueprintVersionDiff } from './blueprint-version-diff'
 import { BlueprintVersionView } from './blueprint-version-view'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { useToast } from '@/components/ui/toast-container'
+import { timeAgo } from '@/lib/utils'
 import type { Blueprint, BlueprintStatus } from '@/types/database'
 import type { JSONContent } from '@tiptap/react'
 import type { MermaidContent } from '@/lib/blueprints/system-diagram-template'
@@ -59,6 +61,7 @@ const TYPE_LABELS: Record<string, string> = {
 const CONFIRM_STATUSES: BlueprintStatus[] = ['approved', 'implemented']
 
 export function RoomCenterPanel({ projectId, blueprint, onStatusChange, onContentRefresh, onToggleDriftPanel, onAnalyzeCrossDoc }: RoomCenterPanelProps) {
+  const { addToast } = useToast()
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false)
   const [confirmDialog, setConfirmDialog] = useState<{ status: BlueprintStatus } | null>(null)
   const [versionRefreshKey, setVersionRefreshKey] = useState(0)
@@ -136,16 +139,18 @@ export function RoomCenterPanel({ projectId, blueprint, onStatusChange, onConten
         const data = await res.json().catch(() => ({}))
         throw new Error(data.error || 'Failed to restore')
       }
+      addToast(`Restored to version ${restoreDialog.version_number}`, 'success')
       setRestoreDialog(null)
       setVersionRefreshKey((k) => k + 1)
       // Refresh editor content
       onContentRefresh?.()
     } catch (err) {
       console.error('Restore failed:', err)
+      addToast('Failed to restore version', 'error')
     } finally {
       setRestoring(false)
     }
-  }, [blueprint, restoreDialog, projectId, onContentRefresh])
+  }, [blueprint, restoreDialog, projectId, onContentRefresh, addToast])
 
   if (!blueprint) {
     return (
@@ -319,16 +324,26 @@ export function RoomCenterPanel({ projectId, blueprint, onStatusChange, onConten
       <Dialog open={!!restoreDialog} onOpenChange={(open) => { if (!open) setRestoreDialog(null) }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Restore to Version {restoreDialog?.version_number}</DialogTitle>
+            <DialogTitle>Restore to version {restoreDialog?.version_number}?</DialogTitle>
           </DialogHeader>
-          <div className="py-2">
+          <DialogBody className="space-y-3">
             <p className="text-sm text-text-secondary">
-              This will replace the current blueprint content with version {restoreDialog?.version_number}.
+              This will revert the blueprint to:
             </p>
-            <p className="text-xs text-text-tertiary mt-2">
-              A backup of the current content will be saved as a new version before restoring.
+            {restoreDialog && (
+              <div className="p-3 rounded-lg bg-bg-tertiary border border-border-default">
+                <p className="text-sm text-text-primary font-medium">
+                  {restoreDialog.change_note || `Version ${restoreDialog.version_number}`}
+                </p>
+                <p className="text-xs text-text-tertiary mt-1">
+                  {timeAgo(restoreDialog.created_at)} by {restoreDialog.created_by.name || 'Unknown'}
+                </p>
+              </div>
+            )}
+            <p className="text-xs text-text-tertiary">
+              Current content will be saved as a new version. No content will be permanently lost.
             </p>
-          </div>
+          </DialogBody>
           <DialogFooter>
             <Button variant="secondary" size="sm" onClick={() => setRestoreDialog(null)} disabled={restoring}>
               Cancel
