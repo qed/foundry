@@ -15,9 +15,9 @@
 
 ---
 
-### Completed Phases (80/150)
+### Completed Phases (81/150)
 
-001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–086 + 088–090 (Lab schema/API/categorization/convert-to-WO/convert-to-feature/agent), 083–085 (Lab layout/inbox/detail), 096–101 (Artifacts full stack + folders), 105 (Comments schema), 106 (@Mentions), 109 (Knowledge schema), 113 (Org console), 117 (Realtime presence), 119 (Audit trail)
+001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–086 + 088–090 (Lab schema/API/categorization/convert-to-WO/convert-to-feature/agent), 083–085 (Lab layout/inbox/detail), 096–101 (Artifacts full stack + folders), 105 (Comments schema), 106 (@Mentions), 109–110 (Knowledge schema + explorer), 113 (Org console), 117 (Realtime presence), 119 (Audit trail)
 
 ---
 
@@ -432,7 +432,7 @@ After this initial update, stay in this session. I will come back to you after e
 | 107 | Notification System | `blocked` | — | 105, 106 | Notifications | `components/notifications/`, `app/api/notifications/` |
 | 108 | Email Notifications | `blocked` | — | 107 | Notifications | `lib/email/`, `app/api/notifications/` |
 | 109 | Knowledge Graph Schema | `done` | — | 002 | Knowledge | `supabase/migrations/`, `types/database.ts` |
-| 110 | Knowledge Graph Explorer | `ready` | — | 002, 109 | Knowledge | `components/knowledge/` |
+| 110 | Knowledge Graph Explorer | `done` | — | 002, 109 | Knowledge | `components/knowledge-graph/` |
 | 111 | Auto-Connection Detection | `blocked` | — | 106, 109, 110 | Knowledge ⚠️ | `components/knowledge/` |
 | 112 | Manual Entity Linking | `blocked` | — | 109, 110 | Knowledge | `components/knowledge/` |
 | 113 | Organization Console | `done` | — | 005, 009 | Admin | `components/admin/`, `app/.../admin/` |
