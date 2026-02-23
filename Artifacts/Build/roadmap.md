@@ -15,9 +15,9 @@
 
 ---
 
-### Completed Phases (79/150)
+### Completed Phases (80/150)
 
-001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–086 + 088–090 (Lab schema/API/categorization/convert-to-WO/convert-to-feature/agent), 083–085 (Lab layout/inbox/detail), 096–101 (Artifacts full stack + folders), 105 (Comments schema), 109 (Knowledge schema), 113 (Org console), 117 (Realtime presence), 119 (Audit trail)
+001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–086 + 088–090 (Lab schema/API/categorization/convert-to-WO/convert-to-feature/agent), 083–085 (Lab layout/inbox/detail), 096–101 (Artifacts full stack + folders), 105 (Comments schema), 106 (@Mentions), 109 (Knowledge schema), 113 (Org console), 117 (Realtime presence), 119 (Audit trail)
 
 ---
 
@@ -428,7 +428,7 @@ After this initial update, stay in this session. I will come back to you after e
 | 103 | Version Diff & Comparison | `blocked` | — | 102 | Versioning | `components/versioning/` |
 | 104 | Version Restore | `blocked` | — | 102, 103 | Versioning | `components/versioning/` |
 | 105 | Comments System Foundation | `done` | — | 002 | Comments | `supabase/migrations/`, `components/comments/` |
-| 106 | @Mentions System | `ready` | — | 099, 105 | Comments ⚠️ | `components/comments/` |
+| 106 | @Mentions System | `done` | — | 099, 105 | Comments ⚠️ | `components/mentions/` |
 | 107 | Notification System | `blocked` | — | 105, 106 | Notifications | `components/notifications/`, `app/api/notifications/` |
 | 108 | Email Notifications | `blocked` | — | 107 | Notifications | `lib/email/`, `app/api/notifications/` |
 | 109 | Knowledge Graph Schema | `done` | — | 002 | Knowledge | `supabase/migrations/`, `types/database.ts` |
