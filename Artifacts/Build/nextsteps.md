@@ -238,7 +238,7 @@ After building, run `npm run build` and `npm run lint` to verify zero errors. Th
 - Phase 089: Convert Feedback → Feature (Lab) -- done
 - Phase 090: Insights Lab Agent Infrastructure (Lab) -- done
 - Phase 101: Artifact Folders & Organization (Artifacts) -- done
-- Phase 102: Document Version History (Versioning) -- done (already built via Phases 043 + 059)
+- Phase 102: Document Version History (Versioning) -- done (parity: trigger_type, change_note, download, UI badges)
 - Phase 106: @Mentions System (Cross) -- done
 - Phase 110: Knowledge Graph Explorer Panel (Cross) -- done
 - Phase 118: Real-Time Collaborative Editing (Realtime) -- done
