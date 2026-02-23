@@ -15,9 +15,9 @@
 
 ---
 
-### Completed Phases (130/150)
+### Completed Phases (131/150)
 
-001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 059–060 (Blueprint versioning + comments), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–091 (Lab full stack + auto-categorization), 092 (Feedback enrichment), 094–095 (App key management + bulk ops), 096–104 (Artifacts full stack + folders + versioning complete), 105 (Comments schema), 106 (@Mentions), 107–108 (Notifications + Email), 109–111 (Knowledge schema + explorer + auto-connections), 112 (Manual entity linking), 113 (Org console), 117 (Realtime presence), 118 (Collaborative editing), 119 (Audit trail), 120 (Project archive), 121–123 (Idea maturity + agent instructions + aggregate export), 124 (Drift detection), 125 (Cross-doc suggestions), 126 (Org templates), 127 (Extraction strategy), 128 (Phase burndown), 129 (MCP implementation), 130 (WO sync alerts), 131 (Slack integration), 114–116 (Team invitations + billing + user profile)
+001–010 (Foundation), 011–020 (Hall core), 024–032 (Hall realtime + Shop layout/tree/DnD), 033–035 (Shop docs + status tracking), 037 (Shop agent), 046–051 (Room schema/layout/blueprints), 054 (Blueprint status), 056 (Room agent), 059–060 (Blueprint versioning + comments), 061–070 (Floor schema/layout/WO/kanban/table/assignment/phases/priority), 073 (Floor agent), 078–080 (Floor comments + dashboard + MCP), 081–091 (Lab full stack + auto-categorization), 092 (Feedback enrichment), 094–095 (App key management + bulk ops), 096–104 (Artifacts full stack + folders + versioning complete), 105 (Comments schema), 106 (@Mentions), 107–108 (Notifications + Email), 109–111 (Knowledge schema + explorer + auto-connections), 112 (Manual entity linking), 113 (Org console), 117 (Realtime presence), 118 (Collaborative editing), 119 (Audit trail), 120 (Project archive), 121–123 (Idea maturity + agent instructions + aggregate export), 124 (Drift detection), 125 (Cross-doc suggestions), 126 (Org templates), 127 (Extraction strategy), 128 (Phase burndown), 129 (MCP implementation), 130 (WO sync alerts), 131 (Slack integration), 132 (Feedback analytics), 114–116 (Team invitations + billing + user profile)
 
 ---
 
@@ -459,7 +459,7 @@ After this initial update, stay in this session. I will come back to you after e
 | 129 | MCP Implementation | `done` | — | 080 | Floor | `lib/mcp/`, `app/api/v1/` |
 | 130 | Work Order Sync Alerts | `done` | — | 046, 061, 124 | Floor ⚠️ | `components/floor/` |
 | 131 | Slack Integration | `done` | — | 081 | Lab | `lib/slack/`, `app/api/projects/` |
-| 132 | Feedback Analytics | `ready` | — | 081 | Lab | `components/lab/` |
+| 132 | Feedback Analytics | `done` | — | 081 | Lab | `components/lab/` |
 | 133 | Priority Scoring | `ready` | — | 081, 090 | Lab | `components/lab/` |
 | 134 | Global Search | `blocked` | — | all 001–133 | Cross ⚠️ | `components/search/`, `app/api/search/` |
 | 135 | Dark/Light Theme Toggle | `blocked` | — | 001, 116 | Cross | `app/globals.css`, `lib/theme/` |
@@ -706,8 +706,8 @@ These phases require work from **multiple module tracks** to be complete before 
 | Assembly Floor (061–080) | 20 | 17 | 0 | 3 | 0 |
 | Insights Lab (081–095) | 15 | 15 | 0 | 0 | 0 |
 | Cross-Cutting (096–120) | 25 | 21 | 0 | 3 | 1 |
-| Advanced (121–135) | 15 | 11 | 0 | 2 | 2 |
+| Advanced (121–135) | 15 | 12 | 0 | 1 | 2 |
 | Polish (136–150) | 15 | 0 | 0 | 0 | 15 |
-| **TOTAL** | **150** | **130** | **0** | **2** | **18** |
+| **TOTAL** | **150** | **131** | **0** | **1** | **18** |
 
-**Currently ready to start**: 132, 133
+**Currently ready to start**: 133
