@@ -77,6 +77,7 @@ export function Toast({ id, type, message, onClose, duration = 5000, action }: T
       <button
         onClick={() => onClose(id)}
         className="p-1 hover:bg-white/10 rounded transition-colors text-text-secondary"
+        aria-label="Dismiss notification"
       >
         <X className="w-4 h-4" />
       </button>

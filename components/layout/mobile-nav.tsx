@@ -22,7 +22,7 @@ export function MobileNav() {
   const baseUrl = `/org/${org.slug}/project/${project.id}`
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-bg-secondary border-t border-border-default flex items-center justify-around z-40 safe-bottom">
+    <nav aria-label="Module navigation" className="md:hidden fixed bottom-0 left-0 right-0 bg-bg-secondary border-t border-border-default flex items-center justify-around z-40 safe-bottom">
       {MODULES.map((mod) => {
         const isActive = pathname.includes(`/${mod.id}`)
 

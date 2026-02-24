@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { AuthProvider } from "@/lib/auth/context";
 import { ToastProvider } from "@/components/ui/toast-container";
 import { ThemeProvider } from "@/lib/theme/theme-context";
+import { SkipLink } from "@/components/ui/skip-link";
 import "./globals.css";
 
 const inter = Inter({
@@ -38,6 +39,7 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.variable} antialiased`}>
+        <SkipLink />
         <ThemeProvider>
           <AuthProvider>
             <ToastProvider>{children}</ToastProvider>

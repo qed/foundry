@@ -43,8 +43,8 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
         }
       }}
     >
-      <div className="absolute inset-0 bg-black/60" />
-      <div className="relative">{children}</div>
+      <div className="absolute inset-0 bg-black/60" aria-hidden="true" />
+      <div className="relative" role="dialog" aria-modal="true">{children}</div>
     </div>
   )
 }
@@ -129,6 +129,7 @@ export function DialogClose({
 }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
+      aria-label="Close dialog"
       className={cn(
         'p-1 hover:bg-bg-tertiary rounded-lg transition-colors text-text-secondary hover:text-text-primary',
         className

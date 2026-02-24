@@ -115,7 +115,7 @@ export function Sidebar({ onClose }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+      <nav aria-label="Main navigation" className="flex-1 p-3 space-y-1 overflow-y-auto">
         {/* Dashboard link */}
         <Link
           href={baseUrl}
