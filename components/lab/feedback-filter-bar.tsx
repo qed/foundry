@@ -222,7 +222,7 @@ export function FeedbackFilterBar({
 
         {/* Filter dropdowns — always visible on lg, toggled on mobile */}
         {isExpanded && (
-          <div className="grid grid-cols-2 lg:grid-cols-6 gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
             <MultiSelectDropdown
               label="Category"
               options={CATEGORY_OPTIONS}

@@ -67,7 +67,7 @@ export function UserMenu() {
       </button>
 
       {menuOpen && (
-        <div className="absolute right-0 mt-2 w-56 bg-bg-tertiary rounded-lg shadow-xl border border-border-default z-50">
+        <div className="absolute right-0 mt-2 w-56 max-w-[calc(100vw-2rem)] bg-bg-tertiary rounded-lg shadow-xl border border-border-default z-50">
           <div className="p-3 border-b border-border-default">
             <p className="text-xs text-text-tertiary">Signed in as</p>
             <p className="text-sm font-medium text-text-primary truncate">

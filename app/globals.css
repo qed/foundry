@@ -275,6 +275,41 @@ body {
   height: 0;
 }
 
+/* Responsive utilities */
+@media (max-width: 767px) {
+  .prose-foundry {
+    font-size: 0.875rem;
+  }
+  .prose-foundry h1 {
+    font-size: 1.25rem;
+  }
+  .prose-foundry h2 {
+    font-size: 1rem;
+  }
+  .prose-foundry pre {
+    font-size: 0.75rem;
+  }
+}
+
+/* Touch-friendly minimum target size */
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Responsive table wrapper — horizontal scroll on mobile */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Safe area insets for notched devices */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
 /* Collaborative editing cursors */
 .collaboration-cursor__caret {
   position: relative;

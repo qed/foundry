@@ -17,6 +17,12 @@ export const metadata: Metadata = {
     "The Operating System for AI-Native Software Teams. Build, test, and deploy software requirements with industrial precision.",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{

@@ -218,7 +218,7 @@ export function GlobalSearch() {
         </div>
 
         {/* Results */}
-        <div ref={resultsRef} className="max-h-[400px] overflow-y-auto">
+        <div ref={resultsRef} className="max-h-[60vh] overflow-y-auto">
           {!query.trim() && (
             <div className="p-8 text-center text-text-tertiary text-sm">
               Start typing to search across all modules

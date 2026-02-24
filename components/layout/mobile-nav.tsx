@@ -22,7 +22,7 @@ export function MobileNav() {
   const baseUrl = `/org/${org.slug}/project/${project.id}`
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-bg-secondary border-t border-border-default flex items-center justify-around z-40">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-bg-secondary border-t border-border-default flex items-center justify-around z-40 safe-bottom">
       {MODULES.map((mod) => {
         const isActive = pathname.includes(`/${mod.id}`)
 
@@ -30,7 +30,7 @@ export function MobileNav() {
           <Link
             key={mod.id}
             href={`${baseUrl}/${mod.id}`}
-            className={`flex flex-col items-center gap-1 px-3 py-3 text-xs transition-all ${
+            className={`flex flex-col items-center justify-center gap-1 min-w-[44px] min-h-[48px] px-2 py-2 text-xs transition-all ${
               isActive
                 ? 'text-accent-cyan'
                 : 'text-text-tertiary hover:text-text-secondary opacity-60 hover:opacity-100'
@@ -43,7 +43,7 @@ export function MobileNav() {
               height={24}
               className="w-6 h-6 object-contain"
             />
-            <span className="truncate">{mod.name}</span>
+            <span className="truncate text-[10px]">{mod.name}</span>
           </Link>
         )
       })}

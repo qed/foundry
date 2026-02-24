@@ -192,7 +192,7 @@ export function IdeaDetailSlideOver({
         aria-labelledby="idea-detail-title"
       >
         {/* Header bar with title + close */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border-default shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-border-default shrink-0">
           <h2
             id="idea-detail-title"
             className="text-lg font-bold text-text-primary truncate pr-4"

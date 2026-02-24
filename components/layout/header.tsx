@@ -51,7 +51,7 @@ export function Header({ onMenuClick }: HeaderProps) {
       <div className="flex items-center gap-2 flex-1 min-w-0">
         <button
           onClick={onMenuClick}
-          className="md:hidden p-2 hover:bg-bg-tertiary rounded-lg transition-colors text-text-secondary"
+          className="md:hidden p-2.5 hover:bg-bg-tertiary rounded-lg transition-colors text-text-secondary touch-target"
           aria-label="Toggle sidebar"
         >
           <Menu className="w-5 h-5" />

@@ -56,7 +56,7 @@ export function DialogContent({
   return (
     <div
       className={cn(
-        'bg-bg-secondary rounded-lg shadow-xl border border-border-default max-w-md w-full mx-4',
+        'bg-bg-secondary rounded-lg shadow-xl border border-border-default max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto',
         className
       )}
       {...props}
