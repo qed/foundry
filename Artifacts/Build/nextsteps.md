@@ -36,7 +36,7 @@ Where XXX is the phase number (e.g., 017, 026, 113). This sets the Claude Code s
 | Artifacts | `PhaseHistory/artifacts.md` | 096–101 | `components/artifacts/`, `app/api/projects/*/artifacts/`, `lib/artifacts/` |
 | Cross-Cutting | `PhaseHistory/cross-cutting.md` | 105–119 | `lib/activity/`, `lib/realtime/`, `components/presence/` |
 
-**137 phases complete** (001–060, 061–095, 096–102, 105–108, 109–111, 112–138).
+**143 phases complete** (001–060, 061–095, 096–102, 105–108, 109–111, 112–144).
 
 _Previously this was a single giant paragraph. Migrated to per-module files on 2026-02-22._
 
@@ -272,6 +272,12 @@ After building, run `npm run build` and `npm run lint` to verify zero errors. Th
 - Phase 136: Error Boundaries & Fallback UI (Quality) -- done
 - Phase 137: Loading States & Skeletons (Quality) -- done
 - Phase 138: Form Validation / Zod (Quality) -- done
+- Phase 139: Responsive Design Audit (Quality) -- done (viewport meta, touch targets 44px, dialog overflow, responsive padding)
+- Phase 140: Accessibility Audit (Quality) -- done (skip link, ARIA labels, dialog role, spinner role, toast a11y, nav landmarks)
+- Phase 141: Performance Optimization (Perf) -- done (dynamic imports for TipTap/recharts/mermaid, React.memo IdeaCard, optimizePackageImports)
+- Phase 142: Database Indexing & Tuning (Perf) -- done (composite indexes, partial indexes, GIN full-text search, entity connection uniqueness)
+- Phase 143: Unit Tests: Foundation & Auth (Testing) -- done (vitest setup, 63 tests: utils, auth errors, permissions, schemas, validateRequest)
+- Phase 144: Unit Tests: All Modules (Testing) -- done (97 more tests: mentions, activity, file-types, colors, maturity, feedback, version-diff, billing — 160 total)
 
 **Next up** (sequential order):
-- Phase 139: Responsive Design Audit (Quality)
+- Phase 145: E2E Tests: Critical Workflows (Testing)
