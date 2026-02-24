@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import dynamic from 'next/dynamic'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { LabHeader } from './lab-header'
 import { LabInbox } from './lab-inbox'
@@ -11,7 +12,12 @@ import { FeedbackFilterBar } from './feedback-filter-bar'
 import type { FeedbackFilters } from './feedback-filter-bar'
 import { BulkActionsBar } from './bulk-actions-bar'
 import { ConversionSuggestionsPanel } from './conversion-suggestions-panel'
-import { AnalyticsDashboard } from './analytics-dashboard'
+import { Spinner } from '@/components/ui/spinner'
+
+const AnalyticsDashboard = dynamic(() => import('./analytics-dashboard').then(m => m.AnalyticsDashboard), {
+  loading: () => <div className="flex-1 flex items-center justify-center"><Spinner /></div>,
+  ssr: false,
+})
 import type { FeedbackSubmission } from '@/types/database'
 
 interface LabStats {

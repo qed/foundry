@@ -1,9 +1,14 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import dynamic from 'next/dynamic'
 import { Download } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
-import { RequirementsEditor } from './requirements-editor'
+
+const RequirementsEditor = dynamic(() => import('./requirements-editor').then(m => m.RequirementsEditor), {
+  loading: () => <div className="flex-1 flex items-center justify-center"><Spinner /></div>,
+  ssr: false,
+})
 import { ExportDocumentDialog } from './export-document-dialog'
 import { VersionHistoryPanel } from './version-history-panel'
 import { VersionViewModal } from './version-view-modal'

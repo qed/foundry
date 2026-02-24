@@ -1,11 +1,15 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import dynamic from 'next/dynamic'
 import { FloorHeader } from './floor-header'
 import { PhaseNavigation } from './phase-navigation'
 import { FloorContent } from './floor-content'
 import { FloorRightPanel } from './floor-right-panel'
-import { PhaseBurndown } from './phase-burndown'
+
+const PhaseBurndown = dynamic(() => import('./phase-burndown').then(m => m.PhaseBurndown), {
+  ssr: false,
+})
 import { CreateWorkOrderModal } from './create-work-order-modal'
 import { ExtractWorkOrdersModal } from './extract-work-orders-modal'
 import { ExtractionStrategyConfig } from './extraction-strategy-config'

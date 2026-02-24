@@ -1,11 +1,20 @@
 'use client'
 
 import { useState, useCallback } from 'react'
+import dynamic from 'next/dynamic'
 import { FileText, ExternalLink, GitCompare } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { EmptyState } from '@/components/ui/empty-state'
-import { BlueprintEditor } from './blueprint-editor'
-import { SystemDiagramEditor } from './system-diagram-editor'
+import { Spinner } from '@/components/ui/spinner'
+
+const BlueprintEditor = dynamic(() => import('./blueprint-editor').then(m => m.BlueprintEditor), {
+  loading: () => <div className="flex-1 flex items-center justify-center"><Spinner /></div>,
+  ssr: false,
+})
+const SystemDiagramEditor = dynamic(() => import('./system-diagram-editor').then(m => m.SystemDiagramEditor), {
+  loading: () => <div className="flex-1 flex items-center justify-center"><Spinner /></div>,
+  ssr: false,
+})
 import { CommentsPanel } from '@/components/shop/comments-panel'
 import { DriftAlertBanner } from './drift-alert-banner'
 import { BlueprintActivityTimeline } from './blueprint-activity-timeline'

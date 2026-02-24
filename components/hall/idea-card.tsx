@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { cn, timeAgo } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Avatar } from '@/components/ui/avatar'
@@ -15,7 +16,7 @@ interface IdeaCardProps {
   onSelect?: (id: string) => void
 }
 
-export function IdeaCard({ idea, onClick, highlighted, isSelected, onSelect }: IdeaCardProps) {
+export const IdeaCard = React.memo(function IdeaCard({ idea, onClick, highlighted, isSelected, onSelect }: IdeaCardProps) {
   const statusCfg = STATUS_CONFIG[idea.status as IdeaStatus]
   const creatorInitials = idea.creator?.display_name
     ? idea.creator.display_name
@@ -120,7 +121,7 @@ export function IdeaCard({ idea, onClick, highlighted, isSelected, onSelect }: I
       </div>
     </button>
   )
-}
+})
 
 export function IdeaCardSkeleton() {
   return (

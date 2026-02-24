@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: projectRoot,
   },
+  images: {
+    formats: ['image/webp', 'image/avif'],
+  },
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'recharts', '@tiptap/react'],
+  },
 };
 
 export default nextConfig;
