@@ -1,7 +1,7 @@
 # Foundry v2 — Post-Phase Alignment Checklist
 
 > **Purpose**: Run this checklist after every completed phase to keep all project documents in sync with reality, then push the updated BuildPlan.
-> **When to run**: At the end of the build session, AFTER committing the phase code to `dev`.
+> **When to run**: At the end of the build session, AFTER committing the phase code to `main`.
 > **Who runs it**: Claude Code, in the same session that built the phase.
 > **Estimated time**: 5–10 minutes per alignment run.
 
@@ -34,7 +34,7 @@ The `Artifacts/BuildPlanv2/` folder exists in BOTH repos and must be kept identi
 Before running the tasks below, confirm these conditions:
 
 - [ ] The phase build is complete (code compiles, lint passes, tests pass)
-- [ ] The phase code has been committed and pushed to `dev` on the current repo
+- [ ] The phase code has been committed and pushed to `main` on the current repo
 - [ ] You have the full conversation context from this build session
 - [ ] You know the phase number and can locate the phase spec file
 
@@ -241,7 +241,7 @@ To start it, run:
 ```bash
 git add Artifacts/BuildPlanv2/
 git commit -m "docs: align BuildPlan after Phase XXX"
-git push origin dev
+git push origin main
 ```
 
 <!-- If your project spans multiple repos, uncomment this section: -->
@@ -259,14 +259,14 @@ git remote get-url origin
 ```bash
 OTHER_REPO="https://github.com/[ORG]/[OTHER_REPO].git"
 
-git clone --branch dev --depth 1 "$OTHER_REPO" /tmp/other-repo
+git clone --branch main --depth 1 "$OTHER_REPO" /tmp/other-repo
 rm -rf /tmp/other-repo/Artifacts/BuildPlanv2/
 cp -r Artifacts/BuildPlanv2/ /tmp/other-repo/Artifacts/BuildPlanv2/
 
 cd /tmp/other-repo
 git add Artifacts/BuildPlanv2/
 git commit -m "docs: sync BuildPlan after Phase XXX"
-git push origin dev
+git push origin main
 
 cd -
 rm -rf /tmp/other-repo
@@ -282,8 +282,8 @@ rm -rf /tmp/other-repo
 After both pushes succeed, report:
 ```
 BuildPlan synced to both repos:
-- [Repo 1] (dev branch)
-- [Repo 2] (dev branch)
+- [Repo 1] (main branch)
+- [Repo 2] (main branch)
 ```
 -->
 

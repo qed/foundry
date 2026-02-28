@@ -128,6 +128,7 @@ export type Database = {
           extraction_strategy_updated_at: string | null;
           agent_writing_instructions: string | null;
           agent_writing_instructions_updated_at: string | null;
+          mode: "open" | "helix";
           created_at: string;
           updated_at: string;
         };
@@ -144,6 +145,7 @@ export type Database = {
           extraction_strategy_updated_at?: string | null;
           agent_writing_instructions?: string | null;
           agent_writing_instructions_updated_at?: string | null;
+          mode?: "open" | "helix";
           created_at?: string;
           updated_at?: string;
         };
@@ -160,6 +162,7 @@ export type Database = {
           extraction_strategy_updated_at?: string | null;
           agent_writing_instructions?: string | null;
           agent_writing_instructions_updated_at?: string | null;
+          mode?: "open" | "helix";
           created_at?: string;
           updated_at?: string;
         };
@@ -2240,6 +2243,114 @@ export type Database = {
           },
         ];
       };
+      helix_steps: {
+        Row: {
+          id: string;
+          project_id: string;
+          stage_number: number;
+          step_number: number;
+          step_key: string;
+          status: "locked" | "active" | "complete";
+          evidence_type: "text" | "file" | "url" | "checklist";
+          evidence_data: Json | null;
+          completed_at: string | null;
+          completed_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          stage_number: number;
+          step_number: number;
+          step_key: string;
+          status?: "locked" | "active" | "complete";
+          evidence_type: "text" | "file" | "url" | "checklist";
+          evidence_data?: Json | null;
+          completed_at?: string | null;
+          completed_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          stage_number?: number;
+          step_number?: number;
+          step_key?: string;
+          status?: "locked" | "active" | "complete";
+          evidence_type?: "text" | "file" | "url" | "checklist";
+          evidence_data?: Json | null;
+          completed_at?: string | null;
+          completed_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "helix_steps_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "helix_steps_completed_by_fkey";
+            columns: ["completed_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      helix_stage_gates: {
+        Row: {
+          id: string;
+          project_id: string;
+          stage_number: number;
+          status: "locked" | "active" | "passed";
+          passed_at: string | null;
+          passed_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          stage_number: number;
+          status?: "locked" | "active" | "passed";
+          passed_at?: string | null;
+          passed_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          stage_number?: number;
+          status?: "locked" | "active" | "passed";
+          passed_at?: string | null;
+          passed_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "helix_stage_gates_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "helix_stage_gates_passed_by_fkey";
+            columns: ["passed_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -2404,3 +2515,10 @@ export type BillingStatus = "active" | "past_due" | "unpaid" | "cancelled" | "tr
 
 export type SlackIntegration = Database["public"]["Tables"]["slack_integrations"]["Row"];
 export type SlackNotificationSent = Database["public"]["Tables"]["slack_notifications_sent"]["Row"];
+
+export type HelixStep = Database["public"]["Tables"]["helix_steps"]["Row"];
+export type HelixStepStatus = HelixStep["status"];
+export type HelixEvidenceType = HelixStep["evidence_type"];
+export type HelixStageGate = Database["public"]["Tables"]["helix_stage_gates"]["Row"];
+export type HelixStageGateStatus = HelixStageGate["status"];
+export type ProjectMode = Project["mode"];

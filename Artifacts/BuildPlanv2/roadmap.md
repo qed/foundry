@@ -8,7 +8,7 @@
 
 ## START HERE: Next Phase
 
-**Mode**: Sequential execution on the `dev` branch. All code and doc commits go to `dev`.
+**Mode**: Sequential execution on the `main` branch. All v2 commits use the `v2 - ` prefix.
 
 **Strategy**: Phases are built sequentially within each Epic. Cross-epic dependencies are noted in the Phase Status Tables.
 
@@ -49,7 +49,7 @@
 
 | Status | Meaning |
 |--------|---------|
-| `done` | Completed, tested, and committed to dev |
+| `done` | Completed, tested, and committed to main |
 | `in-progress` | Actively being built in a session |
 | `ready` | All prerequisites are `done` — can start |
 | `blocked` | Has unfinished prerequisites — cannot start yet |
@@ -315,13 +315,13 @@
 ## Per-Phase Workflow (Repeatable)
 
 For each phase:
-1. Sync BuildPlan only: `git fetch origin dev && git checkout origin/dev -- Artifacts/BuildPlanv2/`
+1. Sync BuildPlan only: `git fetch origin main && git checkout origin/main -- Artifacts/BuildPlanv2/`
 2. Confirm the phase shows `ready` in the Status Table above
 3. Read the phase spec at `Artifacts/BuildPlanv2/Phases/Phase-XXX-*.md`
-4. Build on the `dev` branch
+4. Build on the `main` branch
 5. Run appropriate build/lint commands
 6. Manual testing checkpoint: provide user with testing instructions
-7. Commit code with descriptive message, push to `dev`
+7. Commit code with `v2 - ` prefix, push to `main`
 8. **Run alignment.md** — sync all project documents and push BuildPlan
 9. Proceed to next phase
 

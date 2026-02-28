@@ -67,7 +67,7 @@ _(Populate after Phase 001 — these are the foundational files that every sessi
 
 > Include all of these in every prompt. Add new conventions as they're discovered.
 
-1. All code and docs are committed to the `dev` branch — never directly to `main`
+1. All v2 code and docs are committed directly to the `main` branch with a `v2 - ` commit prefix
 2. Artifacts/BuildPlanv2/ folder is updated via alignment.md after every phase
 3. Next.js 16+ with App Router & Turbopack
 4. TypeScript strict mode
@@ -103,13 +103,12 @@ Then give me:
 
 > Include at the top of every prompt.
 
-**IMPORTANT**: Build on the `dev` branch. All code and doc commits go to `dev`. The `main` branch is for production releases only.
+**IMPORTANT**: Build on the `main` branch. All v2 code and doc commits go to `main` with a `v2 - ` commit prefix.
 
-**Before starting**: Pull ONLY the latest BuildPlan from remote dev (avoids code merge conflicts):
+**Before starting**: Pull ONLY the latest BuildPlan from remote main (avoids code merge conflicts):
 ```bash
-git checkout dev
-git fetch origin dev
-git checkout origin/dev -- Artifacts/BuildPlanv2/
+git fetch origin main
+git checkout origin/main -- Artifacts/BuildPlanv2/
 ```
 
 ---
