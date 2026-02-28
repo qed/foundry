@@ -6,6 +6,7 @@ import type { HelixStep } from '@/types/database'
 import { getStep } from '@/config/helix-process'
 import type { StepConfig } from '@/config/helix-process'
 import EvidencePanel from './EvidencePanel'
+import EvidenceViewer from './EvidenceViewer'
 
 interface StepDetailViewProps {
   step: HelixStep
@@ -147,17 +148,26 @@ export default function StepDetailView({
             )}
           </div>
 
-          {/* Right Panel: Evidence Submission */}
+          {/* Right Panel: Evidence Viewer (complete) or Evidence Submission (active) */}
           <div className="lg:col-span-1">
-            <EvidencePanel
-              step={step}
-              stepKey={stepKey}
-              evidenceType={primaryEvidenceType}
-              onComplete={onComplete}
-              isLoading={isLoading}
-              isLocked={isLocked}
-              error={error}
-            />
+            {isComplete ? (
+              <EvidenceViewer
+                evidenceData={step.evidence_data}
+                evidenceType={primaryEvidenceType}
+                stepKey={stepKey}
+                completedAt={step.completed_at}
+              />
+            ) : (
+              <EvidencePanel
+                step={step}
+                stepKey={stepKey}
+                evidenceType={primaryEvidenceType}
+                onComplete={onComplete}
+                isLoading={isLoading}
+                isLocked={isLocked}
+                error={error}
+              />
+            )}
           </div>
         </div>
 
