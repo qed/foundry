@@ -2,7 +2,7 @@
 
 > **Single source of truth** for sequential phase execution.
 > **Location**: `Artifacts/BuildPlanv2/roadmap.md` (kept in sync via alignment.md).
-> Last updated: 2026-02-28 (Phase 001 complete)
+> Last updated: 2026-02-28 (Phases 001-008 complete)
 
 ---
 
@@ -12,9 +12,9 @@
 
 **Strategy**: Phases are built sequentially within each Epic. Cross-epic dependencies are noted in the Phase Status Tables.
 
-**Per-phase workflow**: Pull dev -> Read spec -> Build -> Lint pass -> Commit to dev -> Push -> Run alignment.md -> Next phase.
+**Per-phase workflow**: Pull main -> Read spec -> Build -> Lint pass -> Commit to main -> Push -> Run alignment.md -> Next phase.
 
-**Currently ready to start**: Phase 002
+**Currently ready to start**: Phase 009
 
 ---
 
@@ -22,8 +22,8 @@
 
 | Epic | Name | Phases | Done | In Progress | Ready | Blocked |
 |------|------|--------|------|-------------|-------|---------|
-| 1 | Foundation & Mode Infrastructure | 001–008 (8) | 1 | 0 | 1 | 6 |
-| 2 | Planning Stage | 009–014 (6) | 0 | 0 | 0 | 6 |
+| 1 | Foundation & Mode Infrastructure | 001–008 (8) | 8 | 0 | 0 | 0 |
+| 2 | Planning Stage | 009–014 (6) | 0 | 0 | 1 | 5 |
 | 3 | Documentation Stage | 015–021 (7) | 0 | 0 | 0 | 7 |
 | 4 | Build Planning & Repo Setup | 022–032 (11) | 0 | 0 | 0 | 11 |
 | 5 | Build, Testing & Deployment | 033–044 (12) | 0 | 0 | 0 | 12 |
@@ -41,7 +41,7 @@
 | 17 | Process Analytics & Reporting | 136–141 (6) | 0 | 0 | 0 | 6 |
 | 18 | MCP & External Agent Integration | 142–148 (7) | 0 | 0 | 0 | 7 |
 | 19 | Process Customization & Advanced | 149–157 (9) | 0 | 0 | 0 | 9 |
-| **TOTAL** | | **157** | **1** | **0** | **1** | **155** |
+| **TOTAL** | | **157** | **8** | **0** | **1** | **148** |
 
 ---
 
@@ -63,19 +63,19 @@
 | Phase | Name | Status | Prerequisites |
 |-------|------|--------|---------------|
 | 001 | Helix Mode Database Migration | `done` | — |
-| 002 | Mode Context Provider & Toggle | `ready` | 001 |
-| 003 | Helix Route Structure | `blocked` | 002 |
-| 004 | Helix Sidebar & Navigation Shell | `blocked` | 003 |
-| 005 | Stage & Step Data Model | `blocked` | 004 |
-| 006 | Helix Dashboard Landing Page | `blocked` | 005 |
-| 007 | Hard-Block Gate Check Engine | `blocked` | 005 |
-| 008 | Mode Toggle UX & Open Mode Bridge | `blocked` | 006, 007 |
+| 002 | Mode Context Provider & Toggle | `done` | 001 |
+| 003 | Helix Route Structure | `done` | 002 |
+| 004 | Helix Sidebar & Navigation Shell | `done` | 003 |
+| 005 | Stage & Step Data Model | `done` | 004 |
+| 006 | Helix Dashboard Landing Page | `done` | 005 |
+| 007 | Hard-Block Gate Check Engine | `done` | 005 |
+| 008 | Mode Toggle UX & Open Mode Bridge | `done` | 006, 007 |
 
 ### Epic 2: Planning Stage — Steps 1.1–1.3 (009–014)
 
 | Phase | Name | Status | Prerequisites |
 |-------|------|--------|---------------|
-| 009 | Step Detail View Component | `blocked` | 008 |
+| 009 | Step Detail View Component | `ready` | 008 |
 | 010 | Step 1.1 — Define Project Idea | `blocked` | 009 |
 | 011 | Step 1.2 — Brainstorming Prompt (Manual) | `blocked` | 010 |
 | 012 | Step 1.3 — Save Project Brief | `blocked` | 011 |
@@ -317,7 +317,7 @@
 For each phase:
 1. Sync BuildPlan only: `git fetch origin main && git checkout origin/main -- Artifacts/BuildPlanv2/`
 2. Confirm the phase shows `ready` in the Status Table above
-3. Read the phase spec at `Artifacts/BuildPlanv2/Phases/Phase-XXX-*.md`
+3. Read the phase spec at `Artifacts/BuildPlanv2/phases/Phase-XXX-*.md`
 4. Build on the `main` branch
 5. Run appropriate build/lint commands
 6. Manual testing checkpoint: provide user with testing instructions

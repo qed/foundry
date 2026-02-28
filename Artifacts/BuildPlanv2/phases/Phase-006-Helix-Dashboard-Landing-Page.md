@@ -25,7 +25,7 @@ This page replaces the placeholder Helix page from Phase 003 with a fully functi
 ## Detailed Requirements
 
 ### 1. Create Stage Card Component
-#### File: `src/components/HelixStageCard.tsx` (NEW)
+#### File: `components/helix/helix-stage-card.tsx` (NEW)
 Create a reusable card component for displaying stage information and navigation.
 
 ```typescript
@@ -162,7 +162,7 @@ export function HelixStageCard({
 ```
 
 ### 2. Create Enhanced Helix Dashboard Page
-#### File: `src/app/(auth)/org/[orgSlug]/project/[projectId]/(helix)/page.tsx` (UPDATED)
+#### File: `app/org/[orgSlug]/project/[projectId]/helix/page.tsx` (UPDATED)
 Replace the placeholder dashboard with a fully featured page using stage cards.
 
 ```typescript
@@ -344,7 +344,7 @@ export default function HelixDashboard() {
 ```
 
 ### 3. Create Dashboard Metrics Component
-#### File: `src/components/HelixDashboardMetrics.tsx` (NEW)
+#### File: `components/helix/helix-dashboard-metrics.tsx` (NEW)
 Create a reusable metrics display component.
 
 ```typescript
@@ -432,13 +432,13 @@ export function HelixDashboardMetrics() {
 
 ## File Structure
 ```
-src/
-├── components/
-│   ├── HelixStageCard.tsx (NEW)
-│   └── HelixDashboardMetrics.tsx (NEW)
-└── app/(auth)/org/[orgSlug]/project/[projectId]/
-    └── (helix)/
-        └── page.tsx (UPDATED)
+components/
+└── helix/
+    ├── helix-stage-card.tsx (NEW)
+    └── helix-dashboard-metrics.tsx (NEW)
+app/org/[orgSlug]/project/[projectId]/
+└── helix/
+    └── page.tsx (UPDATED)
 ```
 
 ---

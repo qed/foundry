@@ -21,7 +21,7 @@ Mode switching must be safe and clear. Users should understand what happens when
 ## Detailed Requirements
 
 ### 1. Enhance Mode Toggle with Better UX
-#### File: `src/components/HelixModeToggle.tsx` (UPDATED)
+#### File: `components/helix/helix-mode-toggle.tsx` (UPDATED)
 Update the mode toggle with improved confirmation logic and progress warnings.
 
 ```typescript
@@ -195,7 +195,7 @@ export function HelixModeToggle({ showLabel = true }: ModeToggleProps) {
 ```
 
 ### 2. Create Unified Sidebar Navigation Component
-#### File: `src/components/ProjectSidebar.tsx` (NEW)
+#### File: `components/helix/project-sidebar.tsx` (NEW)
 Create a sidebar that shows either Helix or Open Mode navigation based on mode.
 
 ```typescript
@@ -228,7 +228,7 @@ export function ProjectSidebar() {
 ```
 
 ### 3. Create Deep Link Handler
-#### File: `src/lib/helix/deep-link.ts` (NEW)
+#### File: `lib/helix/deep-link.ts` (NEW)
 Create utilities for handling deep links across both modes.
 
 ```typescript
@@ -348,7 +348,7 @@ export function translateLinkBetweenModes(
 ```
 
 ### 4. Create Navigation Guard for Deep Links
-#### File: `src/components/DeepLinkNavigationGuard.tsx` (NEW)
+#### File: `components/helix/deep-link-navigation-guard.tsx` (NEW)
 Create a component that handles deep link navigation when switching modes.
 
 ```typescript
@@ -401,7 +401,7 @@ export function DeepLinkNavigationGuard() {
 ```
 
 ### 5. Create Breadcrumb Component for Both Modes
-#### File: `src/components/ProjectBreadcrumb.tsx` (NEW)
+#### File: `components/helix/project-breadcrumb.tsx` (NEW)
 Create breadcrumbs that work in both Helix and Open modes.
 
 ```typescript
@@ -472,7 +472,7 @@ export function ProjectBreadcrumb() {
 ```
 
 ### 6. Update Project Layout to Include All Components
-#### File: `src/app/(auth)/org/[orgSlug]/project/[projectId]/layout.tsx` (UPDATED)
+#### File: `app/org/[orgSlug]/project/[projectId]/layout.tsx` (UPDATED)
 Integrate all new components into the project layout.
 
 ```typescript
@@ -519,17 +519,17 @@ export default function ProjectLayout({
 
 ## File Structure
 ```
-src/
-├── components/
-│   ├── HelixModeToggle.tsx (UPDATED)
-│   ├── ProjectSidebar.tsx (NEW)
-│   ├── ProjectBreadcrumb.tsx (NEW)
-│   └── DeepLinkNavigationGuard.tsx (NEW)
-├── lib/
-│   └── helix/
-│       └── deep-link.ts (NEW)
-└── app/(auth)/org/[orgSlug]/project/[projectId]/
-    └── layout.tsx (UPDATED)
+components/
+└── helix/
+    ├── helix-mode-toggle.tsx (UPDATED)
+    ├── project-sidebar.tsx (NEW)
+    ├── project-breadcrumb.tsx (NEW)
+    └── deep-link-navigation-guard.tsx (NEW)
+lib/
+└── helix/
+    └── deep-link.ts (NEW)
+app/org/[orgSlug]/project/[projectId]/
+└── layout.tsx (UPDATED)
 ```
 
 ---

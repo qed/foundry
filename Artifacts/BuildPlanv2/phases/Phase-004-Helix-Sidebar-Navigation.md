@@ -23,7 +23,7 @@ This is the central navigation hub for the entire Helix Mode experience and will
 ## Detailed Requirements
 
 ### 1. Create Helix Sidebar Component
-#### File: `src/components/HelixSidebar.tsx` (NEW)
+#### File: `components/helix/helix-sidebar.tsx` (NEW)
 Create the main sidebar component showing all stages and steps with status indicators.
 
 ```typescript
@@ -238,7 +238,7 @@ export function HelixSidebar() {
 ```
 
 ### 2. Integrate Sidebar into Helix Layout
-#### File: `src/app/(auth)/org/[orgSlug]/project/[projectId]/(helix)/layout.tsx` (UPDATED)
+#### File: `app/org/[orgSlug]/project/[projectId]/helix/layout.tsx` (UPDATED)
 Update the Helix layout to include the HelixSidebar component.
 
 ```typescript
@@ -308,7 +308,7 @@ export default function HelixLayout({
 ```
 
 ### 3. Create Step Navigation Hook
-#### File: `src/hooks/useStepNavigation.ts` (NEW)
+#### File: `hooks/useStepNavigation.ts` (NEW)
 Create a hook for navigating between steps with validation.
 
 ```typescript
@@ -377,7 +377,7 @@ export function useStepNavigation() {
 ```
 
 ### 4. Create Responsive Sidebar Wrapper
-#### File: `src/components/HelixSidebarWrapper.tsx` (NEW)
+#### File: `components/helix/helix-sidebar-wrapper.tsx` (NEW)
 Create a wrapper that handles sidebar visibility on mobile/tablet devices.
 
 ```typescript
@@ -428,15 +428,15 @@ export function HelixSidebarWrapper() {
 
 ## File Structure
 ```
-src/
-├── components/
-│   ├── HelixSidebar.tsx (NEW)
-│   └── HelixSidebarWrapper.tsx (NEW)
-├── hooks/
-│   └── useStepNavigation.ts (NEW)
-└── app/(auth)/org/[orgSlug]/project/[projectId]/
-    └── (helix)/
-        └── layout.tsx (UPDATED)
+components/
+└── helix/
+    ├── helix-sidebar.tsx (NEW)
+    └── helix-sidebar-wrapper.tsx (NEW)
+hooks/
+└── useStepNavigation.ts (NEW)
+app/org/[orgSlug]/project/[projectId]/
+└── helix/
+    └── layout.tsx (UPDATED)
 ```
 
 ---

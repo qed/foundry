@@ -29,7 +29,7 @@ Helix Mode is integrated into the existing Foundry v1 application:
 
 ---
 
-## Phase Breakdown (145 Phases across 19 Epics)
+## Phase Breakdown (157 Phases across 19 Epics)
 
 ### EPIC 1: FOUNDATION & MODE INFRASTRUCTURE (Phases 001–008)
 

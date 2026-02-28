@@ -27,7 +27,7 @@ The gate check engine validates:
 ## Detailed Requirements
 
 ### 1. Create Gate Check Service
-#### File: `src/lib/helix/gate-check.ts` (NEW)
+#### File: `lib/helix/gate-check.ts` (NEW)
 Create the core gate checking logic for step and stage progression.
 
 ```typescript
@@ -327,7 +327,7 @@ function getPreviousStepKey(stepKey: string): string | null {
 ```
 
 ### 2. Create API Route for Gate Checking
-#### File: `src/app/api/helix/gate-check/route.ts` (NEW)
+#### File: `app/api/helix/gate-check/route.ts` (NEW)
 Create the API endpoint for evaluating gate checks.
 
 ```typescript
@@ -389,7 +389,7 @@ export async function POST(request: NextRequest) {
 ```
 
 ### 3. Create Hook for Gate Check Validation
-#### File: `src/hooks/useGateCheck.ts` (NEW)
+#### File: `hooks/useGateCheck.ts` (NEW)
 Create a hook for client-side gate checking.
 
 ```typescript
@@ -447,7 +447,7 @@ export function useGateCheck() {
 ```
 
 ### 4. Create Gate Check UI Component
-#### File: `src/components/GateCheckAlert.tsx` (NEW)
+#### File: `components/helix/gate-check-alert.tsx` (NEW)
 Create a component for displaying gate check results to users.
 
 ```typescript
@@ -538,19 +538,19 @@ export function GateCheckAlert({
 
 ## File Structure
 ```
-src/
-├── lib/
-│   └── helix/
-│       └── gate-check.ts (NEW)
-├── hooks/
-│   └── useGateCheck.ts (NEW)
-├── components/
-│   └── GateCheckAlert.tsx (NEW)
-└── app/
-    └── api/
-        └── helix/
-            └── gate-check/
-                └── route.ts (NEW)
+lib/
+└── helix/
+    └── gate-check.ts (NEW)
+hooks/
+└── useGateCheck.ts (NEW)
+components/
+└── helix/
+    └── gate-check-alert.tsx (NEW)
+app/
+└── api/
+    └── helix/
+        └── gate-check/
+            └── route.ts (NEW)
 ```
 
 ---

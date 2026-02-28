@@ -21,7 +21,7 @@ The data model uses TypeScript interfaces for type safety and includes helper fu
 ## Detailed Requirements
 
 ### 1. Create Helix Process Configuration
-#### File: `src/config/helix-process.ts` (NEW)
+#### File: `config/helix-process.ts` (NEW)
 Define the complete Helix process structure with all 22 steps.
 
 ```typescript
@@ -656,9 +656,8 @@ export function isValidStepKey(key: string): boolean {
 
 ## File Structure
 ```
-src/
-└── config/
-    └── helix-process.ts (NEW)
+config/
+└── helix-process.ts (NEW)
 ```
 
 ---
