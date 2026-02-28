@@ -24,7 +24,7 @@ The `mode` column on projects allows soft switching between Open Mode (v1) and H
 ## Detailed Requirements
 
 ### 1. Add Mode Column to Projects Table
-#### File: `supabase/migrations/20260228000001_add_helix_mode.sql` (NEW)
+#### File: `supabase/migrations/042_add_helix_mode.sql` (NEW)
 Add a `mode` enum column to the existing `projects` table with default value 'open'. This allows switching between Open Mode (existing v1 behavior) and Helix Mode (new quality-controlled process).
 
 ```sql
@@ -43,7 +43,7 @@ CREATE INDEX idx_projects_mode ON projects(mode);
 ```
 
 ### 2. Create Helix Steps Table
-#### File: `supabase/migrations/20260228000002_create_helix_steps.sql` (NEW)
+#### File: `supabase/migrations/043_create_helix_steps.sql` (NEW)
 Create the `helix_steps` table to track progression through the 22 steps across 8 stages. Each record represents a step's current status and associated evidence.
 
 ```sql
@@ -126,7 +126,7 @@ COMMENT ON TABLE helix_steps IS 'Tracks progression through Helix Mode steps wit
 ```
 
 ### 3. Create Helix Stage Gates Table
-#### File: `supabase/migrations/20260228000003_create_helix_stage_gates.sql` (NEW)
+#### File: `supabase/migrations/044_create_helix_stage_gates.sql` (NEW)
 Create the `helix_stage_gates` table to enforce hard-block progression between stages. A stage gate must be passed (all steps in stage complete with valid evidence) before accessing the next stage.
 
 ```sql
@@ -202,7 +202,7 @@ COMMENT ON TABLE helix_stage_gates IS 'Tracks stage gate status to enforce linea
 ```
 
 ### 4. Create Database Helpers & Utility Functions
-#### File: `src/lib/db/helix.ts` (NEW)
+#### File: `lib/db/helix.ts` (NEW)
 Create utility functions for common Helix-related database queries and operations.
 
 ```typescript
@@ -401,14 +401,16 @@ export async function initializeStageGates(
 ```
 supabase/
 ├── migrations/
-│   ├── 20260228000001_add_helix_mode.sql (NEW)
-│   ├── 20260228000002_create_helix_steps.sql (NEW)
-│   └── 20260228000003_create_helix_stage_gates.sql (NEW)
+│   ├── 042_add_helix_mode.sql (NEW)
+│   ├── 043_create_helix_steps.sql (NEW)
+│   └── 044_create_helix_stage_gates.sql (NEW)
 
-src/
-├── lib/
-│   └── db/
-│       └── helix.ts (NEW)
+lib/
+├── db/
+│   └── helix.ts (NEW)
+
+types/
+├── database.ts (MODIFIED — added helix_steps, helix_stage_gates types, mode column)
 ```
 
 ---

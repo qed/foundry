@@ -2,7 +2,7 @@
 
 > **Single source of truth** for sequential phase execution.
 > **Location**: `Artifacts/BuildPlanv2/roadmap.md` (kept in sync via alignment.md).
-> Last updated: 2026-02-28
+> Last updated: 2026-02-28 (Phase 001 complete)
 
 ---
 
@@ -14,7 +14,7 @@
 
 **Per-phase workflow**: Pull dev -> Read spec -> Build -> Lint pass -> Commit to dev -> Push -> Run alignment.md -> Next phase.
 
-**Currently ready to start**: Phase 001
+**Currently ready to start**: Phase 002
 
 ---
 
@@ -22,7 +22,7 @@
 
 | Epic | Name | Phases | Done | In Progress | Ready | Blocked |
 |------|------|--------|------|-------------|-------|---------|
-| 1 | Foundation & Mode Infrastructure | 001–008 (8) | 0 | 0 | 1 | 7 |
+| 1 | Foundation & Mode Infrastructure | 001–008 (8) | 1 | 0 | 1 | 6 |
 | 2 | Planning Stage | 009–014 (6) | 0 | 0 | 0 | 6 |
 | 3 | Documentation Stage | 015–021 (7) | 0 | 0 | 0 | 7 |
 | 4 | Build Planning & Repo Setup | 022–032 (11) | 0 | 0 | 0 | 11 |
@@ -41,7 +41,7 @@
 | 17 | Process Analytics & Reporting | 136–141 (6) | 0 | 0 | 0 | 6 |
 | 18 | MCP & External Agent Integration | 142–148 (7) | 0 | 0 | 0 | 7 |
 | 19 | Process Customization & Advanced | 149–157 (9) | 0 | 0 | 0 | 9 |
-| **TOTAL** | | **157** | **0** | **0** | **1** | **156** |
+| **TOTAL** | | **157** | **1** | **0** | **1** | **155** |
 
 ---
 
@@ -62,8 +62,8 @@
 
 | Phase | Name | Status | Prerequisites |
 |-------|------|--------|---------------|
-| 001 | Helix Mode Database Migration | `ready` | — |
-| 002 | Mode Context Provider & Toggle | `blocked` | 001 |
+| 001 | Helix Mode Database Migration | `done` | — |
+| 002 | Mode Context Provider & Toggle | `ready` | 001 |
 | 003 | Helix Route Structure | `blocked` | 002 |
 | 004 | Helix Sidebar & Navigation Shell | `blocked` | 003 |
 | 005 | Stage & Step Data Model | `blocked` | 004 |

@@ -50,7 +50,7 @@ Where XXX is the phase number (e.g., 001, 029, 059). This sets the Claude Code s
 | Epic 18 | `PhaseHistory/epic-18-mcp-integration.md` | 142–148 | `app/api/`, `src/` |
 | Epic 19 | `PhaseHistory/epic-19-customization.md` | 149–157 | `app/helix/`, `src/` |
 
-**0 phases complete.** Update this count after each phase via alignment.
+**1 phase complete.** Update this count after each phase via alignment.
 
 ---
 
@@ -59,7 +59,10 @@ Where XXX is the phase number (e.g., 001, 029, 059). This sets the Claude Code s
 > Customize per phase. Include the files relevant to the phase being built, plus the universal files every session should read.
 
 ### Universal (include in every prompt)
-_(Populate after Phase 001 — these are the foundational files that every session needs)_
+- `types/database.ts` — All Supabase table types (Row/Insert/Update) and convenience aliases
+- `lib/supabase/client.ts` — Browser-side Supabase client (uses `createBrowserClient`)
+- `lib/supabase/server.ts` — Server-side Supabase client (`createClient`, `createServiceClient`, `getUser`)
+- `lib/db/helix.ts` — Helix step/gate query utilities (client-side)
 
 ---
 
@@ -77,7 +80,12 @@ _(Populate after Phase 001 — these are the foundational files that every sessi
 8. Claude AI: haiku for agents, sonnet for generation
 9. Gate checks enforce step completion before proceeding
 
-_(Add new conventions here as phases are completed)_
+10. RLS policies use `is_project_member()` SECURITY DEFINER helper (from migration 002) — never inline subqueries
+11. Service role bypass policies: `auth.role() = 'service_role'` FOR ALL on every table
+12. Auto-update `updated_at` via existing `update_updated_at()` trigger function
+13. Migration files numbered sequentially: `042_`, `043_`, etc. (next available: 045)
+14. Database types live in `types/database.ts` with convenience aliases at the bottom
+15. Helix utility functions in `lib/db/helix.ts` — re-export types from `types/database.ts`
 
 ---
 
@@ -118,10 +126,10 @@ git checkout origin/main -- Artifacts/BuildPlanv2/
 > Updated after each phase completes. Next = first incomplete phase in the list.
 
 **Completed**:
-_(none yet)_
+- Phase 001: Helix Mode Database Migration
 
 **Next up** (sequential order):
-- Phase 001: Helix Mode Database Migration
+- Phase 002: Mode Context Provider & Toggle
 
 ---
 
