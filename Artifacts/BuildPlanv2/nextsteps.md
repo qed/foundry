@@ -2,7 +2,7 @@
 
 > **Purpose**: Master template used to generate phase build prompts for Claude Code sessions.
 > **Updated by**: The build session after each phase completes (via alignment.md).
-> **Last updated**: 2026-02-28
+> **Last updated**: 2026-02-28 (Phases 001-014 complete)
 > **Location**: `Artifacts/BuildPlanv2/nextsteps.md` (kept in sync via alignment.md).
 
 ---
@@ -50,7 +50,7 @@ Where XXX is the phase number (e.g., 001, 029, 059). This sets the Claude Code s
 | Epic 18 | `PhaseHistory/epic-18-mcp-integration.md` | 142–148 | `app/api/`, `lib/` |
 | Epic 19 | `PhaseHistory/epic-19-customization.md` | 149–157 | `app/helix/`, `components/helix/`, `lib/` |
 
-**8 phases complete (Epic 1 done).** Update this count after each phase via alignment.
+**14 phases complete (Epics 1–2 done).** Update this count after each phase via alignment.
 
 ---
 
@@ -88,6 +88,25 @@ Where XXX is the phase number (e.g., 001, 029, 059). This sets the Claude Code s
 - `app/org/[orgSlug]/project/[projectId]/helix/loading.tsx` — Skeleton loader
 - `app/org/[orgSlug]/project/[projectId]/helix/[...slug]/page.tsx` — Catch-all 404
 
+### Planning Stage (from Epic 2 — read for any step-related phase)
+- `components/helix/StepDetailView.tsx` — Reusable dual-panel step layout with breadcrumbs, evidence viewer/panel, and navigation
+- `components/helix/EvidencePanel.tsx` — Evidence submission panel (text, file, URL, checklist inputs)
+- `components/helix/EvidenceViewer.tsx` — Read-only evidence display with smart type detection, markdown rendering, copy-to-clipboard
+- `components/helix/MarkdownRenderer.tsx` — react-markdown wrapper with remark-gfm and custom styled components
+- `components/helix/BreadcrumbNav.tsx` — Helix > Stage > Step breadcrumb navigation
+- `components/helix/ProgressBar.tsx` — Stage progress bar + OverallProgress components
+- `components/helix/StepNavigation.tsx` — Previous/Next step link-based navigation with lock awareness
+- `components/helix/steps/Step1_1Content.tsx` — Step 1.1: Define Project Idea (TipTap editor, form fields, auto-save)
+- `components/helix/steps/Step1_2Content.tsx` — Step 1.2: Brainstorming Prompt (copy prompt, paste output, file upload)
+- `components/helix/steps/Step1_3Content.tsx` — Step 1.3: Save Project Brief (markdown paste/upload with preview)
+- `lib/helix/actions.ts` — Server actions: completeHelixStep, autoSaveStepEvidence
+- `lib/helix/fileProcessing.ts` — File text extraction utility
+- `lib/utils/debounce.ts` — Generic debounce utility
+- `hooks/useHelixProgress.ts` — Client-side progress fetching hook
+- `app/org/[orgSlug]/project/[projectId]/helix/step/[stepKey]/page.tsx` — Dynamic step route with conditional step-specific rendering
+- `app/api/helix/projects/[projectId]/steps/[stepKey]/auto-save/route.ts` — Auto-save API endpoint
+- `app/api/helix/projects/[projectId]/progress/route.ts` — Progress API endpoint
+
 ---
 
 ## Section 3: Conventions & Patterns
@@ -119,6 +138,13 @@ Where XXX is the phase number (e.g., 001, 029, 059). This sets the Claude Code s
 21. Helix process config in `config/helix-process.ts` is the single source of truth for all 8 stages and 22 steps — always import from there
 22. Custom hooks live in root `hooks/` directory (e.g., `useStepNavigation.ts`, `useGateCheck.ts`)
 23. Server-side Helix logic in `lib/helix/` directory (e.g., `gate-check.ts`, `deep-link.ts`)
+24. Step-specific content components go in `components/helix/steps/` with PascalCase names (e.g., `Step1_1Content.tsx`)
+25. Evidence stored in `helix_steps.evidence_data` JSONB column — NOT in the artifacts table
+26. Dark theme colors for status: green (`bg-green-900/20`, `text-green-300`), red (`bg-red-900/20`, `text-red-300`), yellow, blue
+27. Server actions in `lib/helix/actions.ts` use `'use server'` directive and `revalidatePath` for data refresh
+28. Step completion pattern: mark current step complete + unlock next step (update status from 'locked' to 'active')
+29. Auto-save uses debounced POST to `/api/helix/projects/[projectId]/steps/[stepKey]/auto-save`
+30. `window.location.reload()` used after step completion to refresh server data in client components
 
 ---
 
@@ -167,9 +193,15 @@ git checkout origin/main -- Artifacts/BuildPlanv2/
 - Phase 006: Helix Dashboard Landing Page
 - Phase 007: Hard-Block Gate Check Engine
 - Phase 008: Mode Toggle UX & Open Mode Bridge
+- Phase 009: Step Detail View Component
+- Phase 010: Step 1.1 — Define Project Idea
+- Phase 011: Step 1.2 — Brainstorming Prompt (Manual)
+- Phase 012: Step 1.3 — Save Project Brief
+- Phase 013: Evidence Viewer Component
+- Phase 014: Step Navigation & Progress Tracking
 
 **Next up** (sequential order):
-- Phase 009: Step Detail View Component
+- Phase 015: Step 2.1 — Identify Documentation
 
 ---
 

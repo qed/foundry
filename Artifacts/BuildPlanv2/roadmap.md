@@ -2,7 +2,7 @@
 
 > **Single source of truth** for sequential phase execution.
 > **Location**: `Artifacts/BuildPlanv2/roadmap.md` (kept in sync via alignment.md).
-> Last updated: 2026-02-28 (Phases 001-008 complete)
+> Last updated: 2026-02-28 (Phases 001-014 complete)
 
 ---
 
@@ -14,7 +14,7 @@
 
 **Per-phase workflow**: Pull main -> Read spec -> Build -> Lint pass -> Commit to main -> Push -> Run alignment.md -> Next phase.
 
-**Currently ready to start**: Phase 009
+**Currently ready to start**: Phase 015
 
 ---
 
@@ -23,8 +23,8 @@
 | Epic | Name | Phases | Done | In Progress | Ready | Blocked |
 |------|------|--------|------|-------------|-------|---------|
 | 1 | Foundation & Mode Infrastructure | 001–008 (8) | 8 | 0 | 0 | 0 |
-| 2 | Planning Stage | 009–014 (6) | 0 | 0 | 1 | 5 |
-| 3 | Documentation Stage | 015–021 (7) | 0 | 0 | 0 | 7 |
+| 2 | Planning Stage | 009–014 (6) | 6 | 0 | 0 | 0 |
+| 3 | Documentation Stage | 015–021 (7) | 0 | 0 | 1 | 6 |
 | 4 | Build Planning & Repo Setup | 022–032 (11) | 0 | 0 | 0 | 11 |
 | 5 | Build, Testing & Deployment | 033–044 (12) | 0 | 0 | 0 | 12 |
 | 6 | MVP Polish & Cross-Cutting | 045–052 (8) | 0 | 0 | 0 | 8 |
@@ -41,7 +41,7 @@
 | 17 | Process Analytics & Reporting | 136–141 (6) | 0 | 0 | 0 | 6 |
 | 18 | MCP & External Agent Integration | 142–148 (7) | 0 | 0 | 0 | 7 |
 | 19 | Process Customization & Advanced | 149–157 (9) | 0 | 0 | 0 | 9 |
-| **TOTAL** | | **157** | **8** | **0** | **1** | **148** |
+| **TOTAL** | | **157** | **14** | **0** | **1** | **142** |
 
 ---
 
@@ -75,18 +75,18 @@
 
 | Phase | Name | Status | Prerequisites |
 |-------|------|--------|---------------|
-| 009 | Step Detail View Component | `ready` | 008 |
-| 010 | Step 1.1 — Define Project Idea | `blocked` | 009 |
-| 011 | Step 1.2 — Brainstorming Prompt (Manual) | `blocked` | 010 |
-| 012 | Step 1.3 — Save Project Brief | `blocked` | 011 |
-| 013 | Evidence Viewer Component | `blocked` | 009 |
-| 014 | Step Navigation & Progress Tracking | `blocked` | 013 |
+| 009 | Step Detail View Component | `done` | 008 |
+| 010 | Step 1.1 — Define Project Idea | `done` | 009 |
+| 011 | Step 1.2 — Brainstorming Prompt (Manual) | `done` | 010 |
+| 012 | Step 1.3 — Save Project Brief | `done` | 011 |
+| 013 | Evidence Viewer Component | `done` | 009 |
+| 014 | Step Navigation & Progress Tracking | `done` | 013 |
 
 ### Epic 3: Documentation Stage — Steps 2.1–2.4 (015–021)
 
 | Phase | Name | Status | Prerequisites |
 |-------|------|--------|---------------|
-| 015 | Step 2.1 — Identify Documentation | `blocked` | 012, 014 |
+| 015 | Step 2.1 — Identify Documentation | `ready` | 012, 014 |
 | 016 | Step 2.2 — Capture Undocumented Knowledge | `blocked` | 015 |
 | 017 | Step 2.3 — Gather Docs Into Folder | `blocked` | 016 |
 | 018 | Step 2.4 — Verify Documentation Complete | `blocked` | 017 |
