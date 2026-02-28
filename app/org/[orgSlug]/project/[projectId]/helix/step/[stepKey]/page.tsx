@@ -2,6 +2,9 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getStep, getNextStep, getPreviousStep } from '@/config/helix-process'
 import StepDetailView from '@/components/helix/StepDetailView'
+import Step1_1Content from '@/components/helix/steps/Step1_1Content'
+import Step1_2Content from '@/components/helix/steps/Step1_2Content'
+import Step1_3Content from '@/components/helix/steps/Step1_3Content'
 import type { HelixStep, Json } from '@/types/database'
 
 interface StepPageProps {
@@ -45,15 +48,75 @@ export default async function StepPage({ params }: StepPageProps) {
     redirect(`/org/${orgSlug}/project/${projectId}/helix`)
   }
 
-  // Determine navigation targets
+  const typedStep = step as HelixStep
+
+  // Step-specific custom components
+  if (stepKey === '1.1') {
+    return (
+      <Step1_1Content
+        step={typedStep}
+        projectId={projectId}
+        orgSlug={orgSlug}
+      />
+    )
+  }
+
+  if (stepKey === '1.2') {
+    // Get Step 1.1 evidence for prompt generation
+    const { data: step1_1 } = await supabase
+      .from('helix_steps')
+      .select('status, evidence_data')
+      .eq('project_id', projectId)
+      .eq('step_key', '1.1')
+      .single()
+
+    if (!step1_1 || step1_1.status !== 'complete') {
+      redirect(`/org/${orgSlug}/project/${projectId}/helix/step/1.1`)
+    }
+
+    const evidence = step1_1.evidence_data as Record<string, unknown> | null
+    const projectIdea = evidence?.projectName as string || ''
+
+    return (
+      <Step1_2Content
+        step={typedStep}
+        projectId={projectId}
+        orgSlug={orgSlug}
+        projectIdea={projectIdea}
+      />
+    )
+  }
+
+  if (stepKey === '1.3') {
+    // Verify Step 1.2 is complete
+    const { data: step1_2 } = await supabase
+      .from('helix_steps')
+      .select('status')
+      .eq('project_id', projectId)
+      .eq('step_key', '1.2')
+      .single()
+
+    if (!step1_2 || step1_2.status !== 'complete') {
+      redirect(`/org/${orgSlug}/project/${projectId}/helix/step/1.2`)
+    }
+
+    return (
+      <Step1_3Content
+        step={typedStep}
+        projectId={projectId}
+        orgSlug={orgSlug}
+      />
+    )
+  }
+
+  // Generic step detail view for all other steps
   const prevStepConfig = getPreviousStep(stepKey)
   const nextStepConfig = getNextStep(stepKey)
-
   const basePath = `/org/${orgSlug}/project/${projectId}/helix/step`
 
   return (
     <StepDetailView
-      step={step as HelixStep}
+      step={typedStep}
       stepKey={stepKey}
       onComplete={async (evidence: unknown) => {
         'use server'
@@ -75,7 +138,6 @@ export default async function StepPage({ params }: StepPageProps) {
           throw new Error('Failed to save evidence')
         }
 
-        // Unlock next step if exists
         if (nextStepConfig) {
           await supabase
             .from('helix_steps')
