@@ -22,7 +22,7 @@ This phase creates the skeleton for all future Helix pages while maintaining sep
 ## Detailed Requirements
 
 ### 1. Create Helix Route Group
-#### File: `src/app/(auth)/org/[orgSlug]/project/[projectId]/(helix)/layout.tsx` (NEW)
+#### File: `app/org/[orgSlug]/project/[projectId]/helix/layout.tsx` (NEW)
 Create the main Helix layout with navigation guard and HelixModeProvider.
 
 ```typescript
@@ -99,7 +99,7 @@ export default function HelixLayout({
 ```
 
 ### 2. Create Helix Loading Skeleton
-#### File: `src/app/(auth)/org/[orgSlug]/project/[projectId]/(helix)/loading.tsx` (NEW)
+#### File: `app/org/[orgSlug]/project/[projectId]/helix/loading.tsx` (NEW)
 Create a loading skeleton for Helix pages to show while data is loading.
 
 ```typescript
@@ -133,7 +133,7 @@ export default function HelixLoading() {
 ```
 
 ### 3. Create Helix Root Page
-#### File: `src/app/(auth)/org/[orgSlug]/project/[projectId]/(helix)/page.tsx` (NEW)
+#### File: `app/org/[orgSlug]/project/[projectId]/helix/page.tsx` (NEW)
 Create the main Helix dashboard page that will be rendered when accessing `/helix`.
 
 ```typescript
@@ -252,7 +252,7 @@ function calculateOverallProgress(
 ```
 
 ### 4. Create Catch-All Route for Helix Sub-Routes
-#### File: `src/app/(auth)/org/[orgSlug]/project/[projectId]/(helix)/[...slug]/page.tsx` (NEW)
+#### File: `app/org/[orgSlug]/project/[projectId]/helix/[...slug]/page.tsx` (NEW)
 Create a catch-all route that handles undefined Helix sub-routes and shows an error message.
 
 ```typescript
@@ -293,7 +293,7 @@ export default function HelixNotFound({
 ```
 
 ### 5. Create Route Structure Type Definitions
-#### File: `src/types/helix-routes.ts` (NEW)
+#### File: `types/helix-routes.ts` (NEW)
 Create TypeScript types for Helix route parameters to ensure type safety.
 
 ```typescript
@@ -364,15 +364,15 @@ export const getHelixBreadcrumbs = (
 
 ## File Structure
 ```
-src/app/(auth)/org/[orgSlug]/project/[projectId]/
-├── (helix)/
-│   ├── layout.tsx (NEW)
-│   ├── loading.tsx (NEW)
-│   ├── page.tsx (NEW)
-│   └── [...slug]/
-│       └── page.tsx (NEW)
-│
-src/types/
+app/org/[orgSlug]/project/[projectId]/
+└── helix/
+    ├── layout.tsx (NEW)
+    ├── loading.tsx (NEW)
+    ├── page.tsx (NEW)
+    └── [...slug]/
+        └── page.tsx (NEW)
+
+types/
 └── helix-routes.ts (NEW)
 ```
 
@@ -395,7 +395,7 @@ src/types/
 ---
 
 ## Acceptance Criteria
-1. Route group `(helix)` created under project layout
+1. Route directory `helix/` created under project layout (real folder, not route group)
 2. Layout.tsx wraps children and applies navigation guard for mode checking
 3. Navigation guard redirects to Open Mode if isHelixMode is false
 4. Loading.tsx provides skeleton UI while page loads

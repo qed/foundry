@@ -21,7 +21,7 @@ All Helix-specific UI will consume this context to determine whether to show v1 
 ## Detailed Requirements
 
 ### 1. Create Helix Mode Context Provider
-#### File: `src/contexts/HelixModeContext.tsx` (NEW)
+#### File: `lib/context/helix-mode-context.tsx` (NEW)
 Create the context and provider component for managing Helix Mode state.
 
 ```typescript
@@ -182,7 +182,7 @@ export function useHelixMode() {
 ```
 
 ### 2. Create Mode Toggle Component
-#### File: `src/components/HelixModeToggle.tsx` (NEW)
+#### File: `components/helix/helix-mode-toggle.tsx` (NEW)
 Create a toggle switch component for switching between modes, with visual indicators.
 
 ```typescript
@@ -289,7 +289,7 @@ export function HelixModeToggle() {
 ```
 
 ### 3. Create API Route for Mode Toggling
-#### File: `src/app/api/projects/[projectId]/mode/route.ts` (NEW)
+#### File: `app/api/projects/[projectId]/mode/route.ts` (NEW)
 Create the API endpoint to get and update project mode in the database.
 
 ```typescript
@@ -486,7 +486,7 @@ async function getHelixStepsConfig() {
 ```
 
 ### 4. Integrate Toggle into Project Layout
-#### File: `src/app/(auth)/org/[orgSlug]/project/[projectId]/layout.tsx` (UPDATED)
+#### File: `app/org/[orgSlug]/project/[projectId]/layout.tsx` (UPDATED)
 Add the HelixModeToggle to the project header, wrapping with HelixModeProvider.
 
 ```typescript
@@ -527,23 +527,23 @@ export default function ProjectLayout({
 
 ## File Structure
 ```
-src/
-├── contexts/
-│   └── HelixModeContext.tsx (NEW)
-├── components/
-│   └── HelixModeToggle.tsx (NEW)
-├── app/
-│   └── api/
-│       └── projects/
-│           └── [projectId]/
-│               └── mode/
-│                   └── route.ts (NEW)
-└── (auth)/
-    └── org/
-        └── [orgSlug]/
-            └── project/
-                └── [projectId]/
-                    └── layout.tsx (UPDATED)
+lib/
+└── context/
+    └── helix-mode-context.tsx (NEW)
+components/
+└── helix/
+    └── helix-mode-toggle.tsx (NEW)
+app/
+├── api/
+│   └── projects/
+│       └── [projectId]/
+│           └── mode/
+│               └── route.ts (NEW)
+└── org/
+    └── [orgSlug]/
+        └── project/
+            └── [projectId]/
+                └── layout.tsx (UPDATED)
 ```
 
 ---
