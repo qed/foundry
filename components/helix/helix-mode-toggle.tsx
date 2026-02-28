@@ -1,23 +1,58 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useProject } from '@/lib/context/project-context'
+import { supabase } from '@/lib/supabase/client'
 
 interface HelixModeToggleProps {
   onToggled?: () => void
+  showProgress?: boolean
 }
 
-export function HelixModeToggle({ onToggled }: HelixModeToggleProps) {
+interface HelixProgress {
+  totalSteps: number
+  completedSteps: number
+  percentage: number
+}
+
+export function HelixModeToggle({ onToggled, showProgress = false }: HelixModeToggleProps) {
   const { project } = useProject()
   const [isToggling, setIsToggling] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [progress, setProgress] = useState<HelixProgress | null>(null)
 
   const isHelix = project.mode === 'helix'
 
+  // Load progress data when in helix mode and showProgress is enabled
+  useEffect(() => {
+    if (!isHelix || !showProgress) {
+      setProgress(null)
+      return
+    }
+
+    async function loadProgress() {
+      const { data: steps } = await supabase
+        .from('helix_steps')
+        .select('status')
+        .eq('project_id', project.id)
+
+      if (steps) {
+        const total = steps.length
+        const completed = steps.filter((s) => s.status === 'complete').length
+        setProgress({
+          totalSteps: total,
+          completedSteps: completed,
+          percentage: total > 0 ? Math.round((completed / total) * 100) : 0,
+        })
+      }
+    }
+
+    loadProgress()
+  }, [isHelix, showProgress, project.id])
+
   const handleToggle = async () => {
     if (isHelix) {
-      // Show confirmation when switching away from Helix
       setShowConfirm(true)
       return
     }
@@ -43,7 +78,6 @@ export function HelixModeToggle({ onToggled }: HelixModeToggleProps) {
       }
 
       onToggled?.()
-      // Reload to reflect new mode state
       window.location.reload()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to toggle mode')
@@ -60,7 +94,7 @@ export function HelixModeToggle({ onToggled }: HelixModeToggleProps) {
             !isHelix ? 'text-text-primary' : 'text-text-secondary'
           }`}
         >
-          Open Mode
+          Open
         </span>
         <button
           onClick={handleToggle}
@@ -83,9 +117,25 @@ export function HelixModeToggle({ onToggled }: HelixModeToggleProps) {
             isHelix ? 'text-text-primary' : 'text-text-secondary'
           }`}
         >
-          Helix Mode
+          Helix
         </span>
       </div>
+
+      {/* Progress indicator */}
+      {showProgress && isHelix && progress && (
+        <div className="mt-2">
+          <div className="flex justify-between text-xs text-text-secondary mb-1">
+            <span>{progress.completedSteps}/{progress.totalSteps} steps</span>
+            <span>{progress.percentage}%</span>
+          </div>
+          <div className="h-1 bg-bg-tertiary rounded-full overflow-hidden">
+            <div
+              className="h-full bg-accent-cyan rounded-full transition-all duration-300"
+              style={{ width: `${progress.percentage}%` }}
+            />
+          </div>
+        </div>
+      )}
 
       {error && (
         <p className="mt-1 text-xs text-red-400">{error}</p>
@@ -99,6 +149,11 @@ export function HelixModeToggle({ onToggled }: HelixModeToggleProps) {
           <p className="text-xs text-text-secondary mb-3">
             Your Helix progress will be preserved. You can switch back anytime.
           </p>
+          {progress && progress.completedSteps > 0 && (
+            <div className="mb-3 p-2 bg-bg-tertiary rounded text-xs text-text-secondary">
+              Current progress: {progress.completedSteps}/{progress.totalSteps} steps ({progress.percentage}%)
+            </div>
+          )}
           <div className="flex gap-2 justify-end">
             <button
               onClick={() => setShowConfirm(false)}
