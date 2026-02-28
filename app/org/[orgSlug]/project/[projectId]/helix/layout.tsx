@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useProject } from '@/lib/context/project-context'
 import { useOrg } from '@/lib/context/org-context'
 import { HelixModeProvider, useHelixMode } from '@/lib/context/helix-mode-context'
+import { HelixSidebarWrapper } from '@/components/helix/helix-sidebar-wrapper'
 
 function HelixLayoutInner({ children }: { children: React.ReactNode }) {
   const { isHelixMode, isLoading } = useHelixMode()
@@ -32,6 +33,7 @@ function HelixLayoutInner({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-full">
+      <HelixSidebarWrapper />
       <div className="flex-1 overflow-y-auto">
         {children}
       </div>
