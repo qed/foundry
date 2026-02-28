@@ -175,9 +175,55 @@ Be specific — mention file paths, function names, and concrete implementation 
 
 ---
 
+## Task 5C: Update Epic Testing Checklist
+
+**File**: `Artifacts/BuildPlanv2/PhaseHistory/Epic XX - Things to Test.md` (the file matching the epic this phase belongs to, e.g., `Epic 01 - Things to Test.md`)
+
+**Action**: After each phase commit, update the testing checklist for the current epic. This file is a living QA document with checkbox items organized by phase.
+
+**If the file doesn't exist yet** (first phase in a new epic): Create it using this template:
+
+```markdown
+# Epic X: [Epic Name] — Things to Test
+
+> Comprehensive testing checklist for Phases NNN–MMM.
+> Use this to verify the full Epic X build before moving to Epic Y.
+
+---
+
+## Phase NNN — [Phase Title]
+
+### [Category Name]
+
+- [ ] [Testable item]
+```
+
+**If the file already exists**: Append a new section for the just-completed phase.
+
+**What to include for each phase**:
+1. Extract all testable items from the phase spec's Acceptance Criteria and Testing Instructions sections
+2. Extract any additional testable behaviors: API endpoints, URL navigation, edge cases, responsive breakpoints, error states, validation rules
+3. Organize items into logical categories (e.g., "Database Schema", "API Endpoints", "UI Components", "Edge Cases")
+4. Write each item as a checkbox (`- [ ]`) that a human tester can verify
+5. Include specific values to verify (URLs, status codes, error messages, CSS classes) — not vague descriptions
+
+**Rules**:
+- Every item should be independently testable — a tester should be able to check the box after verifying it
+- Include SQL queries, API calls, or commands where relevant
+- Group related items under `### Category` headers within each phase section
+- Keep items concise but specific — "Toggle shows cyan indicator when mode is 'helix'" not "Toggle works"
+- If the phase was built differently from spec, write test items for what was ACTUALLY built
+
+**Do NOT**:
+- Write items that require reading source code to verify — focus on observable behavior
+- Include implementation details that aren't testable (e.g., "uses useState hook")
+- Skip a phase — every completed phase gets a section
+
+---
+
 ## Task 6: Cross-Document Consistency Check
 
-**Action**: Re-read all updated documents (phase file, summary, roadmap, nextsteps, PhaseHistory) and verify they tell the same story.
+**Action**: Re-read all updated documents (phase file, summary, roadmap, nextsteps, PhaseHistory, Epic Testing Checklist) and verify they tell the same story.
 
 **Check for**:
 
@@ -298,6 +344,7 @@ BuildPlan synced to both repos:
 | roadmap.md | Status tracking, execution queue, dependencies, progress counts | Mark done, unblock downstream, update queue |
 | nextsteps.md | Prompt template: phase history, key files, conventions, patterns | Add to history, add new files/conventions |
 | PhaseHistory file | Detailed technical narrative per phase, grouped by epic | Append new entry for this phase |
+| Epic XX - Things to Test.md | Checkbox testing checklist per phase, grouped by epic | Append test items for this phase |
 
 ---
 
