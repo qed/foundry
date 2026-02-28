@@ -1,19 +1,23 @@
 'use client'
 
 import React from 'react'
-import { ChevronLeft, ChevronRight, AlertCircle, CheckCircle2, Lock } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Lock } from 'lucide-react'
 import type { HelixStep } from '@/types/database'
-import { getStep } from '@/config/helix-process'
+import { getStep, getNextStep, getPreviousStep } from '@/config/helix-process'
 import type { StepConfig } from '@/config/helix-process'
 import EvidencePanel from './EvidencePanel'
 import EvidenceViewer from './EvidenceViewer'
+import BreadcrumbNav from './BreadcrumbNav'
+import StepNavigation from './StepNavigation'
 
 interface StepDetailViewProps {
   step: HelixStep
   stepKey: string
+  orgSlug: string
+  projectId: string
   onComplete: (evidence: unknown) => Promise<void>
-  onNavigatePrev?: () => void
-  onNavigateNext?: () => void
+  /** Status of the next step (to determine if navigation is possible) */
+  nextStepStatus?: string
   isLoading?: boolean
   error?: string
   /** Custom content to render in the left panel instead of the default instructions */
@@ -23,14 +27,17 @@ interface StepDetailViewProps {
 export default function StepDetailView({
   step,
   stepKey,
+  orgSlug,
+  projectId,
   onComplete,
-  onNavigatePrev,
-  onNavigateNext,
+  nextStepStatus,
   isLoading = false,
   error,
   children,
 }: StepDetailViewProps) {
   const stepConfig: StepConfig | undefined = getStep(stepKey)
+  const prevStepConfig = getPreviousStep(stepKey)
+  const nextStepConfig = getNextStep(stepKey)
 
   if (!stepConfig) {
     return (
@@ -51,6 +58,9 @@ export default function StepDetailView({
       {/* Header */}
       <div className="border-b border-bg-tertiary bg-bg-secondary sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="mb-3">
+            <BreadcrumbNav orgSlug={orgSlug} projectId={projectId} stepKey={stepKey} />
+          </div>
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-text-primary">
@@ -172,25 +182,14 @@ export default function StepDetailView({
         </div>
 
         {/* Navigation */}
-        <div className="mt-12 flex justify-between items-center">
-          <button
-            onClick={onNavigatePrev}
-            disabled={!onNavigatePrev}
-            className="flex items-center gap-2 px-4 py-2 text-text-secondary hover:text-text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <ChevronLeft size={20} />
-            Previous Step
-          </button>
-
-          <button
-            onClick={onNavigateNext}
-            disabled={!onNavigateNext || !isComplete}
-            className="flex items-center gap-2 px-4 py-2 text-text-secondary hover:text-text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Next Step
-            <ChevronRight size={20} />
-          </button>
-        </div>
+        <StepNavigation
+          orgSlug={orgSlug}
+          projectId={projectId}
+          prevStepKey={prevStepConfig?.key}
+          nextStepKey={nextStepConfig?.key}
+          canGoPrev={!!prevStepConfig}
+          canGoNext={isComplete && !!nextStepConfig && nextStepStatus !== 'locked'}
+        />
       </div>
     </div>
   )

@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { getStep, getNextStep, getPreviousStep } from '@/config/helix-process'
+import { getStep, getNextStep } from '@/config/helix-process'
 import StepDetailView from '@/components/helix/StepDetailView'
 import Step1_1Content from '@/components/helix/steps/Step1_1Content'
 import Step1_2Content from '@/components/helix/steps/Step1_2Content'
@@ -110,14 +110,27 @@ export default async function StepPage({ params }: StepPageProps) {
   }
 
   // Generic step detail view for all other steps
-  const prevStepConfig = getPreviousStep(stepKey)
   const nextStepConfig = getNextStep(stepKey)
-  const basePath = `/org/${orgSlug}/project/${projectId}/helix/step`
+
+  // Get next step status for navigation
+  let nextStepStatus: string | undefined
+  if (nextStepConfig) {
+    const { data: nextStepData } = await supabase
+      .from('helix_steps')
+      .select('status')
+      .eq('project_id', projectId)
+      .eq('step_key', nextStepConfig.key)
+      .single()
+    nextStepStatus = nextStepData?.status ?? undefined
+  }
 
   return (
     <StepDetailView
       step={typedStep}
       stepKey={stepKey}
+      orgSlug={orgSlug}
+      projectId={projectId}
+      nextStepStatus={nextStepStatus}
       onComplete={async (evidence: unknown) => {
         'use server'
 
@@ -147,14 +160,6 @@ export default async function StepPage({ params }: StepPageProps) {
             .eq('status', 'locked')
         }
       }}
-      onNavigatePrev={prevStepConfig ? async () => {
-        'use server'
-        redirect(`${basePath}/${prevStepConfig.key}`)
-      } : undefined}
-      onNavigateNext={nextStepConfig ? async () => {
-        'use server'
-        redirect(`${basePath}/${nextStepConfig.key}`)
-      } : undefined}
     />
   )
 }
