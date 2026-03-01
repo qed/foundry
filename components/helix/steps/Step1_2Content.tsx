@@ -25,10 +25,10 @@ export default function Step1_2Content({
   orgSlug,
   companyName,
 }: Step1_2ContentProps) {
-  const [brainstormingOutput, setBrainstormingOutput] = useState<BrainstormingOutput | null>(
-    step.evidence_data as BrainstormingOutput | null
-  )
-  const [pastedText, setPastedText] = useState('')
+  const existingOutput = step.evidence_data as BrainstormingOutput | null
+  const isComplete = step.status === 'complete'
+
+  const [pastedText, setPastedText] = useState(existingOutput?.content || '')
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [validationError, setValidationError] = useState<string | null>(null)
@@ -95,7 +95,7 @@ Put as many details as possible into this brief. It should be specific enough th
     return true
   }
 
-  const handlePasteOutput = async () => {
+  const handleSubmit = async () => {
     if (!validateOutput(pastedText)) return
 
     const output: BrainstormingOutput = {
@@ -108,7 +108,6 @@ Put as many details as possible into this brief. It should be specific enough th
       setIsSaving(true)
       setError(null)
       await completeHelixStep(projectId, '1.2', output, 'Brainstorming Output')
-      setBrainstormingOutput(output)
       window.location.reload()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save brainstorming output')
@@ -120,86 +119,24 @@ Put as many details as possible into this brief. It should be specific enough th
   const handleFileUpload = async (file: File) => {
     try {
       setError(null)
+      setValidationError(null)
       const text = await file.text()
-      if (!validateOutput(text)) return
 
-      const output: BrainstormingOutput = {
-        source: 'file',
-        content: text,
-        fileName: file.name,
-        uploadedAt: new Date().toISOString(),
+      if (!text || text.trim().length === 0) {
+        setValidationError(`The file "${file.name}" appears to be empty. Please upload a file with text content.`)
+        return
       }
 
-      setIsSaving(true)
-      await completeHelixStep(projectId, '1.2', output, 'Brainstorming Output')
-      setBrainstormingOutput(output)
-      window.location.reload()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to process uploaded file')
-    } finally {
-      setIsSaving(false)
+      if (text.length < 500) {
+        setValidationError(`The file "${file.name}" only contains ${text.length} characters. The brainstorming output must be at least 500 characters.`)
+        return
+      }
+
+      // Load the file content into the textarea so user can review/edit before submitting
+      setPastedText(text)
+    } catch {
+      setValidationError(`Could not read "${file.name}". Please make sure it's a text-based file (e.g. .txt, .md, .doc) and try again.`)
     }
-  }
-
-  if (step.status === 'complete' && brainstormingOutput) {
-    return (
-      <div className="min-h-screen bg-bg-primary">
-        <div className="border-b border-bg-tertiary bg-bg-secondary sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <h1 className="text-2xl font-bold text-text-primary">1.2 — Brainstorming Prompt</h1>
-            <p className="text-text-secondary mt-1">Step 2 of 3 — Planning Stage</p>
-          </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              <div className="bg-bg-secondary rounded-lg border border-bg-tertiary p-8">
-                <div className="flex items-center gap-3 mb-6">
-                  <CheckCircle2 size={24} className="text-green-500" />
-                  <h2 className="text-xl font-semibold text-text-primary">Completed</h2>
-                </div>
-                <p className="text-sm text-text-secondary mb-6">
-                  Brainstorming output received on{' '}
-                  {new Date(brainstormingOutput.uploadedAt).toLocaleDateString()}
-                </p>
-                {brainstormingOutput.source === 'file' && (
-                  <p className="text-sm text-text-secondary mb-6 flex items-center gap-2">
-                    <FileUp size={16} />
-                    Uploaded file: {brainstormingOutput.fileName}
-                  </p>
-                )}
-                <div className="bg-bg-primary border border-bg-tertiary rounded-lg p-6 max-h-96 overflow-y-auto">
-                  <div className="prose prose-sm prose-invert max-w-none text-text-secondary whitespace-pre-wrap">
-                    {brainstormingOutput.content}
-                  </div>
-                </div>
-                <div className="mt-8 p-4 bg-green-900/20 border border-green-800/30 rounded-lg">
-                  <p className="text-sm text-green-300">
-                    Your brainstorming output has been saved and locked.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="lg:col-span-1">
-              <div className="bg-bg-secondary rounded-lg border border-bg-tertiary p-6 sticky top-20">
-                <h3 className="text-lg font-semibold text-text-primary mb-4">Next Steps</h3>
-                <p className="text-sm text-text-secondary mb-4">
-                  Step 1.2 is complete. Your brainstorming output is saved.
-                </p>
-                <a
-                  href={`/org/${orgSlug}/project/${projectId}/helix/step/1.3`}
-                  className="w-full block px-4 py-3 bg-accent-cyan text-white rounded-lg font-medium hover:bg-opacity-90 transition-all text-center"
-                >
-                  Continue to Step 1.3
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -215,6 +152,24 @@ Put as many details as possible into this brief. It should be specific enough th
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
             <div className="bg-bg-secondary rounded-lg border border-bg-tertiary p-8 space-y-8">
+              {/* Completed banner */}
+              {isComplete && (
+                <div className="flex items-center gap-3 p-4 bg-green-900/20 border border-green-800/30 rounded-lg">
+                  <CheckCircle2 size={20} className="text-green-500" />
+                  <div>
+                    <p className="text-sm font-medium text-green-300">
+                      Completed on{' '}
+                      {step.completed_at
+                        ? new Date(step.completed_at).toLocaleDateString()
+                        : 'unknown'}
+                    </p>
+                    <p className="text-xs text-green-300/70 mt-0.5">
+                      You can still edit and re-save your brainstorming output.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Instructions */}
               <div>
                 <h2 className="text-lg font-semibold text-text-primary mb-4">Instructions</h2>
@@ -302,7 +257,6 @@ Put as many details as possible into this brief. It should be specific enough th
                 <div className="border-2 border-dashed border-bg-tertiary rounded-lg p-6 text-center hover:border-accent-cyan transition-colors">
                   <input
                     type="file"
-                    accept=".md,.txt"
                     onChange={(e) => {
                       if (e.target.files?.[0]) handleFileUpload(e.target.files[0])
                     }}
@@ -312,7 +266,7 @@ Put as many details as possible into this brief. It should be specific enough th
                   <label htmlFor="file-upload-1-2" className="cursor-pointer flex flex-col items-center gap-2">
                     <FileUp size={32} className="text-text-secondary" />
                     <p className="text-sm font-medium text-text-primary">Click to upload</p>
-                    <p className="text-xs text-text-secondary">Markdown or Text files</p>
+                    <p className="text-xs text-text-secondary">Any text-based file</p>
                   </label>
                 </div>
               </div>
@@ -322,8 +276,6 @@ Put as many details as possible into this brief. It should be specific enough th
           {/* Right Panel */}
           <div className="lg:col-span-1">
             <div className="bg-bg-secondary rounded-lg border border-bg-tertiary p-6 sticky top-20">
-              <h3 className="text-lg font-semibold text-text-primary mb-4">Submit Output</h3>
-
               {(validationError || error) && (
                 <div className="mb-4 p-3 bg-red-900/20 border border-red-800/30 rounded-lg flex gap-2">
                   <AlertCircle size={16} className="text-red-400 flex-shrink-0 mt-0.5" />
@@ -331,20 +283,29 @@ Put as many details as possible into this brief. It should be specific enough th
                 </div>
               )}
 
-              <p className="text-sm text-text-secondary mb-6">
-                Paste your brainstorming output or upload a file, then submit.
-              </p>
+              {isComplete && (
+                <a
+                  href={`/org/${orgSlug}/project/${projectId}/helix/step/1.3`}
+                  className="w-full block px-4 py-3 bg-accent-cyan text-white rounded-lg font-medium hover:bg-opacity-90 transition-all text-center"
+                >
+                  Continue to Step 1.3
+                </a>
+              )}
 
               <button
-                onClick={handlePasteOutput}
+                onClick={handleSubmit}
                 disabled={isSaving || pastedText.trim().length === 0 || pastedText.length < 500}
-                className="w-full px-4 py-3 bg-accent-cyan text-white rounded-lg font-medium hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 mb-3"
+                className={`w-full px-4 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                  isComplete
+                    ? 'mt-3 border border-border-default text-text-secondary hover:text-text-primary hover:border-accent-cyan/50'
+                    : 'bg-accent-cyan text-white hover:bg-opacity-90'
+                }`}
               >
                 {isSaving && <Loader2 size={20} className="animate-spin" />}
-                {isSaving ? 'Submitting...' : 'Submit Pasted Output'}
+                {isComplete ? 'Re-save Changes' : 'Save and Complete'}
               </button>
 
-              <p className="text-xs text-text-secondary text-center">Minimum 500 characters required</p>
+              <p className="text-xs text-text-secondary text-center mt-3">Minimum 500 characters required</p>
 
               <div className="mt-6 pt-6 border-t border-bg-tertiary">
                 <a
