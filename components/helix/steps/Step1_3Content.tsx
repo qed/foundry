@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { AlertCircle, CheckCircle2, Loader2, FileUp, Eye, Code } from 'lucide-react'
 import type { HelixStep } from '@/types/database'
 import { completeHelixStep } from '@/lib/helix/actions'
+import { extractTextFromFile } from '@/lib/helix/fileProcessing'
 import MarkdownRenderer from '@/components/helix/MarkdownRenderer'
 
 interface Step1_3ContentProps {
@@ -72,30 +73,17 @@ export default function Step1_3Content({
   const handleFileUpload = async (file: File) => {
     try {
       setError(null)
-      if (file.type !== 'text/plain' && file.type !== 'text/markdown' && !file.name.endsWith('.md')) {
-        setError('Only markdown (.md) and text (.txt) files are supported.')
+      setValidationError(null)
+      const text = await extractTextFromFile(file)
+
+      if (!text || text.trim().length === 0) {
+        setValidationError(`The file "${file.name}" appears to be empty. Please upload a file with text content.`)
         return
       }
 
-      const text = await file.text()
-      if (!validateContent(text)) return
-
-      const brief: ProjectBrief = {
-        source: 'file',
-        content: text,
-        fileName: file.name,
-        fileType: file.type,
-        uploadedAt: new Date().toISOString(),
-      }
-
-      setIsSaving(true)
-      await completeHelixStep(projectId, '1.3', brief, 'Project Brief')
-      setBriefContent(brief)
-      window.location.reload()
+      setPastedContent(text)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to process uploaded file')
-    } finally {
-      setIsSaving(false)
+      setValidationError(err instanceof Error ? err.message : `Could not read "${file.name}". Please upload a .txt, .md, or .docx file.`)
     }
   }
 
@@ -263,7 +251,7 @@ export default function Step1_3Content({
                 <div className="border-2 border-dashed border-bg-tertiary rounded-lg p-6 text-center hover:border-accent-cyan transition-colors">
                   <input
                     type="file"
-                    accept=".md,.txt,.markdown,.text"
+                    accept=".md,.txt,.markdown,.text,.docx"
                     onChange={(e) => {
                       if (e.target.files?.[0]) handleFileUpload(e.target.files[0])
                     }}
@@ -273,7 +261,7 @@ export default function Step1_3Content({
                   <label htmlFor="file-upload-1-3" className="cursor-pointer flex flex-col items-center gap-2">
                     <FileUp size={32} className="text-text-secondary" />
                     <p className="text-sm font-medium text-text-primary">Click to upload</p>
-                    <p className="text-xs text-text-secondary">Markdown (.md) or Text (.txt) files</p>
+                    <p className="text-xs text-text-secondary">Text, Markdown, or Word files</p>
                   </label>
                 </div>
               </div>

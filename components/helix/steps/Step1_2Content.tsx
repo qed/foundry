@@ -1,10 +1,9 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Copy, CheckCircle2, AlertCircle, Loader2, FileUp, Clipboard } from 'lucide-react'
+import { Copy, CheckCircle2, AlertCircle, Loader2, Clipboard } from 'lucide-react'
 import type { HelixStep } from '@/types/database'
 import { completeHelixStep } from '@/lib/helix/actions'
-import { extractTextFromFile } from '@/lib/helix/fileProcessing'
 
 interface Step1_2ContentProps {
   step: HelixStep
@@ -13,26 +12,16 @@ interface Step1_2ContentProps {
   companyName: string
 }
 
-interface BrainstormingOutput {
-  source: 'paste' | 'file'
-  content: string
-  fileName?: string
-  uploadedAt: string
-}
-
 export default function Step1_2Content({
   step,
   projectId,
   orgSlug,
   companyName,
 }: Step1_2ContentProps) {
-  const existingOutput = step.evidence_data as BrainstormingOutput | null
   const isComplete = step.status === 'complete'
 
-  const [pastedText, setPastedText] = useState(existingOutput?.content || '')
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [validationError, setValidationError] = useState<string | null>(null)
   const [copiedToClipboard, setCopiedToClipboard] = useState(false)
 
   const generatePrompt = (): string => {
@@ -83,60 +72,16 @@ Put as many details as possible into this brief. It should be specific enough th
     }
   }
 
-  const validateOutput = (text: string): boolean => {
-    setValidationError(null)
-    if (!text || text.trim().length === 0) {
-      setValidationError('Output cannot be empty')
-      return false
-    }
-    if (text.length < 500) {
-      setValidationError('Output must be at least 500 characters')
-      return false
-    }
-    return true
-  }
-
-  const handleSubmit = async () => {
-    if (!validateOutput(pastedText)) return
-
-    const output: BrainstormingOutput = {
-      source: 'paste',
-      content: pastedText,
-      uploadedAt: new Date().toISOString(),
-    }
-
+  const handleMarkComplete = async () => {
     try {
       setIsSaving(true)
       setError(null)
-      await completeHelixStep(projectId, '1.2', output, 'Brainstorming Output')
+      await completeHelixStep(projectId, '1.2', { completedAt: new Date().toISOString() }, 'Brainstorming Prompt')
       window.location.reload()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save brainstorming output')
+      setError(err instanceof Error ? err.message : 'Failed to mark step as complete')
     } finally {
       setIsSaving(false)
-    }
-  }
-
-  const handleFileUpload = async (file: File) => {
-    try {
-      setError(null)
-      setValidationError(null)
-      const text = await extractTextFromFile(file)
-
-      if (!text || text.trim().length === 0) {
-        setValidationError(`The file "${file.name}" appears to be empty. Please upload a file with text content.`)
-        return
-      }
-
-      if (text.length < 500) {
-        setValidationError(`The file "${file.name}" only contains ${text.length} characters. The brainstorming output must be at least 500 characters.`)
-        return
-      }
-
-      // Load the file content into the textarea so user can review/edit before submitting
-      setPastedText(text)
-    } catch (err) {
-      setValidationError(err instanceof Error ? err.message : `Could not read "${file.name}". Please upload a .txt, .md, or .docx file.`)
     }
   }
 
@@ -165,7 +110,7 @@ Put as many details as possible into this brief. It should be specific enough th
                         : 'unknown'}
                     </p>
                     <p className="text-xs text-green-300/70 mt-0.5">
-                      You can still edit and re-save your brainstorming output.
+                      You can revisit this prompt at any time.
                     </p>
                   </div>
                 </div>
@@ -179,7 +124,6 @@ Put as many details as possible into this brief. It should be specific enough th
                     'Click "Copy Prompt" to copy the brainstorming prompt',
                     'Open Claude Chat (https://claude.ai) in a new tab',
                     'Paste the prompt and follow Claude\'s guidance through all 4 phases',
-                    'Copy the final Project Brief and paste it back here',
                   ].map((instruction, idx) => (
                     <li key={idx} className="flex gap-4">
                       <span className="flex-shrink-0 w-6 h-6 rounded-full bg-accent-cyan/10 flex items-center justify-center text-sm font-semibold text-accent-cyan">
@@ -220,93 +164,36 @@ Put as many details as possible into this brief. It should be specific enough th
                   )}
                 </button>
               </div>
-
-              {/* Divider */}
-              <div className="flex items-center gap-4 py-4">
-                <div className="flex-1 h-px bg-bg-tertiary" />
-                <span className="text-sm text-text-secondary">PASTE OUTPUT BELOW</span>
-                <div className="flex-1 h-px bg-bg-tertiary" />
-              </div>
-
-              {/* Paste Output */}
-              <div>
-                <h2 className="text-lg font-semibold text-text-primary mb-4">
-                  Paste Brainstorming Output
-                </h2>
-                <p className="text-sm text-text-secondary mb-3">
-                  After completing the brainstorming in Claude Chat, paste the final Project Brief here.
-                </p>
-                <textarea
-                  value={pastedText}
-                  onChange={(e) => {
-                    setPastedText(e.target.value)
-                    setValidationError(null)
-                  }}
-                  placeholder="Paste the Project Brief from Claude Chat here (minimum 500 characters)..."
-                  className="w-full h-64 px-4 py-3 bg-bg-primary border border-bg-tertiary rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-accent-cyan resize-none"
-                />
-                <p
-                  className={`text-xs mt-2 ${pastedText.length >= 500 ? 'text-green-500' : 'text-text-secondary'}`}
-                >
-                  {pastedText.length} / 500 characters (minimum)
-                </p>
-              </div>
-
-              {/* File Upload */}
-              <div>
-                <h2 className="text-lg font-semibold text-text-primary mb-4">Or Upload a File</h2>
-                <div className="border-2 border-dashed border-bg-tertiary rounded-lg p-6 text-center hover:border-accent-cyan transition-colors">
-                  <input
-                    type="file"
-                    onChange={(e) => {
-                      if (e.target.files?.[0]) handleFileUpload(e.target.files[0])
-                    }}
-                    className="hidden"
-                    id="file-upload-1-2"
-                  />
-                  <label htmlFor="file-upload-1-2" className="cursor-pointer flex flex-col items-center gap-2">
-                    <FileUp size={32} className="text-text-secondary" />
-                    <p className="text-sm font-medium text-text-primary">Click to upload</p>
-                    <p className="text-xs text-text-secondary">Text, Markdown, or Word files</p>
-                  </label>
-                </div>
-              </div>
             </div>
           </div>
 
           {/* Right Panel */}
           <div className="lg:col-span-1">
             <div className="bg-bg-secondary rounded-lg border border-bg-tertiary p-6 sticky top-20">
-              {(validationError || error) && (
+              {error && (
                 <div className="mb-4 p-3 bg-red-900/20 border border-red-800/30 rounded-lg flex gap-2">
                   <AlertCircle size={16} className="text-red-400 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-red-300">{validationError || error}</p>
+                  <p className="text-sm text-red-300">{error}</p>
                 </div>
               )}
 
-              {isComplete && (
+              {isComplete ? (
                 <a
                   href={`/org/${orgSlug}/project/${projectId}/helix/step/1.3`}
                   className="w-full block px-4 py-3 bg-accent-cyan text-white rounded-lg font-medium hover:bg-opacity-90 transition-all text-center"
                 >
                   Continue to Step 1.3
                 </a>
+              ) : (
+                <button
+                  onClick={handleMarkComplete}
+                  disabled={isSaving}
+                  className="w-full px-4 py-3 bg-accent-cyan text-white rounded-lg font-medium hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                >
+                  {isSaving && <Loader2 size={20} className="animate-spin" />}
+                  {isSaving ? 'Saving...' : 'Mark as Complete'}
+                </button>
               )}
-
-              <button
-                onClick={handleSubmit}
-                disabled={isSaving || pastedText.trim().length === 0 || pastedText.length < 500}
-                className={`w-full px-4 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-                  isComplete
-                    ? 'mt-3 border border-border-default text-text-secondary hover:text-text-primary hover:border-accent-cyan/50'
-                    : 'bg-accent-cyan text-white hover:bg-opacity-90'
-                }`}
-              >
-                {isSaving && <Loader2 size={20} className="animate-spin" />}
-                {isComplete ? 'Re-save Changes' : 'Save and Complete'}
-              </button>
-
-              <p className="text-xs text-text-secondary text-center mt-3">Minimum 500 characters required</p>
 
               <div className="mt-6 pt-6 border-t border-bg-tertiary">
                 <a
