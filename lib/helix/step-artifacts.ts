@@ -123,10 +123,11 @@ async function saveStepArtifactInner(
   diag.push(`Artifact name: "${artifactName}"`)
   diag.push(`Storage path: "${storagePath}"`)
 
-  // Use the provided client (user-authenticated) or fall back to service client
+  // Use service client for storage (bypasses RLS), user client for DB if available
+  const serviceClient = createServiceClient()
+  const dbClient = supabaseClient ?? serviceClient
   const clientType = supabaseClient ? 'user-auth' : 'service-role'
-  const supabase = supabaseClient ?? createServiceClient()
-  diag.push(`Using ${clientType} supabase client`)
+  diag.push(`DB client: ${clientType}, Storage client: service-role`)
 
   // Upload markdown file to storage (best-effort — DB content_text is the source of truth)
   const fileBuffer = Buffer.from(markdown, 'utf-8')
@@ -134,7 +135,7 @@ async function saveStepArtifactInner(
 
   let storageError: string | null = null
   try {
-    let { error: uploadError } = await supabase.storage
+    let { error: uploadError } = await serviceClient.storage
       .from('artifacts')
       .upload(storagePath, fileBuffer, {
         contentType: 'text/markdown',
@@ -143,8 +144,8 @@ async function saveStepArtifactInner(
 
     if (uploadError?.message === 'Bucket not found') {
       diag.push('Storage bucket not found — creating...')
-      await supabase.storage.createBucket('artifacts', { public: false })
-      const retry = await supabase.storage
+      await serviceClient.storage.createBucket('artifacts', { public: false })
+      const retry = await serviceClient.storage
         .from('artifacts')
         .upload(storagePath, fileBuffer, {
           contentType: 'text/markdown',
@@ -166,7 +167,7 @@ async function saveStepArtifactInner(
 
   // Save artifact DB record regardless of storage upload result
   diag.push('Querying for existing artifact...')
-  const { data: existing, error: selectError } = await supabase
+  const { data: existing, error: selectError } = await dbClient
     .from('artifacts')
     .select('id')
     .eq('project_id', projectId)
@@ -180,13 +181,14 @@ async function saveStepArtifactInner(
 
   if (existing) {
     diag.push(`Found existing artifact id=${existing.id} — updating...`)
-    const { error: updateError, count } = await supabase
+    const { error: updateError, count } = await dbClient
       .from('artifacts')
       .update({
         file_size: fileBuffer.byteLength,
         content_text: markdown,
         processing_status: 'complete',
         storage_path: storagePath,
+        folder_id: null,
       })
       .eq('id', existing.id)
 
@@ -197,7 +199,7 @@ async function saveStepArtifactInner(
     diag.push(`DB update OK (count: ${count ?? 'unknown'})`)
   } else {
     diag.push('No existing artifact — inserting new...')
-    const { error: insertError, count } = await supabase
+    const { error: insertError, count } = await dbClient
       .from('artifacts')
       .insert({
         project_id: projectId,
@@ -219,9 +221,9 @@ async function saveStepArtifactInner(
 
   // Verify the artifact was actually saved by reading it back
   diag.push('Verifying artifact in DB...')
-  const { data: verify, error: verifyError } = await supabase
+  const { data: verify, error: verifyError } = await dbClient
     .from('artifacts')
-    .select('id, name, file_size, processing_status, content_text')
+    .select('id, name, file_size, processing_status, content_text, folder_id')
     .eq('project_id', projectId)
     .eq('name', artifactName)
     .maybeSingle()
@@ -231,7 +233,7 @@ async function saveStepArtifactInner(
   } else if (!verify) {
     diag.push('VERIFY FAILED: Artifact not found after insert/update!')
   } else {
-    diag.push(`Verified: id=${verify.id}, size=${verify.file_size}, status=${verify.processing_status}, content_length=${verify.content_text?.length ?? 0}`)
+    diag.push(`Verified: id=${verify.id}, size=${verify.file_size}, status=${verify.processing_status}, content_length=${verify.content_text?.length ?? 0}, folder_id=${verify.folder_id ?? 'null'}`)
   }
 
   if (storageError) {
