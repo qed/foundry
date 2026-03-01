@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { Copy, CheckCircle2, AlertCircle, Loader2, FileUp, Clipboard } from 'lucide-react'
 import type { HelixStep } from '@/types/database'
 import { completeHelixStep } from '@/lib/helix/actions'
+import { extractTextFromFile } from '@/lib/helix/fileProcessing'
 
 interface Step1_2ContentProps {
   step: HelixStep
@@ -120,7 +121,7 @@ Put as many details as possible into this brief. It should be specific enough th
     try {
       setError(null)
       setValidationError(null)
-      const text = await file.text()
+      const text = await extractTextFromFile(file)
 
       if (!text || text.trim().length === 0) {
         setValidationError(`The file "${file.name}" appears to be empty. Please upload a file with text content.`)
@@ -134,8 +135,8 @@ Put as many details as possible into this brief. It should be specific enough th
 
       // Load the file content into the textarea so user can review/edit before submitting
       setPastedText(text)
-    } catch {
-      setValidationError(`Could not read "${file.name}". Please make sure it's a text-based file (e.g. .txt, .md, .doc) and try again.`)
+    } catch (err) {
+      setValidationError(err instanceof Error ? err.message : `Could not read "${file.name}". Please upload a .txt, .md, or .docx file.`)
     }
   }
 
@@ -266,7 +267,7 @@ Put as many details as possible into this brief. It should be specific enough th
                   <label htmlFor="file-upload-1-2" className="cursor-pointer flex flex-col items-center gap-2">
                     <FileUp size={32} className="text-text-secondary" />
                     <p className="text-sm font-medium text-text-primary">Click to upload</p>
-                    <p className="text-xs text-text-secondary">Any text-based file</p>
+                    <p className="text-xs text-text-secondary">Text, Markdown, or Word files</p>
                   </label>
                 </div>
               </div>
