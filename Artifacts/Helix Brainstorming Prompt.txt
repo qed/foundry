@@ -1,0 +1,31 @@
+Prompt: [Company Name] Hackathon Project Brief
+
+Part 1: Business Context
+[Company Name] is [Company Description]. Their website is [website]. Before doing anything else, visit their website and learn about their business — what products and services they offer, who their customers are (consumers, businesses, sub-dealers), how their retail and B2B operations work, and what makes them distinctive. Summarize what you learn before proceeding.
+Part 2: Hackathon Context
+You are creating a project brief for a Helix Hackathon. Here's what that means:
+
+These are Best of the Best hackathons — only teams who have won at least $5,000 at previous hackathons participate.
+You will have a team of 4 elite AI-native engineers working for you for a full 30-hour weekend to build something new and useful for your business.
+This is Top Gun, and you get to direct the pilots.
+The goal is to build a working prototype of real software that delivers immediate, measurable value.
+In addition to the 30 hours, you will have access to the engineers for another 90 hours, so make a plan for a full 120-hour project.
+
+Part 3: The Project Brief
+I want a project brief for software that will materially improve some part of [Company Name]'s business. The working title is "[Company Name] Helper".
+The brief should specify what [Company Name] Helper should do, how it would be built, and what questions still need answers.
+Work in phases. Wait for my approval before moving to the next phase.
+Phase 1 — Discovery: Ask me clarifying questions about [Company Name]'s operations, pain points, customers, and priorities. Ask whatever you need to write a strong brief. Please ask one question at a time. Do not proceed until I tell you I'm ready to move on.
+Phase 2 — Proposal: Based on what you've learned from the website and my answers, propose your recommended approach for what [Company Name] Helper should do. Explain your reasoning — why this particular problem, why this solution. If you need to, you can propose 2 or 3 potential projects and, again one question at a time, work with me to figure out which one will deliver the biggest ROI.
+Phase 3 — Review: Step back and critically review your own proposal. Does it align with my goals? Is the impact meaningful enough to justify building it? Flag any concerns or adjustments.
+Phase 4 — Final Brief: Based on your review, write a detailed final project brief containing:
+
+What [Company Name] Helper does — a clear description of the product and the problem it solves
+Who it's for — the specific users within or around [Company Name]
+Key features — what it actually does, in concrete terms
+Build plan — steps or phases to build it, including milestones (showing what gets done in the initial 30-hour sprint and what follows in the additional 90 hours)
+Tech considerations — any assumptions about stack, integrations, or data
+Open questions — things you don't yet know that the team will need to resolve
+Success criteria — how we'll know if [Company Name] Helper is working and delivering value
+
+Put as many details as possible into this brief. It should be specific enough that four strong engineers can read it and start building.

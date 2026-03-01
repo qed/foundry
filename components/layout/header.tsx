@@ -8,6 +8,7 @@ import { Breadcrumb, type BreadcrumbItem } from './breadcrumb'
 import { HeaderPresence } from '@/components/presence/header-presence'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 import { ArchivedBadge } from '@/components/projects/archived-badge'
+import { HelixModeToggle } from '@/components/helix/helix-mode-toggle'
 import { Menu, Search } from 'lucide-react'
 import { openGlobalSearch } from '@/components/search/global-search'
 
@@ -59,6 +60,11 @@ export function Header({ onMenuClick }: HeaderProps) {
 
         <Breadcrumb items={breadcrumbs} />
         {project.is_archived && <ArchivedBadge />}
+      </div>
+
+      {/* Center: mode toggle */}
+      <div className="mx-4 flex-shrink-0">
+        <HelixModeToggle showProgress />
       </div>
 
       {/* Right side: search + presence + notifications + user menu */}
