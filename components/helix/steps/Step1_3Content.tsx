@@ -208,7 +208,7 @@ export default function Step1_3Content({
                 </div>
 
                 {previewMode ? (
-                  <div className="border border-bg-tertiary rounded-lg p-6 bg-bg-primary min-h-[16rem]">
+                  <div className="border border-bg-tertiary rounded-lg p-6 bg-bg-primary min-h-[16rem] max-h-64 overflow-y-auto">
                     {pastedContent.length > 0 ? (
                       <div className="prose prose-sm prose-invert max-w-none">
                         <MarkdownRenderer content={pastedContent} />
