@@ -74,12 +74,24 @@ export async function saveStepArtifact(
 
   // Upload markdown file to storage (upsert: true to overwrite if exists)
   const fileBuffer = Buffer.from(markdown, 'utf-8')
-  const { error: uploadError } = await supabase.storage
+  let { error: uploadError } = await supabase.storage
     .from('artifacts')
     .upload(storagePath, fileBuffer, {
       contentType: 'text/markdown',
       upsert: true,
     })
+
+  // Auto-create the storage bucket if it doesn't exist, then retry
+  if (uploadError?.message === 'Bucket not found') {
+    await supabase.storage.createBucket('artifacts', { public: false })
+    const retry = await supabase.storage
+      .from('artifacts')
+      .upload(storagePath, fileBuffer, {
+        contentType: 'text/markdown',
+        upsert: true,
+      })
+    uploadError = retry.error
+  }
 
   if (uploadError) {
     return { saved: false, name: artifactName, error: `Storage upload failed: ${uploadError.message}` }
