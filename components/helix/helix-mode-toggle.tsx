@@ -24,9 +24,9 @@ export function HelixModeToggle({ onToggled, showProgress = false }: HelixModeTo
 
   const isHelix = project.mode === 'helix'
 
-  // Load progress data when in helix mode and showProgress is enabled
+  // Load progress data when in helix mode (needed for toggle logic + optional display)
   useEffect(() => {
-    if (!isHelix || !showProgress) {
+    if (!isHelix) {
       setProgress(null)
       return
     }
@@ -49,10 +49,15 @@ export function HelixModeToggle({ onToggled, showProgress = false }: HelixModeTo
     }
 
     loadProgress()
-  }, [isHelix, showProgress, project.id])
+  }, [isHelix, project.id])
 
   const handleToggle = async () => {
     if (isHelix) {
+      // Skip confirmation when nothing has been started (no completed steps)
+      if (!progress || progress.completedSteps === 0) {
+        await doToggle()
+        return
+      }
       setShowConfirm(true)
       return
     }
