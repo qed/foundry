@@ -29,7 +29,7 @@ export default function Step1_3Content({
   const [briefContent, setBriefContent] = useState<ProjectBrief | null>(
     step.evidence_data as ProjectBrief | null
   )
-  const [pastedContent, setPastedContent] = useState('')
+  const [pastedContent, setPastedContent] = useState(briefContent?.content || '')
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [validationError, setValidationError] = useState<string | null>(null)
@@ -87,65 +87,7 @@ export default function Step1_3Content({
     }
   }
 
-  if (step.status === 'complete' && briefContent) {
-    return (
-      <div className="min-h-screen bg-bg-primary">
-        <div className="border-b border-bg-tertiary bg-bg-secondary sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <h1 className="text-2xl font-bold text-text-primary">1.3 — Save Project Brief</h1>
-            <p className="text-text-secondary mt-1">Step 3 of 3 — Planning Stage</p>
-          </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              <div className="bg-bg-secondary rounded-lg border border-bg-tertiary p-8">
-                <div className="flex items-center gap-3 mb-6">
-                  <CheckCircle2 size={24} className="text-green-500" />
-                  <h2 className="text-xl font-semibold text-text-primary">Completed</h2>
-                </div>
-                <p className="text-sm text-text-secondary mb-6">
-                  Project Brief saved on {new Date(briefContent.uploadedAt).toLocaleDateString()}
-                </p>
-                {briefContent.source === 'file' && (
-                  <p className="text-sm text-text-secondary mb-6 flex items-center gap-2">
-                    <FileUp size={16} />
-                    Uploaded file: {briefContent.fileName}
-                  </p>
-                )}
-                <div className="bg-bg-primary border border-bg-tertiary rounded-lg p-6">
-                  <div className="prose prose-sm prose-invert max-w-none">
-                    <MarkdownRenderer content={briefContent.content} />
-                  </div>
-                </div>
-                <div className="mt-8 p-4 bg-green-900/20 border border-green-800/30 rounded-lg">
-                  <p className="text-sm text-green-300">
-                    Your Project Brief has been saved and locked. The Planning Stage is now complete.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="lg:col-span-1">
-              <div className="bg-bg-secondary rounded-lg border border-bg-tertiary p-6 sticky top-20">
-                <h3 className="text-lg font-semibold text-text-primary mb-4">Planning Complete</h3>
-                <p className="text-sm text-text-secondary mb-6">
-                  Stage 1 — Planning is now complete. Your project is ready for the next stage.
-                </p>
-                <a
-                  href={`/org/${orgSlug}/project/${projectId}/helix`}
-                  className="w-full block px-4 py-3 bg-accent-cyan text-white rounded-lg font-medium hover:bg-opacity-90 transition-all text-center"
-                >
-                  Back to Helix Dashboard
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  const isComplete = step.status === 'complete'
 
   return (
     <div className="min-h-screen bg-bg-primary">
@@ -160,6 +102,24 @@ export default function Step1_3Content({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
             <div className="bg-bg-secondary rounded-lg border border-bg-tertiary p-8 space-y-8">
+              {/* Completed banner */}
+              {isComplete && (
+                <div className="flex items-center gap-3 p-4 bg-green-900/20 border border-green-800/30 rounded-lg">
+                  <CheckCircle2 size={20} className="text-green-500" />
+                  <div>
+                    <p className="text-sm font-medium text-green-300">
+                      Completed on{' '}
+                      {step.completed_at
+                        ? new Date(step.completed_at).toLocaleDateString()
+                        : 'unknown'}
+                    </p>
+                    <p className="text-xs text-green-300/70 mt-0.5">
+                      You can still edit and re-save your Project Brief.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Instructions */}
               <div>
                 <h2 className="text-lg font-semibold text-text-primary mb-4">Instructions</h2>
@@ -271,8 +231,6 @@ export default function Step1_3Content({
           {/* Right Panel */}
           <div className="lg:col-span-1">
             <div className="bg-bg-secondary rounded-lg border border-bg-tertiary p-6 sticky top-20">
-              <h3 className="text-lg font-semibold text-text-primary mb-4">Save Project Brief</h3>
-
               {(validationError || error) && (
                 <div className="mb-4 p-3 bg-red-900/20 border border-red-800/30 rounded-lg flex gap-2">
                   <AlertCircle size={16} className="text-red-400 flex-shrink-0 mt-0.5" />
@@ -280,20 +238,31 @@ export default function Step1_3Content({
                 </div>
               )}
 
-              <p className="text-sm text-text-secondary mb-6">
-                Upload or paste your Project Brief, then save to complete the Planning Stage.
-              </p>
+              {isComplete && (
+                <a
+                  href={`/org/${orgSlug}/project/${projectId}/helix`}
+                  className="w-full block px-4 py-3 bg-accent-cyan text-white rounded-lg font-medium hover:bg-opacity-90 transition-all text-center"
+                >
+                  Back to Helix Dashboard
+                </a>
+              )}
 
               <button
                 onClick={handlePasteContent}
                 disabled={isSaving || pastedContent.trim().length === 0 || pastedContent.length < 100}
-                className="w-full px-4 py-3 bg-accent-cyan text-white rounded-lg font-medium hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 mb-3"
+                className={`w-full px-4 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                  isComplete
+                    ? 'mt-3 border border-border-default text-text-secondary hover:text-text-primary hover:border-accent-cyan/50'
+                    : 'bg-accent-cyan text-white hover:bg-opacity-90'
+                }`}
               >
                 {isSaving && <Loader2 size={20} className="animate-spin" />}
-                {isSaving ? 'Saving...' : 'Save Project Brief'}
+                {isComplete ? 'Re-save Changes' : 'Save Project Brief'}
               </button>
 
-              <p className="text-xs text-text-secondary text-center">Minimum 100 characters required</p>
+              {!isComplete && (
+                <p className="text-xs text-text-secondary text-center mt-3">Minimum 100 characters required</p>
+              )}
 
               <div className="mt-6 pt-6 border-t border-bg-tertiary">
                 <p className="text-xs text-text-secondary">
