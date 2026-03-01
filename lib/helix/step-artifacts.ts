@@ -1,6 +1,12 @@
 import { createServiceClient } from '@/lib/supabase/server'
 import { getStep } from '@/config/helix-process'
 
+export interface StepArtifactResult {
+  saved: boolean
+  name?: string
+  error?: string
+}
+
 /**
  * Convert step evidence to markdown text for artifact storage.
  * Returns null if there's no meaningful content to save.
@@ -44,18 +50,23 @@ function evidenceToMarkdown(stepKey: string, evidence: unknown): string | null {
 /**
  * Save step evidence as a project artifact so it survives mode switches.
  * Uses upsert logic: updates existing artifact if one with the same name exists.
+ * Returns a result object indicating success/failure for diagnostics.
  */
 export async function saveStepArtifact(
   projectId: string,
   stepKey: string,
   evidence: unknown,
   userId: string
-): Promise<void> {
+): Promise<StepArtifactResult> {
   const stepConfig = getStep(stepKey)
-  if (!stepConfig) return
+  if (!stepConfig) {
+    return { saved: false, error: `No step config found for key "${stepKey}"` }
+  }
 
   const markdown = evidenceToMarkdown(stepKey, evidence)
-  if (!markdown) return
+  if (!markdown) {
+    return { saved: false, error: `No markdown produced for step "${stepKey}" (evidence keys: ${evidence && typeof evidence === 'object' ? Object.keys(evidence as Record<string, unknown>).join(', ') : 'none'})` }
+  }
 
   const artifactName = `Helix Step ${stepKey} — ${stepConfig.title}`
   const storagePath = `projects/${projectId}/artifacts/helix-step-${stepKey}.md`
@@ -71,8 +82,7 @@ export async function saveStepArtifact(
     })
 
   if (uploadError) {
-    console.error('[step-artifact] Storage upload failed:', uploadError)
-    return
+    return { saved: false, name: artifactName, error: `Storage upload failed: ${uploadError.message}` }
   }
 
   // Check if artifact with this name already exists for this project
@@ -84,7 +94,6 @@ export async function saveStepArtifact(
     .single()
 
   if (existing) {
-    // Update existing artifact record
     const { error: updateError } = await supabase
       .from('artifacts')
       .update({
@@ -96,10 +105,9 @@ export async function saveStepArtifact(
       .eq('id', existing.id)
 
     if (updateError) {
-      console.error('[step-artifact] DB update failed:', updateError)
+      return { saved: false, name: artifactName, error: `DB update failed: ${updateError.message}` }
     }
   } else {
-    // Insert new artifact record
     const { error: insertError } = await supabase
       .from('artifacts')
       .insert({
@@ -114,7 +122,9 @@ export async function saveStepArtifact(
       })
 
     if (insertError) {
-      console.error('[step-artifact] DB insert failed:', insertError)
+      return { saved: false, name: artifactName, error: `DB insert failed: ${insertError.message}` }
     }
   }
+
+  return { saved: true, name: artifactName }
 }

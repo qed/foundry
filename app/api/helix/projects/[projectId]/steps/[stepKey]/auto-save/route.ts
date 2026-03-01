@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { saveStepArtifact } from '@/lib/helix/step-artifacts'
+import type { StepArtifactResult } from '@/lib/helix/step-artifacts'
 import type { Json } from '@/types/database'
 
 export async function POST(
@@ -30,16 +31,17 @@ export async function POST(
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    // Also save as artifact (non-blocking — don't fail the auto-save if this errors)
+    // Also save as artifact
+    let artifactResult: StepArtifactResult = { saved: false, error: 'No authenticated user' }
     if (user) {
       try {
-        await saveStepArtifact(projectId, stepKey, data, user.id)
+        artifactResult = await saveStepArtifact(projectId, stepKey, data, user.id)
       } catch (err) {
-        console.error('[auto-save] Failed to save step artifact:', err)
+        artifactResult = { saved: false, error: `Exception: ${err instanceof Error ? err.message : String(err)}` }
       }
     }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, artifact: artifactResult })
   } catch (error) {
     console.error('Auto-save error:', error)
     return NextResponse.json({ error: 'Failed to auto-save' }, { status: 500 })

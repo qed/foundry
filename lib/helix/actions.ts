@@ -93,9 +93,12 @@ export async function completeHelixStep(
 
   // Save step evidence as a project artifact (non-blocking — failure won't break step completion)
   try {
-    await saveStepArtifact(projectId, stepKey, evidence, user.id)
+    const artifactResult = await saveStepArtifact(projectId, stepKey, evidence, user.id)
+    if (!artifactResult.saved) {
+      console.error('[completeHelixStep] Artifact not saved:', artifactResult.error)
+    }
   } catch (err) {
-    console.error('Failed to save step artifact:', err)
+    console.error('[completeHelixStep] Failed to save step artifact:', err)
   }
 
   // Revalidate helix pages
