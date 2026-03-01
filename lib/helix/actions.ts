@@ -91,10 +91,13 @@ export async function completeHelixStep(
     }
   }
 
-  // Fire-and-forget artifact save — don't block step completion
-  void saveStepArtifact(projectId, stepKey, evidence, user.id).catch((err) => {
+  // Await artifact save so it completes before the server action returns
+  try {
+    await saveStepArtifact(projectId, stepKey, evidence, user.id)
+  } catch (err) {
     console.error('[completeHelixStep] Failed to save step artifact:', err)
-  })
+    // Don't throw — step completion itself succeeded
+  }
 
   // Revalidate helix pages
   revalidatePath(`/org/[orgSlug]/project/${projectId}/helix`, 'layout')
