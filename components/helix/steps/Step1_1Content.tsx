@@ -373,7 +373,18 @@ export default function Step1_1Content({
                             : 'bg-bg-tertiary text-text-secondary hover:bg-opacity-70'
                         }`}
                       >
-                        List
+                        Bullet List
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+                        className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                          editor?.isActive('orderedList')
+                            ? 'bg-accent-cyan text-white'
+                            : 'bg-bg-tertiary text-text-secondary hover:bg-opacity-70'
+                        }`}
+                      >
+                        Ordered List
                       </button>
                     </div>
                     <EditorContent
