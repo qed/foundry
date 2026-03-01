@@ -325,22 +325,6 @@ export default function Step1_1Content({
                 </div>
               </div>
 
-              {/* Auto-Save Status */}
-              {saveStatus !== 'idle' && (
-                <div
-                  className={`flex items-center gap-2 p-3 rounded-lg ${
-                    saveStatus === 'saving'
-                      ? 'bg-blue-900/20 text-blue-300'
-                      : 'bg-green-900/20 text-green-300'
-                  }`}
-                >
-                  {saveStatus === 'saving' && <Loader2 size={16} className="animate-spin" />}
-                  {saveStatus === 'saved' && <CheckCircle2 size={16} />}
-                  <p className="text-sm font-medium">
-                    {saveStatus === 'saving' ? 'Saving...' : 'Saved'}
-                  </p>
-                </div>
-              )}
             </div>
           </div>
 
@@ -376,8 +360,24 @@ export default function Step1_1Content({
                 {isComplete ? 'Re-save Changes' : 'Save and Complete'}
               </button>
 
+              {/* Auto-Save Status */}
+              <div className="mt-3 flex items-center justify-center gap-1.5 h-5">
+                {saveStatus === 'saving' && (
+                  <>
+                    <Loader2 size={14} className="animate-spin text-text-secondary" />
+                    <span className="text-xs text-text-secondary">Auto-saving...</span>
+                  </>
+                )}
+                {saveStatus === 'saved' && (
+                  <>
+                    <CheckCircle2 size={14} className="text-green-400" />
+                    <span className="text-xs text-green-400">Auto-saved</span>
+                  </>
+                )}
+              </div>
+
               {!isComplete && (
-                <p className="text-sm text-text-secondary mt-4">
+                <p className="text-sm text-text-secondary mt-3">
                   Complete all fields above, then click to save your project idea and unlock Step 1.2.
                 </p>
               )}
