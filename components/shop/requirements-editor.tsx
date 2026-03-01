@@ -135,6 +135,7 @@ export function RequirementsEditor({
   }, [ydoc, _provider])
 
   const editor = useEditor({
+    immediatelyRender: false,
     extensions,
     content: ydoc ? undefined : content, // Yjs manages content when collaborative
     editable: !readOnly,

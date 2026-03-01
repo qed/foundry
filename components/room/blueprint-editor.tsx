@@ -136,6 +136,7 @@ export function BlueprintEditor({
   }, [ydoc, _provider])
 
   const editor = useEditor({
+    immediatelyRender: false,
     extensions,
     content: ydoc ? undefined : (content || undefined), // Yjs manages content when collaborative
     editable: !readOnly,

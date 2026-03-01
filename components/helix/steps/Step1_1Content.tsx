@@ -55,6 +55,7 @@ export default function Step1_1Content({
 
   // TipTap editor for the full project idea text
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit,
       Placeholder.configure({
