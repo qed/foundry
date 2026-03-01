@@ -8,6 +8,7 @@ import Link from '@tiptap/extension-link'
 import { AlertCircle, Loader2, CheckCircle2 } from 'lucide-react'
 import type { HelixStep } from '@/types/database'
 import { completeHelixStep } from '@/lib/helix/actions'
+import type { CompleteStepResult } from '@/lib/helix/actions'
 import StepHeaderNav from '@/components/helix/StepHeaderNav'
 import { debounce } from '@/lib/utils/debounce'
 
@@ -54,6 +55,7 @@ export default function Step1_1Content({
   const [isSaving, setIsSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
   const [validationError, setValidationError] = useState<string | null>(null)
+  const [saveResult, setSaveResult] = useState<CompleteStepResult | null>(null)
 
   // TipTap editor for the full project idea text
   const editor = useEditor({
@@ -134,20 +136,18 @@ export default function Step1_1Content({
 
   const handleComplete = async () => {
     if (!validateForm()) return
+    setSaveResult(null)
     try {
       setIsSaving(true)
       const result = await completeHelixStep(projectId, '1.1', formData, 'Project Idea Definition')
-      if (!result.success) {
-        setValidationError(result.error || 'Failed to complete step')
-        return
-      }
-      if (!result.artifactSaved) {
-        setValidationError(result.error || 'Step saved but artifact failed — check console')
-        return
-      }
-      window.location.reload()
+      // ALWAYS show diagnostics — never auto-reload
+      setSaveResult(result)
     } catch (error) {
-      setValidationError(error instanceof Error ? error.message : 'Failed to complete step')
+      setSaveResult({
+        success: false,
+        error: `Client-side catch: ${error instanceof Error ? error.message : String(error)}`,
+        diagnostics: ['Server action threw — this means the return value was not received'],
+      })
     } finally {
       setIsSaving(false)
     }
@@ -194,6 +194,39 @@ export default function Step1_1Content({
                       You can still edit and re-save your project idea.
                     </p>
                   </div>
+                </div>
+              )}
+
+              {/* Save Diagnostics Panel — always shown after save */}
+              {saveResult && (
+                <div className={`p-4 rounded-lg border ${
+                  saveResult.success && saveResult.artifactSaved
+                    ? 'bg-green-900/20 border-green-800/30'
+                    : 'bg-yellow-900/20 border-yellow-800/30'
+                }`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-semibold text-text-primary">
+                      Save Result: {saveResult.success ? 'Step OK' : 'Step FAILED'}
+                      {saveResult.success && ` / Artifact: ${saveResult.artifactSaved ? 'OK' : 'FAILED'}`}
+                    </h3>
+                    <button
+                      onClick={() => window.location.reload()}
+                      className="text-xs px-2 py-1 bg-accent-cyan text-white rounded hover:bg-opacity-80"
+                    >
+                      Reload Page
+                    </button>
+                  </div>
+                  {saveResult.error && (
+                    <p className="text-sm text-yellow-300 mb-2">{saveResult.error}</p>
+                  )}
+                  <details open>
+                    <summary className="text-xs text-text-secondary cursor-pointer mb-1">
+                      Diagnostics Trace ({saveResult.diagnostics?.length ?? 0} entries)
+                    </summary>
+                    <pre className="text-xs text-text-secondary bg-bg-primary rounded p-3 overflow-x-auto max-h-64 overflow-y-auto whitespace-pre-wrap">
+                      {saveResult.diagnostics?.join('\n') || 'No diagnostics collected'}
+                    </pre>
+                  </details>
                 </div>
               )}
 

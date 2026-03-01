@@ -6,6 +6,7 @@ export interface StepArtifactResult {
   saved: boolean
   name?: string
   error?: string
+  diagnostics?: string[]
 }
 
 /**
@@ -94,31 +95,43 @@ async function saveStepArtifactInner(
   userId: string,
   supabaseClient?: SupabaseClient
 ): Promise<StepArtifactResult> {
+  const diag: string[] = []
+
   const stepConfig = getStep(stepKey)
   if (!stepConfig) {
-    return { saved: false, error: `No step config found for key "${stepKey}"` }
+    diag.push(`No step config for "${stepKey}"`)
+    return { saved: false, error: `No step config found for key "${stepKey}"`, diagnostics: diag }
   }
+  diag.push(`Step config found: "${stepConfig.title}"`)
 
   const markdown = evidenceToMarkdown(stepKey, evidence)
   if (!markdown) {
+    const evidenceKeys = evidence && typeof evidence === 'object'
+      ? Object.keys(evidence as Record<string, unknown>).join(', ')
+      : 'none'
+    diag.push(`evidenceToMarkdown returned null — evidence keys: ${evidenceKeys}`)
     return {
       saved: false,
-      error: `No markdown produced for step "${stepKey}" (evidence keys: ${
-        evidence && typeof evidence === 'object'
-          ? Object.keys(evidence as Record<string, unknown>).join(', ')
-          : 'none'
-      })`,
+      error: `No markdown produced for step "${stepKey}" (evidence keys: ${evidenceKeys})`,
+      diagnostics: diag,
     }
   }
+  diag.push(`Markdown generated: ${markdown.length} chars, starts with: "${markdown.slice(0, 80)}..."`)
 
   const artifactName = `Helix Step ${stepKey} — ${stepConfig.title}`
   const storagePath = `projects/${projectId}/artifacts/helix-step-${stepKey}.md`
+  diag.push(`Artifact name: "${artifactName}"`)
+  diag.push(`Storage path: "${storagePath}"`)
 
   // Use the provided client (user-authenticated) or fall back to service client
+  const clientType = supabaseClient ? 'user-auth' : 'service-role'
   const supabase = supabaseClient ?? createServiceClient()
+  diag.push(`Using ${clientType} supabase client`)
 
   // Upload markdown file to storage (best-effort — DB content_text is the source of truth)
   const fileBuffer = Buffer.from(markdown, 'utf-8')
+  diag.push(`File buffer: ${fileBuffer.byteLength} bytes`)
+
   let storageError: string | null = null
   try {
     let { error: uploadError } = await supabase.storage
@@ -128,8 +141,8 @@ async function saveStepArtifactInner(
         upsert: true,
       })
 
-    // Auto-create the storage bucket if it doesn't exist, then retry
     if (uploadError?.message === 'Bucket not found') {
+      diag.push('Storage bucket not found — creating...')
       await supabase.storage.createBucket('artifacts', { public: false })
       const retry = await supabase.storage
         .from('artifacts')
@@ -142,14 +155,17 @@ async function saveStepArtifactInner(
 
     if (uploadError) {
       storageError = uploadError.message
-      console.error('[saveStepArtifact] Storage upload failed (continuing with DB save):', uploadError.message)
+      diag.push(`Storage upload FAILED: ${uploadError.message}`)
+    } else {
+      diag.push('Storage upload OK')
     }
   } catch (err) {
     storageError = String(err)
-    console.error('[saveStepArtifact] Storage upload threw (continuing with DB save):', err)
+    diag.push(`Storage upload THREW: ${err}`)
   }
 
-  // Save artifact DB record regardless of storage upload result — content_text is what the UI displays
+  // Save artifact DB record regardless of storage upload result
+  diag.push('Querying for existing artifact...')
   const { data: existing, error: selectError } = await supabase
     .from('artifacts')
     .select('id')
@@ -158,11 +174,13 @@ async function saveStepArtifactInner(
     .maybeSingle()
 
   if (selectError) {
-    return { saved: false, name: artifactName, error: `DB select failed: ${selectError.message}` }
+    diag.push(`DB select FAILED: ${selectError.message} (code: ${selectError.code})`)
+    return { saved: false, name: artifactName, error: `DB select failed: ${selectError.message}`, diagnostics: diag }
   }
 
   if (existing) {
-    const { error: updateError } = await supabase
+    diag.push(`Found existing artifact id=${existing.id} — updating...`)
+    const { error: updateError, count } = await supabase
       .from('artifacts')
       .update({
         file_size: fileBuffer.byteLength,
@@ -173,10 +191,13 @@ async function saveStepArtifactInner(
       .eq('id', existing.id)
 
     if (updateError) {
-      return { saved: false, name: artifactName, error: `DB update failed: ${updateError.message}` }
+      diag.push(`DB update FAILED: ${updateError.message} (code: ${updateError.code})`)
+      return { saved: false, name: artifactName, error: `DB update failed: ${updateError.message}`, diagnostics: diag }
     }
+    diag.push(`DB update OK (count: ${count ?? 'unknown'})`)
   } else {
-    const { error: insertError } = await supabase
+    diag.push('No existing artifact — inserting new...')
+    const { error: insertError, count } = await supabase
       .from('artifacts')
       .insert({
         project_id: projectId,
@@ -190,13 +211,32 @@ async function saveStepArtifactInner(
       })
 
     if (insertError) {
-      return { saved: false, name: artifactName, error: `DB insert failed: ${insertError.message}` }
+      diag.push(`DB insert FAILED: ${insertError.message} (code: ${insertError.code})`)
+      return { saved: false, name: artifactName, error: `DB insert failed: ${insertError.message}`, diagnostics: diag }
     }
+    diag.push(`DB insert OK (count: ${count ?? 'unknown'})`)
+  }
+
+  // Verify the artifact was actually saved by reading it back
+  diag.push('Verifying artifact in DB...')
+  const { data: verify, error: verifyError } = await supabase
+    .from('artifacts')
+    .select('id, name, file_size, processing_status, content_text')
+    .eq('project_id', projectId)
+    .eq('name', artifactName)
+    .maybeSingle()
+
+  if (verifyError) {
+    diag.push(`Verify query FAILED: ${verifyError.message}`)
+  } else if (!verify) {
+    diag.push('VERIFY FAILED: Artifact not found after insert/update!')
+  } else {
+    diag.push(`Verified: id=${verify.id}, size=${verify.file_size}, status=${verify.processing_status}, content_length=${verify.content_text?.length ?? 0}`)
   }
 
   if (storageError) {
-    return { saved: true, name: artifactName, error: `Saved to DB but storage upload failed: ${storageError}` }
+    return { saved: true, name: artifactName, error: `Saved to DB but storage upload failed: ${storageError}`, diagnostics: diag }
   }
 
-  return { saved: true, name: artifactName }
+  return { saved: true, name: artifactName, diagnostics: diag }
 }

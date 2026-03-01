@@ -11,6 +11,7 @@ export interface CompleteStepResult {
   error?: string
   artifactSaved?: boolean
   artifactError?: string
+  diagnostics: string[]
 }
 
 export async function completeHelixStep(
@@ -19,6 +20,10 @@ export async function completeHelixStep(
   evidence: unknown,
   _artifactTitle?: string
 ): Promise<CompleteStepResult> {
+  const diag: string[] = []
+  diag.push(`[${new Date().toISOString()}] completeHelixStep called: project=${projectId}, step=${stepKey}`)
+  diag.push(`Evidence keys: ${evidence && typeof evidence === 'object' ? Object.keys(evidence as Record<string, unknown>).join(', ') : 'none'}`)
+
   const supabase = await createClient()
 
   // Get current user
@@ -27,8 +32,10 @@ export async function completeHelixStep(
     error: authError,
   } = await supabase.auth.getUser()
   if (authError || !user) {
-    return { success: false, error: 'Not authenticated' }
+    diag.push(`Auth failed: ${authError?.message ?? 'no user'}`)
+    return { success: false, error: 'Not authenticated', diagnostics: diag }
   }
+  diag.push(`Authenticated as user ${user.id.slice(0, 8)}...`)
 
   // Update step as complete
   const { error: stepError } = await supabase
@@ -43,8 +50,10 @@ export async function completeHelixStep(
     .eq('step_key', stepKey)
 
   if (stepError) {
-    return { success: false, error: `Failed to complete step: ${stepError.message}` }
+    diag.push(`Step update FAILED: ${stepError.message}`)
+    return { success: false, error: `Failed to complete step: ${stepError.message}`, diagnostics: diag }
   }
+  diag.push('Step update OK')
 
   // Unlock next step
   const nextStepConfig = getNextStep(stepKey)
@@ -55,6 +64,7 @@ export async function completeHelixStep(
       .eq('project_id', projectId)
       .eq('step_key', nextStepConfig.key)
       .eq('status', 'locked')
+    diag.push(`Unlocked next step: ${nextStepConfig.key}`)
   }
 
   // Check if all steps in this stage are now complete — if so, pass the gate and unlock the next stage
@@ -77,7 +87,6 @@ export async function completeHelixStep(
     }
 
     if (allComplete) {
-      // Mark current stage gate as passed
       await supabase
         .from('helix_stage_gates')
         .update({
@@ -88,26 +97,33 @@ export async function completeHelixStep(
         .eq('project_id', projectId)
         .eq('stage_number', currentStepConfig.stageNumber)
 
-      // Unlock next stage gate
       await supabase
         .from('helix_stage_gates')
         .update({ status: 'active' as const })
         .eq('project_id', projectId)
         .eq('stage_number', currentStepConfig.stageNumber + 1)
         .eq('status', 'locked')
+      diag.push('All stage steps complete — gates updated')
     }
   }
 
   // Await artifact save — pass the user's authenticated client
-  let artifactResult: { saved: boolean; error?: string }
+  diag.push('Starting artifact save...')
+  let artifactResult: { saved: boolean; error?: string; diagnostics?: string[] }
   try {
     artifactResult = await saveStepArtifact(projectId, stepKey, evidence, user.id, supabase)
   } catch (err) {
     artifactResult = { saved: false, error: `Threw: ${err}` }
   }
 
+  if (artifactResult.diagnostics) {
+    diag.push(...artifactResult.diagnostics)
+  }
+  diag.push(`Artifact result: saved=${artifactResult.saved}, error=${artifactResult.error ?? 'none'}`)
+
   // Revalidate helix pages
   revalidatePath(`/org/[orgSlug]/project/${projectId}/helix`, 'layout')
+  diag.push('revalidatePath called')
 
   if (!artifactResult.saved) {
     return {
@@ -115,10 +131,11 @@ export async function completeHelixStep(
       error: `Step completed but artifact save failed: ${artifactResult.error}`,
       artifactSaved: false,
       artifactError: artifactResult.error,
+      diagnostics: diag,
     }
   }
 
-  return { success: true, artifactSaved: true }
+  return { success: true, artifactSaved: true, diagnostics: diag }
 }
 
 export async function autoSaveStepEvidence(
