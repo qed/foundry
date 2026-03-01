@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { Copy, CheckCircle2, AlertCircle, Loader2, Clipboard } from 'lucide-react'
 import type { HelixStep } from '@/types/database'
 import { completeHelixStep } from '@/lib/helix/actions'
+import StepHeaderNav from '@/components/helix/StepHeaderNav'
 
 interface Step1_2ContentProps {
   step: HelixStep
@@ -88,9 +89,12 @@ Put as many details as possible into this brief. It should be specific enough th
   return (
     <div className="min-h-screen bg-bg-primary">
       <div className="border-b border-bg-tertiary bg-bg-secondary sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <h1 className="text-2xl font-bold text-text-primary">1.2 — Brainstorming Prompt</h1>
-          <p className="text-text-secondary mt-1">Step 2 of 3 — Planning Stage</p>
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-text-primary">1.2 — Brainstorming Prompt</h1>
+            <p className="text-text-secondary mt-1">Step 2 of 3 — Planning Stage</p>
+          </div>
+          <StepHeaderNav stepKey="1.2" orgSlug={orgSlug} projectId={projectId} />
         </div>
       </div>
 

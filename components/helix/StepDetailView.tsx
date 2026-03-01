@@ -9,6 +9,7 @@ import EvidencePanel from './EvidencePanel'
 import EvidenceViewer from './EvidenceViewer'
 import BreadcrumbNav from './BreadcrumbNav'
 import StepNavigation from './StepNavigation'
+import StepHeaderNav from './StepHeaderNav'
 
 interface StepDetailViewProps {
   step: HelixStep
@@ -89,6 +90,7 @@ export default function StepDetailView({
                   <span className="text-sm text-accent-cyan">Active</span>
                 </div>
               )}
+              <StepHeaderNav stepKey={stepKey} orgSlug={orgSlug} projectId={projectId} />
             </div>
           </div>
         </div>

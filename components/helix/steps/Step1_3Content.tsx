@@ -6,6 +6,7 @@ import type { HelixStep } from '@/types/database'
 import { completeHelixStep } from '@/lib/helix/actions'
 import { extractTextFromFile } from '@/lib/helix/fileProcessing'
 import MarkdownRenderer from '@/components/helix/MarkdownRenderer'
+import StepHeaderNav from '@/components/helix/StepHeaderNav'
 
 interface Step1_3ContentProps {
   step: HelixStep
@@ -92,9 +93,12 @@ export default function Step1_3Content({
   return (
     <div className="min-h-screen bg-bg-primary">
       <div className="border-b border-bg-tertiary bg-bg-secondary sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <h1 className="text-2xl font-bold text-text-primary">1.3 — Save Project Brief</h1>
-          <p className="text-text-secondary mt-1">Step 3 of 3 — Planning Stage</p>
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-text-primary">1.3 — Save Project Brief</h1>
+            <p className="text-text-secondary mt-1">Step 3 of 3 — Planning Stage</p>
+          </div>
+          <StepHeaderNav stepKey="1.3" orgSlug={orgSlug} projectId={projectId} />
         </div>
       </div>
 

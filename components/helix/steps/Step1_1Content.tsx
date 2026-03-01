@@ -8,6 +8,7 @@ import Link from '@tiptap/extension-link'
 import { AlertCircle, Loader2, CheckCircle2 } from 'lucide-react'
 import type { HelixStep } from '@/types/database'
 import { completeHelixStep } from '@/lib/helix/actions'
+import StepHeaderNav from '@/components/helix/StepHeaderNav'
 import { debounce } from '@/lib/utils/debounce'
 
 interface Step1_1ContentProps {
@@ -154,11 +155,14 @@ export default function Step1_1Content({
   return (
     <div className="min-h-screen bg-bg-primary">
       <div className="border-b border-bg-tertiary bg-bg-secondary sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <h1 className="text-2xl font-bold text-text-primary">
-            1.1 — Define Project Idea
-          </h1>
-          <p className="text-text-secondary mt-1">Step 1 of 3 — Planning Stage</p>
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-text-primary">
+              1.1 — Define Project Idea
+            </h1>
+            <p className="text-text-secondary mt-1">Step 1 of 3 — Planning Stage</p>
+          </div>
+          <StepHeaderNav stepKey="1.1" orgSlug={orgSlug} projectId={projectId} />
         </div>
       </div>
 
