@@ -49,6 +49,7 @@ export default function Step1_1Content({
     }
   })
 
+  const isComplete = step.status === 'complete'
   const [isSaving, setIsSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
   const [validationError, setValidationError] = useState<string | null>(null)
@@ -70,7 +71,6 @@ export default function Step1_1Content({
       const html = editor.getHTML()
       setFormData((prev) => ({ ...prev, ideaText: html }))
     },
-    editable: step.status !== 'complete',
   })
 
   // Auto-save with debounce
@@ -105,10 +105,8 @@ export default function Step1_1Content({
 
   // Trigger auto-save on form changes
   useEffect(() => {
-    if (step.status !== 'complete') {
-      debouncedAutoSave(formData)
-    }
-  }, [formData, debouncedAutoSave, step.status])
+    debouncedAutoSave(formData)
+  }, [formData, debouncedAutoSave])
 
   const validateForm = useCallback((): boolean => {
     setValidationError(null)
@@ -153,97 +151,6 @@ export default function Step1_1Content({
     formData.targetUsers.trim().length > 0 &&
     plainTextLength >= 50
 
-  if (step.status === 'complete') {
-    const data = step.evidence_data as Record<string, unknown> | null
-    return (
-      <div className="min-h-screen bg-bg-primary">
-        <div className="border-b border-bg-tertiary bg-bg-secondary sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <h1 className="text-2xl font-bold text-text-primary">
-              1.1 — Define Project Idea
-            </h1>
-            <p className="text-text-secondary mt-1">Step 1 of 3 — Planning Stage</p>
-          </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              <div className="bg-bg-secondary rounded-lg border border-bg-tertiary p-8">
-                <div className="flex items-center gap-3 mb-6">
-                  <CheckCircle2 size={24} className="text-green-500" />
-                  <h2 className="text-xl font-semibold text-text-primary">Completed</h2>
-                </div>
-
-                <div className="space-y-6">
-                  <div>
-                    <p className="text-sm text-text-secondary uppercase tracking-wide mb-2">Project Name</p>
-                    <p className="text-lg font-medium text-text-primary">
-                      {(data?.projectName as string) || formData.projectName}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-text-secondary uppercase tracking-wide mb-2">Problem Statement</p>
-                    <p className="text-text-secondary leading-relaxed">
-                      {(data?.problemStatement as string) || formData.problemStatement}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-text-secondary uppercase tracking-wide mb-2">Target Users</p>
-                    <p className="text-text-secondary leading-relaxed">
-                      {(data?.targetUsers as string) || formData.targetUsers}
-                    </p>
-                  </div>
-                  {((data?.vision as string) || formData.vision) && (
-                    <div>
-                      <p className="text-sm text-text-secondary uppercase tracking-wide mb-2">Vision</p>
-                      <p className="text-text-secondary leading-relaxed">
-                        {(data?.vision as string) || formData.vision}
-                      </p>
-                    </div>
-                  )}
-                  <div className="pt-6 border-t border-bg-tertiary">
-                    <p className="text-sm text-text-secondary uppercase tracking-wide mb-3">Project Idea</p>
-                    <div
-                      className="prose prose-sm prose-invert max-w-none text-text-secondary"
-                      dangerouslySetInnerHTML={{
-                        __html: (data?.ideaText as string) || formData.ideaText,
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div className="mt-8 p-4 bg-green-900/20 border border-green-800/30 rounded-lg">
-                  <p className="text-sm text-green-300">
-                    Completed on{' '}
-                    {step.completed_at
-                      ? new Date(step.completed_at).toLocaleDateString()
-                      : 'unknown'}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="lg:col-span-1">
-              <div className="bg-bg-secondary rounded-lg border border-bg-tertiary p-6 sticky top-20">
-                <h3 className="text-lg font-semibold text-text-primary mb-4">Next Steps</h3>
-                <p className="text-sm text-text-secondary mb-4">
-                  Step 1.1 is complete. The project idea has been saved.
-                </p>
-                <a
-                  href={`/org/${orgSlug}/project/${projectId}/helix/step/1.2`}
-                  className="w-full block px-4 py-3 bg-accent-cyan text-white rounded-lg font-medium hover:bg-opacity-90 transition-all text-center"
-                >
-                  Continue to Step 1.2
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="min-h-screen bg-bg-primary">
       <div className="border-b border-bg-tertiary bg-bg-secondary sticky top-0 z-10">
@@ -260,6 +167,24 @@ export default function Step1_1Content({
           {/* Main Form */}
           <div className="lg:col-span-2">
             <div className="bg-bg-secondary rounded-lg border border-bg-tertiary p-8 space-y-8">
+              {/* Completed banner */}
+              {isComplete && (
+                <div className="flex items-center gap-3 p-4 bg-green-900/20 border border-green-800/30 rounded-lg">
+                  <CheckCircle2 size={20} className="text-green-500" />
+                  <div>
+                    <p className="text-sm font-medium text-green-300">
+                      Completed on{' '}
+                      {step.completed_at
+                        ? new Date(step.completed_at).toLocaleDateString()
+                        : 'unknown'}
+                    </p>
+                    <p className="text-xs text-green-300/70 mt-0.5">
+                      You can still edit and re-save your project idea.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Instructions */}
               <div>
                 <h2 className="text-lg font-semibold text-text-primary mb-4">Instructions</h2>
@@ -422,8 +347,6 @@ export default function Step1_1Content({
           {/* Right Panel */}
           <div className="lg:col-span-1">
             <div className="bg-bg-secondary rounded-lg border border-bg-tertiary p-6 sticky top-20">
-              <h3 className="text-lg font-semibold text-text-primary mb-4">Mark as Complete</h3>
-
               {validationError && (
                 <div className="mb-4 p-3 bg-red-900/20 border border-red-800/30 rounded-lg flex gap-2">
                   <AlertCircle size={16} className="text-red-400 flex-shrink-0 mt-0.5" />
@@ -431,22 +354,27 @@ export default function Step1_1Content({
                 </div>
               )}
 
-              <p className="text-sm text-text-secondary mb-4">
-                Complete all fields above, then click the button to save your project idea and unlock Step 1.2.
-              </p>
-
               <button
                 onClick={handleComplete}
                 disabled={isSaving || !isFormValid}
                 className="w-full px-4 py-3 bg-accent-cyan text-white rounded-lg font-medium hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
               >
                 {isSaving && <Loader2 size={20} className="animate-spin" />}
-                Mark as Complete
+                Save and Complete
               </button>
 
-              <p className="text-xs text-text-secondary mt-3 text-center">
-                Once submitted, your project idea cannot be edited.
+              <p className="text-sm text-text-secondary mt-4">
+                Complete all fields above, then click to save your project idea and unlock Step 1.2.
               </p>
+
+              {isComplete && (
+                <a
+                  href={`/org/${orgSlug}/project/${projectId}/helix/step/1.2`}
+                  className="w-full block px-4 py-3 mt-4 bg-accent-cyan text-white rounded-lg font-medium hover:bg-opacity-90 transition-all text-center"
+                >
+                  Continue to Step 1.2
+                </a>
+              )}
             </div>
           </div>
         </div>
