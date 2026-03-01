@@ -35,80 +35,39 @@ export default function Step1_2Content({
   const [copiedToClipboard, setCopiedToClipboard] = useState(false)
 
   const generatePrompt = (): string => {
-    return `# Helix Brainstorming Prompt
+    const name = projectIdea || '[Company Name]'
+    return `Prompt: ${name} Hackathon Project Brief
 
-## Project Context
-**Project Name:** ${projectIdea}
+Part 1: Business Context
+${name} is [Company Description]. Their website is [website]. Before doing anything else, visit their website and learn about their business — what products and services they offer, who their customers are (consumers, businesses, sub-dealers), how their retail and B2B operations work, and what makes them distinctive. Summarize what you learn before proceeding.
 
----
+Part 2: Hackathon Context
+You are creating a project brief for a Helix Hackathon. Here's what that means:
 
-## Instructions
-You are facilitating a structured brainstorming session for this project. Follow the 4-phase process below:
+These are Best of the Best hackathons — only teams who have won at least $5,000 at previous hackathons participate.
+You will have a team of 4 elite AI-native engineers working for you for a full 30-hour weekend to build something new and useful for your business.
+This is Top Gun, and you get to direct the pilots.
+The goal is to build a working prototype of real software that delivers immediate, measurable value.
+In addition to the 30 hours, you will have access to the engineers for another 90 hours, so make a plan for a full 120-hour project.
 
-### Phase 1: Problem Deep Dive
-1. Expand on the core problem statement
-2. Identify pain points and user frustrations
-3. Explore root causes
-4. Define success criteria for solving this problem
+Part 3: The Project Brief
+I want a project brief for software that will materially improve some part of ${name}'s business. The working title is "${name} Helper".
+The brief should specify what ${name} Helper should do, how it would be built, and what questions still need answers.
+Work in phases. Wait for my approval before moving to the next phase.
+Phase 1 — Discovery: Ask me clarifying questions about ${name}'s operations, pain points, customers, and priorities. Ask whatever you need to write a strong brief. Please ask one question at a time. Do not proceed until I tell you I'm ready to move on.
+Phase 2 — Proposal: Based on what you've learned from the website and my answers, propose your recommended approach for what ${name} Helper should do. Explain your reasoning — why this particular problem, why this solution. If you need to, you can propose 2 or 3 potential projects and, again one question at a time, work with me to figure out which one will deliver the biggest ROI.
+Phase 3 — Review: Step back and critically review your own proposal. Does it align with my goals? Is the impact meaningful enough to justify building it? Flag any concerns or adjustments.
+Phase 4 — Final Brief: Based on your review, write a detailed final project brief containing:
 
-### Phase 2: Solution Exploration
-1. Brainstorm 5-10 potential solution approaches
-2. Evaluate pros/cons of each approach
-3. Identify constraints and dependencies
-4. Recommend the most promising approach
+What ${name} Helper does — a clear description of the product and the problem it solves
+Who it's for — the specific users within or around ${name}
+Key features — what it actually does, in concrete terms
+Build plan — steps or phases to build it, including milestones (showing what gets done in the initial 30-hour sprint and what follows in the additional 90 hours)
+Tech considerations — any assumptions about stack, integrations, or data
+Open questions — things you don't yet know that the team will need to resolve
+Success criteria — how we'll know if ${name} Helper is working and delivering value
 
-### Phase 3: User & Market Research
-1. Define detailed user personas
-2. Describe user workflows and jobs-to-be-done
-3. Analyze competitive landscape
-4. Identify market opportunities and threats
-
-### Phase 4: Project Brief Synthesis
-1. Summarize the findings from Phases 1-3
-2. Define the project scope and goals
-3. Outline key features and requirements
-4. Create a 1-2 paragraph executive summary
-
----
-
-## Expected Output Format
-
-After completing all 4 phases, provide a comprehensive Project Brief that includes:
-
-**Executive Summary**
-(1-2 paragraphs)
-
-**Problem Statement**
-(expanded from the original)
-
-**Target Users & Personas**
-(detailed descriptions)
-
-**Solution Overview**
-(recommended approach with justification)
-
-**Key Features & Requirements**
-(prioritized list)
-
-**Success Metrics**
-(how we'll measure success)
-
-**Market & Competitive Analysis**
-(landscape overview)
-
-**Next Steps**
-(recommended actions for project definition stage)
-
----
-
-## How to Use This Prompt
-1. Copy the entire prompt above
-2. Go to Claude Chat (https://claude.ai)
-3. Create a new conversation
-4. Paste the prompt
-5. Allow Claude to work through all 4 phases
-6. Copy the final Project Brief back to Foundry
-`
+Put as many details as possible into this brief. It should be specific enough that four strong engineers can read it and start building.`
   }
 
   const promptText = generatePrompt()
