@@ -1,31 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
-
-// Temporary step definitions - will be replaced by Phase 005 config
-const HELIX_STEPS = [
-  { stage_number: 1, step_number: 1, step_key: '1.1', evidence_type: 'text' as const },
-  { stage_number: 1, step_number: 2, step_key: '1.2', evidence_type: 'text' as const },
-  { stage_number: 1, step_number: 3, step_key: '1.3', evidence_type: 'text' as const },
-  { stage_number: 2, step_number: 1, step_key: '2.1', evidence_type: 'text' as const },
-  { stage_number: 2, step_number: 2, step_key: '2.2', evidence_type: 'checklist' as const },
-  { stage_number: 2, step_number: 3, step_key: '2.3', evidence_type: 'text' as const },
-  { stage_number: 3, step_number: 1, step_key: '3.1', evidence_type: 'text' as const },
-  { stage_number: 3, step_number: 2, step_key: '3.2', evidence_type: 'text' as const },
-  { stage_number: 3, step_number: 3, step_key: '3.3', evidence_type: 'text' as const },
-  { stage_number: 4, step_number: 1, step_key: '4.1', evidence_type: 'text' as const },
-  { stage_number: 4, step_number: 2, step_key: '4.2', evidence_type: 'file' as const },
-  { stage_number: 4, step_number: 3, step_key: '4.3', evidence_type: 'text' as const },
-  { stage_number: 5, step_number: 1, step_key: '5.1', evidence_type: 'text' as const },
-  { stage_number: 5, step_number: 2, step_key: '5.2', evidence_type: 'checklist' as const },
-  { stage_number: 5, step_number: 3, step_key: '5.3', evidence_type: 'text' as const },
-  { stage_number: 6, step_number: 1, step_key: '6.1', evidence_type: 'text' as const },
-  { stage_number: 6, step_number: 2, step_key: '6.2', evidence_type: 'checklist' as const },
-  { stage_number: 6, step_number: 3, step_key: '6.3', evidence_type: 'text' as const },
-  { stage_number: 7, step_number: 1, step_key: '7.1', evidence_type: 'text' as const },
-  { stage_number: 7, step_number: 2, step_key: '7.2', evidence_type: 'text' as const },
-  { stage_number: 8, step_number: 1, step_key: '8.1', evidence_type: 'checklist' as const },
-  { stage_number: 8, step_number: 2, step_key: '8.2', evidence_type: 'text' as const },
-]
+import { HELIX_STAGES } from '@/config/helix-process'
 
 export async function GET(
   _request: NextRequest,
@@ -68,60 +43,74 @@ export async function POST(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  // Use service client for writes (projects table has no user UPDATE RLS policy)
+  const serviceClient = createServiceClient()
+
   // Update project mode
-  const { error: updateError } = await supabase
+  const { error: updateError } = await serviceClient
     .from('projects')
     .update({ mode, updated_at: new Date().toISOString() })
     .eq('id', projectId)
 
   if (updateError) {
+    console.error('Failed to update project mode:', updateError)
     return NextResponse.json({ error: 'Failed to update project mode' }, { status: 500 })
   }
 
   // Initialize helix data when switching to helix mode
   if (mode === 'helix') {
-    const serviceClient = createServiceClient()
+    // Derive steps from config
+    const helixSteps = HELIX_STAGES.flatMap((stage) =>
+      stage.steps.map((step) => ({
+        stage_number: step.stageNumber,
+        step_number: step.stepNumber,
+        step_key: step.key,
+        evidence_type: step.evidenceRequirements[0]?.type ?? 'text',
+      }))
+    )
 
-    // Check if steps already exist
-    const { data: existingSteps } = await serviceClient
+    // Delete any existing stale rows and reinitialize
+    await serviceClient
       .from('helix_steps')
-      .select('id')
+      .delete()
       .eq('project_id', projectId)
-      .limit(1)
 
-    if (!existingSteps || existingSteps.length === 0) {
-      // Initialize steps
-      const { error: stepsError } = await serviceClient
-        .from('helix_steps')
-        .insert(
-          HELIX_STEPS.map((step) => ({
-            project_id: projectId,
-            ...step,
-            status: step.step_key === '1.1' ? ('active' as const) : ('locked' as const),
-            evidence_data: null,
-          }))
-        )
+    await serviceClient
+      .from('helix_stage_gates')
+      .delete()
+      .eq('project_id', projectId)
 
-      if (stepsError) {
-        console.error('Failed to initialize helix steps:', stepsError)
-        return NextResponse.json({ error: 'Failed to initialize helix steps' }, { status: 500 })
-      }
+    // Initialize steps
+    const { error: stepsError } = await serviceClient
+      .from('helix_steps')
+      .insert(
+        helixSteps.map((step) => ({
+          project_id: projectId,
+          ...step,
+          status: step.step_key === '1.1' ? ('active' as const) : ('locked' as const),
+          evidence_data: null,
+        }))
+      )
 
-      // Initialize stage gates
-      const { error: gatesError } = await serviceClient
-        .from('helix_stage_gates')
-        .insert(
-          Array.from({ length: 8 }, (_, i) => ({
-            project_id: projectId,
-            stage_number: i + 1,
-            status: i === 0 ? ('active' as const) : ('locked' as const),
-          }))
-        )
+    if (stepsError) {
+      console.error('Failed to initialize helix steps:', stepsError)
+      return NextResponse.json({ error: 'Failed to initialize helix steps' }, { status: 500 })
+    }
 
-      if (gatesError) {
-        console.error('Failed to initialize stage gates:', gatesError)
-        return NextResponse.json({ error: 'Failed to initialize stage gates' }, { status: 500 })
-      }
+    // Initialize stage gates
+    const { error: gatesError } = await serviceClient
+      .from('helix_stage_gates')
+      .insert(
+        Array.from({ length: 8 }, (_, i) => ({
+          project_id: projectId,
+          stage_number: i + 1,
+          status: i === 0 ? ('active' as const) : ('locked' as const),
+        }))
+      )
+
+    if (gatesError) {
+      console.error('Failed to initialize stage gates:', gatesError)
+      return NextResponse.json({ error: 'Failed to initialize stage gates' }, { status: 500 })
     }
   }
 

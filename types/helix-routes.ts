@@ -3,14 +3,14 @@
  */
 
 export type HelixStageSlug =
-  | 'discovery'
-  | 'requirements'
-  | 'architecture'
-  | 'implementation'
+  | 'planning'
+  | 'documentation'
+  | 'build-planning'
+  | 'repo-setup'
+  | 'review'
+  | 'build'
   | 'testing'
   | 'deployment'
-  | 'monitoring'
-  | 'retrospective'
 
 export interface HelixRouteParams {
   orgSlug: string
@@ -44,26 +44,26 @@ export const helixRoutes = {
 
 /** Map stage numbers to URL slugs */
 export const STAGE_NUMBER_TO_SLUG: Record<number, HelixStageSlug> = {
-  1: 'discovery',
-  2: 'requirements',
-  3: 'architecture',
-  4: 'implementation',
-  5: 'testing',
-  6: 'deployment',
-  7: 'monitoring',
-  8: 'retrospective',
+  1: 'planning',
+  2: 'documentation',
+  3: 'build-planning',
+  4: 'repo-setup',
+  5: 'review',
+  6: 'build',
+  7: 'testing',
+  8: 'deployment',
 }
 
 /** Map URL slugs back to stage numbers */
 export const STAGE_SLUG_TO_NUMBER: Record<HelixStageSlug, number> = {
-  discovery: 1,
-  requirements: 2,
-  architecture: 3,
-  implementation: 4,
-  testing: 5,
-  deployment: 6,
-  monitoring: 7,
-  retrospective: 8,
+  planning: 1,
+  documentation: 2,
+  'build-planning': 3,
+  'repo-setup': 4,
+  review: 5,
+  build: 6,
+  testing: 7,
+  deployment: 8,
 }
 
 /** Check if a string is a valid helix stage slug */

@@ -1,6 +1,6 @@
 /**
  * Complete Helix process configuration.
- * Defines the 8 stages and 22 steps of the structured development process.
+ * Defines the 8 stages and 21 steps of the structured development process.
  */
 
 export interface EvidenceRequirement {
@@ -30,7 +30,7 @@ export interface StageConfig {
 }
 
 // ---------------------------------------------------------------------------
-// Stage 1: Discovery
+// Stage 1: Planning
 // ---------------------------------------------------------------------------
 
 const stage1Steps: StepConfig[] = [
@@ -63,14 +63,14 @@ const stage1Steps: StepConfig[] = [
     title: 'Save Project Brief',
     description: 'Upload or paste your final Project Brief document. This synthesizes your project idea and brainstorming into a formal brief that becomes the source of truth for the rest of the Helix process.',
     evidenceRequirements: [
-      { type: 'text', label: 'Project Brief', description: 'Final project brief document', required: true },
+      { type: 'file', label: 'Project Brief', description: 'Final project brief document (.pdf, .docx, .md, .txt)', required: true },
     ],
     deliverables: ['Project brief document'],
   },
 ]
 
 // ---------------------------------------------------------------------------
-// Stage 2: Requirements
+// Stage 2: Documentation
 // ---------------------------------------------------------------------------
 
 const stage2Steps: StepConfig[] = [
@@ -78,39 +78,50 @@ const stage2Steps: StepConfig[] = [
     key: '2.1',
     stageNumber: 2,
     stepNumber: 1,
-    title: 'Functional Requirements',
-    description: 'Document detailed functional requirements based on discovery findings.',
+    title: 'Identify Available Documentation',
+    description: 'Audit all existing documentation, resources, and reference materials. List all documentation, design files, API docs, requirements docs, and other reference materials.',
     evidenceRequirements: [
-      { type: 'text', label: 'Requirements Document', description: 'Detailed functional requirements', required: true },
+      { type: 'checklist', label: 'Documentation Sources', description: 'Checklist of documentation sources found (design files, requirements, API docs, architecture diagrams, codebase, user research, brand guidelines, other materials)', required: true },
     ],
-    deliverables: ['Functional requirements document', 'User stories'],
+    deliverables: ['Documentation audit checklist'],
   },
   {
     key: '2.2',
     stageNumber: 2,
     stepNumber: 2,
-    title: 'Non-Functional Requirements',
-    description: 'Define performance, security, scalability, and other non-functional requirements.',
+    title: 'Prompt Champion for Undocumented Knowledge',
+    description: 'Interview project champion to capture undocumented context and expertise. Use the AI prompt to generate interview questions and record answers about implicit knowledge, constraints, trade-offs, and context.',
     evidenceRequirements: [
-      { type: 'checklist', label: 'NFR Checklist', description: 'Non-functional requirements checklist', required: true },
+      { type: 'text', label: 'Champion Interview', description: 'Q&A summary from champion interview, minimum 300 characters', required: true },
     ],
-    deliverables: ['Non-functional requirements specification'],
+    deliverables: ['Champion interview Q&A summary'],
   },
   {
     key: '2.3',
     stageNumber: 2,
     stepNumber: 3,
-    title: 'Requirements Prioritization',
-    description: 'Prioritize requirements using MoSCoW or similar framework.',
+    title: 'Gather All Docs into One Folder',
+    description: 'Consolidate all documentation into a single, organized repository. Create a folder/space with all gathered documentation organized by category with a README.',
     evidenceRequirements: [
-      { type: 'text', label: 'Priority Matrix', description: 'Prioritized requirements matrix', required: true },
+      { type: 'url', label: 'Documentation Folder', description: 'Link to documentation folder or repository', required: true },
     ],
-    deliverables: ['Prioritized requirements list', 'MVP definition'],
+    deliverables: ['Organized documentation folder', 'Documentation README'],
+  },
+  {
+    key: '2.4',
+    stageNumber: 2,
+    stepNumber: 4,
+    title: 'Verify Documentation is Complete',
+    description: 'Confirm that all necessary documentation is present and no critical gaps exist. Review the complete documentation set and create a completeness checklist or gap analysis.',
+    evidenceRequirements: [
+      { type: 'checklist', label: 'Completeness Verification', description: 'Documentation completeness verification checklist (all existing docs gathered, champion knowledge documented, no critical gaps, docs organized and accessible, README/index created)', required: true },
+    ],
+    deliverables: ['Documentation completeness verification'],
   },
 ]
 
 // ---------------------------------------------------------------------------
-// Stage 3: Architecture
+// Stage 3: Build Planning
 // ---------------------------------------------------------------------------
 
 const stage3Steps: StepConfig[] = [
@@ -118,39 +129,39 @@ const stage3Steps: StepConfig[] = [
     key: '3.1',
     stageNumber: 3,
     stepNumber: 1,
-    title: 'System Architecture Design',
-    description: 'Design high-level system architecture including component interactions and data flow.',
+    title: 'Run Building Brief Summary Prompt',
+    description: 'Use AI to generate a structured technical build plan from project brief and documentation. Receive a comprehensive build plan including architecture, tech stack, phases, and risk assessment.',
     evidenceRequirements: [
-      { type: 'text', label: 'Architecture Document', description: 'System architecture design document', required: true },
+      { type: 'text', label: 'Build Plan Summary', description: 'AI-generated build plan summary, minimum 500 characters', required: true },
     ],
-    deliverables: ['Architecture diagram', 'Component specification'],
+    deliverables: ['AI-generated build plan summary'],
   },
   {
     key: '3.2',
     stageNumber: 3,
     stepNumber: 2,
-    title: 'Technology Stack Selection',
-    description: 'Select and justify technology choices for the project.',
+    title: 'Build Plan Output Saved',
+    description: 'Save the build plan in a structured document format with clear sections for Architecture, Tech Stack, Phase Breakdown, Risks, and Timeline.',
     evidenceRequirements: [
-      { type: 'text', label: 'Tech Stack Rationale', description: 'Technology selection rationale', required: true },
+      { type: 'file', label: 'Build Plan Document', description: 'Build plan document (.pdf, .docx, .md)', required: true },
     ],
-    deliverables: ['Technology stack document', 'Trade-off analysis'],
+    deliverables: ['Build plan document'],
   },
   {
     key: '3.3',
     stageNumber: 3,
     stepNumber: 3,
-    title: 'Data Model Design',
-    description: 'Design the data model, database schema, and data flow patterns.',
+    title: 'Review Build Plan Quality',
+    description: 'Critically review the build plan for completeness, feasibility, and alignment. Verify feasibility, tech choices justified, phases realistic, risks identified, and no critical gaps.',
     evidenceRequirements: [
-      { type: 'text', label: 'Data Model', description: 'Data model and schema design', required: true },
+      { type: 'text', label: 'Review Notes', description: 'Build plan review notes, minimum 200 characters', required: true },
     ],
-    deliverables: ['ERD diagram', 'Schema definition'],
+    deliverables: ['Build plan review notes'],
   },
 ]
 
 // ---------------------------------------------------------------------------
-// Stage 4: Implementation
+// Stage 4: Repo Setup
 // ---------------------------------------------------------------------------
 
 const stage4Steps: StepConfig[] = [
@@ -158,39 +169,50 @@ const stage4Steps: StepConfig[] = [
     key: '4.1',
     stageNumber: 4,
     stepNumber: 1,
-    title: 'Core Feature Development',
-    description: 'Implement core features based on prioritized requirements.',
+    title: 'Copy Repo Template',
+    description: 'Use the Helix repo template as a starting point. Copy the Helix project template (structure, config files, CI/CD setup, etc.) to provide the foundation for the project.',
     evidenceRequirements: [
-      { type: 'text', label: 'Implementation Notes', description: 'Core feature implementation notes and decisions', required: true },
+      { type: 'url', label: 'Repository Link', description: 'Link to initialized repository', required: true },
     ],
-    deliverables: ['Working core features', 'Code review records'],
+    deliverables: ['Initialized repository from template'],
   },
   {
     key: '4.2',
     stageNumber: 4,
     stepNumber: 2,
-    title: 'Integration Development',
-    description: 'Build integrations between components and external services.',
+    title: 'Find-and-Replace Placeholders',
+    description: 'Replace template placeholders with project-specific values: project name, description, author, URLs, etc.',
     evidenceRequirements: [
-      { type: 'file', label: 'Integration Docs', description: 'Integration documentation and test results', required: true },
+      { type: 'checklist', label: 'Placeholder Verification', description: 'Placeholder replacement verification (project name, description, author/org info, config files, README, package.json/requirements updated)', required: true },
     ],
-    deliverables: ['Integration documentation', 'API contracts'],
+    deliverables: ['Configured repository with project-specific values'],
   },
   {
     key: '4.3',
     stageNumber: 4,
     stepNumber: 3,
-    title: 'UI/UX Implementation',
-    description: 'Implement user interface and user experience based on design specifications.',
+    title: 'Populate BuildPlan Folder',
+    description: 'Add build plan and documentation to the repository. Copy the build plan and documentation folder into the /BuildPlan directory and organize them for reference during build.',
     evidenceRequirements: [
-      { type: 'text', label: 'UI Implementation', description: 'UI implementation notes and screenshots', required: true },
+      { type: 'checklist', label: 'BuildPlan Contents', description: 'BuildPlan folder contents verified (build plan document added, documentation folder included, phases folder created, README created, all files accessible from repo root)', required: true },
     ],
-    deliverables: ['Implemented UI', 'Accessibility compliance report'],
+    deliverables: ['Populated BuildPlan folder in repository'],
+  },
+  {
+    key: '4.4',
+    stageNumber: 4,
+    stepNumber: 4,
+    title: 'Initialize Git Repo',
+    description: 'Initialize git repository and create initial commit with message "initial: project setup from Helix template".',
+    evidenceRequirements: [
+      { type: 'url', label: 'Initial Commit', description: 'Link to git commit or repository showing initial commit', required: true },
+    ],
+    deliverables: ['Git repository with initial commit'],
   },
 ]
 
 // ---------------------------------------------------------------------------
-// Stage 5: Testing
+// Stage 5: Pre-Build Review
 // ---------------------------------------------------------------------------
 
 const stage5Steps: StepConfig[] = [
@@ -198,39 +220,17 @@ const stage5Steps: StepConfig[] = [
     key: '5.1',
     stageNumber: 5,
     stepNumber: 1,
-    title: 'Unit & Integration Testing',
-    description: 'Write and run unit tests and integration tests for all core components.',
+    title: 'Pre-Build Review Checkpoint',
+    description: 'Final review before build phase: verify all prerequisites met, risks addressed, team ready. Conduct a comprehensive review of requirements, architecture, environment, timeline, and risks.',
     evidenceRequirements: [
-      { type: 'text', label: 'Test Report', description: 'Unit and integration test coverage report', required: true },
+      { type: 'checklist', label: 'Pre-Build Review', description: 'Pre-build review verification (requirements finalized, architecture reviewed, tech stack finalized, team roles defined, dev environment set up, CI/CD configured, build phases realistic, risks identified, success criteria defined, go/no-go decision made)', required: true },
     ],
-    deliverables: ['Test suite', 'Coverage report'],
-  },
-  {
-    key: '5.2',
-    stageNumber: 5,
-    stepNumber: 2,
-    title: 'End-to-End Testing',
-    description: 'Conduct end-to-end testing of critical user flows.',
-    evidenceRequirements: [
-      { type: 'checklist', label: 'E2E Test Checklist', description: 'End-to-end test scenarios checklist', required: true },
-    ],
-    deliverables: ['E2E test results', 'Bug report'],
-  },
-  {
-    key: '5.3',
-    stageNumber: 5,
-    stepNumber: 3,
-    title: 'Performance Testing',
-    description: 'Conduct performance and load testing to validate NFRs.',
-    evidenceRequirements: [
-      { type: 'text', label: 'Performance Report', description: 'Performance test results and analysis', required: true },
-    ],
-    deliverables: ['Performance benchmarks', 'Optimization recommendations'],
+    deliverables: ['Pre-build review checklist', 'Go/no-go decision'],
   },
 ]
 
 // ---------------------------------------------------------------------------
-// Stage 6: Deployment
+// Stage 6: Build
 // ---------------------------------------------------------------------------
 
 const stage6Steps: StepConfig[] = [
@@ -238,39 +238,17 @@ const stage6Steps: StepConfig[] = [
     key: '6.1',
     stageNumber: 6,
     stepNumber: 1,
-    title: 'Deployment Pipeline Setup',
-    description: 'Configure CI/CD pipeline and deployment infrastructure.',
+    title: 'Build Phases',
+    description: 'Execute repeating build cycle for each phase in the build plan. Each phase: implement features, write tests, commit code, document changes. Report status and blockers.',
     evidenceRequirements: [
-      { type: 'text', label: 'Pipeline Config', description: 'CI/CD pipeline configuration details', required: true },
+      { type: 'url', label: 'Build Progress', description: 'Link to build phase progress or pull requests', required: true },
     ],
-    deliverables: ['CI/CD pipeline', 'Deployment scripts'],
-  },
-  {
-    key: '6.2',
-    stageNumber: 6,
-    stepNumber: 2,
-    title: 'Staging Deployment & Validation',
-    description: 'Deploy to staging environment and validate functionality.',
-    evidenceRequirements: [
-      { type: 'checklist', label: 'Staging Checklist', description: 'Staging deployment validation checklist', required: true },
-    ],
-    deliverables: ['Staging environment', 'Validation report'],
-  },
-  {
-    key: '6.3',
-    stageNumber: 6,
-    stepNumber: 3,
-    title: 'Production Release',
-    description: 'Execute production deployment with rollback plan.',
-    evidenceRequirements: [
-      { type: 'text', label: 'Release Notes', description: 'Production release notes and rollback plan', required: true },
-    ],
-    deliverables: ['Production deployment', 'Release notes'],
+    deliverables: ['Implemented features per build phase', 'Pull requests'],
   },
 ]
 
 // ---------------------------------------------------------------------------
-// Stage 7: Monitoring
+// Stage 7: Testing
 // ---------------------------------------------------------------------------
 
 const stage7Steps: StepConfig[] = [
@@ -278,28 +256,28 @@ const stage7Steps: StepConfig[] = [
     key: '7.1',
     stageNumber: 7,
     stepNumber: 1,
-    title: 'Monitoring & Alerting Setup',
-    description: 'Configure monitoring dashboards, logging, and alerting rules.',
+    title: 'Track Per-Phase Testing Status',
+    description: 'Document testing results for each build phase. For each phase: list tests run, results (pass/fail), bugs found, fixes applied. Update test coverage metrics.',
     evidenceRequirements: [
-      { type: 'text', label: 'Monitoring Config', description: 'Monitoring and alerting configuration', required: true },
+      { type: 'text', label: 'Testing Summary', description: 'Testing summary with results per phase, minimum 200 characters', required: true },
     ],
-    deliverables: ['Monitoring dashboard', 'Alert rules'],
+    deliverables: ['Per-phase testing results', 'Test coverage metrics'],
   },
   {
     key: '7.2',
     stageNumber: 7,
     stepNumber: 2,
-    title: 'Post-Launch Observation',
-    description: 'Monitor system health and user behavior for the initial launch period.',
+    title: 'End-to-End Integration Test',
+    description: 'Run full integration test of completed system. Execute comprehensive end-to-end testing covering all features, user flows, edge cases, and integration points.',
     evidenceRequirements: [
-      { type: 'text', label: 'Observation Report', description: 'Post-launch observation findings', required: true },
+      { type: 'text', label: 'E2E Test Results', description: 'E2E test results and sign-off, minimum 300 characters', required: true },
     ],
-    deliverables: ['Health report', 'User behavior analysis'],
+    deliverables: ['E2E test results', 'Integration test sign-off'],
   },
 ]
 
 // ---------------------------------------------------------------------------
-// Stage 8: Retrospective
+// Stage 8: Deployment
 // ---------------------------------------------------------------------------
 
 const stage8Steps: StepConfig[] = [
@@ -307,23 +285,34 @@ const stage8Steps: StepConfig[] = [
     key: '8.1',
     stageNumber: 8,
     stepNumber: 1,
-    title: 'Team Retrospective',
-    description: 'Conduct team retrospective to gather lessons learned.',
+    title: 'Prepare for Deployment',
+    description: 'Prepare all deployment artifacts and verification procedures. Create deployment checklist: environment config, secrets, database migrations, rollback plan, monitoring setup, communication plan.',
     evidenceRequirements: [
-      { type: 'checklist', label: 'Retro Checklist', description: 'Retrospective discussion checklist', required: true },
+      { type: 'checklist', label: 'Deployment Readiness', description: 'Deployment readiness checklist (environment configuration, secrets secured, database migrations prepared, rollback plan, monitoring configured, communication plan, stakeholders notified, deployment window scheduled)', required: true },
     ],
-    deliverables: ['Retrospective notes', 'Action items'],
+    deliverables: ['Deployment readiness checklist', 'Rollback plan'],
   },
   {
     key: '8.2',
     stageNumber: 8,
     stepNumber: 2,
-    title: 'Process Improvement Plan',
-    description: 'Document process improvements and recommendations for future projects.',
+    title: 'Deploy to Production',
+    description: 'Execute deployment to production environment. Monitor for errors. Verify all services online and responding.',
     evidenceRequirements: [
-      { type: 'text', label: 'Improvement Plan', description: 'Process improvement recommendations', required: true },
+      { type: 'text', label: 'Deployment Log', description: 'Deployment log and confirmation, minimum 100 characters', required: true },
     ],
-    deliverables: ['Improvement plan', 'Updated process documentation'],
+    deliverables: ['Deployment log', 'Production deployment confirmation'],
+  },
+  {
+    key: '8.3',
+    stageNumber: 8,
+    stepNumber: 3,
+    title: 'Post-Deploy Verification',
+    description: 'Verify system is working correctly in production. Run smoke tests, verify key features, check monitoring/logs, confirm no errors, validate with stakeholders.',
+    evidenceRequirements: [
+      { type: 'checklist', label: 'Post-Deploy Verification', description: 'Post-deploy verification checklist (app loads without errors, key features verified, API endpoints responding, database connectivity confirmed, auth/authz working, monitoring normal, no error logs, stakeholder sign-off, documentation updated)', required: true },
+    ],
+    deliverables: ['Post-deploy verification checklist', 'Stakeholder sign-off'],
   },
 ]
 
@@ -334,7 +323,7 @@ const stage8Steps: StepConfig[] = [
 export const HELIX_STAGES: StageConfig[] = [
   {
     number: 1,
-    slug: 'discovery',
+    slug: 'planning',
     title: 'Planning',
     description: 'Define your project idea, brainstorm with AI, and create a formal Project Brief.',
     steps: stage1Steps,
@@ -342,59 +331,59 @@ export const HELIX_STAGES: StageConfig[] = [
   },
   {
     number: 2,
-    slug: 'requirements',
-    title: 'Requirements',
-    description: 'Define and prioritize functional and non-functional requirements.',
+    slug: 'documentation',
+    title: 'Documentation',
+    description: 'Gather, organize, and verify all project documentation and undocumented knowledge.',
     steps: stage2Steps,
-    gateDescription: 'Requirements documented, reviewed, and prioritized.',
+    gateDescription: 'All documentation gathered, verified complete, and organized.',
   },
   {
     number: 3,
-    slug: 'architecture',
-    title: 'Architecture',
-    description: 'Design the system architecture, tech stack, and data model.',
+    slug: 'build-planning',
+    title: 'Build Planning',
+    description: 'Generate a structured technical build plan from project brief and documentation.',
     steps: stage3Steps,
-    gateDescription: 'Architecture reviewed and approved by technical leads.',
+    gateDescription: 'Build plan created, saved, and quality reviewed.',
   },
   {
     number: 4,
-    slug: 'implementation',
-    title: 'Implementation',
-    description: 'Build core features, integrations, and user interface.',
+    slug: 'repo-setup',
+    title: 'Repo Setup',
+    description: 'Initialize repository from template, configure project-specific values, and make initial commit.',
     steps: stage4Steps,
-    gateDescription: 'All features implemented and code reviewed.',
+    gateDescription: 'Repository initialized, configured, and ready for build.',
   },
   {
     number: 5,
-    slug: 'testing',
-    title: 'Testing',
-    description: 'Validate through unit, integration, E2E, and performance testing.',
+    slug: 'review',
+    title: 'Pre-Build Review',
+    description: 'Final review checkpoint before entering the build phase.',
     steps: stage5Steps,
-    gateDescription: 'All tests passing with adequate coverage.',
+    gateDescription: 'Pre-build review completed and approved.',
   },
   {
     number: 6,
-    slug: 'deployment',
-    title: 'Deployment',
-    description: 'Set up CI/CD, validate in staging, and deploy to production.',
+    slug: 'build',
+    title: 'Build',
+    description: 'Execute repeating build cycles for each phase in the build plan.',
     steps: stage6Steps,
-    gateDescription: 'Production deployment validated and stable.',
+    gateDescription: 'All build phases completed.',
   },
   {
     number: 7,
-    slug: 'monitoring',
-    title: 'Monitoring',
-    description: 'Monitor system health and observe post-launch behavior.',
+    slug: 'testing',
+    title: 'Testing',
+    description: 'Track per-phase testing and run end-to-end integration tests.',
     steps: stage7Steps,
-    gateDescription: 'System stable with monitoring in place.',
+    gateDescription: 'All testing completed and quality gates passed.',
   },
   {
     number: 8,
-    slug: 'retrospective',
-    title: 'Retrospective',
-    description: 'Reflect on the process and document improvements.',
+    slug: 'deployment',
+    title: 'Deployment',
+    description: 'Prepare, deploy to production, and verify post-deployment.',
     steps: stage8Steps,
-    gateDescription: 'Retrospective completed with improvement plan.',
+    gateDescription: 'Successfully deployed to production with verification.',
   },
 ]
 

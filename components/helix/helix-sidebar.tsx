@@ -15,12 +15,12 @@ import {
   Circle,
   Compass,
   FileText,
-  Layers,
-  Code2,
+  ClipboardList,
+  FolderGit2,
+  CheckSquare,
+  Hammer,
   TestTube2,
   Rocket,
-  Eye,
-  RotateCcw,
 } from 'lucide-react'
 
 const STAGE_CONFIG: {
@@ -28,14 +28,14 @@ const STAGE_CONFIG: {
   title: string
   icon: typeof Compass
 }[] = [
-  { number: 1, title: 'Discovery', icon: Compass },
-  { number: 2, title: 'Requirements', icon: FileText },
-  { number: 3, title: 'Architecture', icon: Layers },
-  { number: 4, title: 'Implementation', icon: Code2 },
-  { number: 5, title: 'Testing', icon: TestTube2 },
-  { number: 6, title: 'Deployment', icon: Rocket },
-  { number: 7, title: 'Monitoring', icon: Eye },
-  { number: 8, title: 'Retrospective', icon: RotateCcw },
+  { number: 1, title: 'Planning', icon: Compass },
+  { number: 2, title: 'Documentation', icon: FileText },
+  { number: 3, title: 'Build Planning', icon: ClipboardList },
+  { number: 4, title: 'Repo Setup', icon: FolderGit2 },
+  { number: 5, title: 'Pre-Build Review', icon: CheckSquare },
+  { number: 6, title: 'Build', icon: Hammer },
+  { number: 7, title: 'Testing', icon: TestTube2 },
+  { number: 8, title: 'Deployment', icon: Rocket },
 ]
 
 interface HelixSidebarProps {

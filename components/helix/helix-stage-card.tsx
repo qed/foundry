@@ -12,23 +12,23 @@ import {
   PlayCircle,
   Compass,
   FileText,
-  Layers,
-  Code2,
+  ClipboardList,
+  FolderGit2,
+  CheckSquare,
+  Hammer,
   TestTube2,
   Rocket,
-  Eye,
-  RotateCcw,
 } from 'lucide-react'
 
 const STAGE_ICONS: Record<number, typeof Compass> = {
   1: Compass,
   2: FileText,
-  3: Layers,
-  4: Code2,
-  5: TestTube2,
-  6: Rocket,
-  7: Eye,
-  8: RotateCcw,
+  3: ClipboardList,
+  4: FolderGit2,
+  5: CheckSquare,
+  6: Hammer,
+  7: TestTube2,
+  8: Rocket,
 }
 
 interface HelixStageCardProps {
