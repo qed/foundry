@@ -51,7 +51,23 @@ export async function GET(
       return Response.json({ error: 'Failed to fetch artifacts' }, { status: 500 })
     }
 
-    return Response.json({ artifacts: artifacts || [] })
+    // DEBUG: Also check for helix artifacts specifically (ignoring folder_id filter)
+    const { data: helixCheck, error: helixError } = await supabase
+      .from('artifacts')
+      .select('id, name, folder_id, project_id, processing_status, created_at')
+      .eq('project_id', projectId)
+      .like('name', 'Helix Step%')
+
+    const debug = {
+      queryProjectId: projectId,
+      folderIdFilter: folderId ?? 'null (IS NULL)',
+      artifactsReturned: artifacts?.length ?? 0,
+      artifactNames: artifacts?.map((a: { name: string }) => a.name) ?? [],
+      helixArtifactsInDb: helixCheck ?? [],
+      helixQueryError: helixError?.message ?? null,
+    }
+
+    return Response.json({ artifacts: artifacts || [], _debug: debug })
   } catch (err) {
     return handleAuthError(err)
   }
