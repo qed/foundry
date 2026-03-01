@@ -1,6 +1,5 @@
 'use client'
 
-import { use } from 'react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { useHelixMode } from '@/lib/context/helix-mode-context'
@@ -12,6 +11,7 @@ import {
   STAGE_SLUG_TO_NUMBER,
   helixRoutes,
 } from '@/types/helix-routes'
+import type { HelixStageSlug } from '@/types/helix-routes'
 import {
   Lock,
   CheckCircle2,
@@ -38,23 +38,14 @@ const STAGE_ICONS: Record<number, typeof Compass> = {
   8: Rocket,
 }
 
-interface StagePageProps {
-  params: Promise<{
-    orgSlug: string
-    projectId: string
-    stageSlug: string
-  }>
+interface HelixStagePageProps {
+  stageSlug: HelixStageSlug
 }
 
-export default function StagePage({ params }: StagePageProps) {
-  const { orgSlug, stageSlug } = use(params)
+export function HelixStagePage({ stageSlug }: HelixStagePageProps) {
   const { org } = useOrg()
   const { project } = useProject()
   const { allSteps, stageGates, isLoading } = useHelixMode()
-
-  if (!isValidStageSlug(stageSlug)) {
-    notFound()
-  }
 
   const stageNumber = STAGE_SLUG_TO_NUMBER[stageSlug]
   const stageConfig = HELIX_STAGES.find((s) => s.number === stageNumber)
