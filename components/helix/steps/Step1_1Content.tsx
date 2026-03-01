@@ -354,26 +354,32 @@ export default function Step1_1Content({
                 </div>
               )}
 
-              <button
-                onClick={handleComplete}
-                disabled={isSaving || !isFormValid}
-                className="w-full px-4 py-3 bg-accent-cyan text-white rounded-lg font-medium hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
-              >
-                {isSaving && <Loader2 size={20} className="animate-spin" />}
-                Save and Complete
-              </button>
-
-              <p className="text-sm text-text-secondary mt-4">
-                Complete all fields above, then click to save your project idea and unlock Step 1.2.
-              </p>
-
               {isComplete && (
                 <a
                   href={`/org/${orgSlug}/project/${projectId}/helix/step/1.2`}
-                  className="w-full block px-4 py-3 mt-4 bg-accent-cyan text-white rounded-lg font-medium hover:bg-opacity-90 transition-all text-center"
+                  className="w-full block px-4 py-3 bg-accent-cyan text-white rounded-lg font-medium hover:bg-opacity-90 transition-all text-center"
                 >
                   Continue to Step 1.2
                 </a>
+              )}
+
+              <button
+                onClick={handleComplete}
+                disabled={isSaving || !isFormValid}
+                className={`w-full px-4 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                  isComplete
+                    ? 'mt-3 border border-border-default text-text-secondary hover:text-text-primary hover:border-accent-cyan/50'
+                    : 'bg-accent-cyan text-white hover:bg-opacity-90'
+                }`}
+              >
+                {isSaving && <Loader2 size={20} className="animate-spin" />}
+                {isComplete ? 'Re-save Changes' : 'Save and Complete'}
+              </button>
+
+              {!isComplete && (
+                <p className="text-sm text-text-secondary mt-4">
+                  Complete all fields above, then click to save your project idea and unlock Step 1.2.
+                </p>
               )}
             </div>
           </div>
