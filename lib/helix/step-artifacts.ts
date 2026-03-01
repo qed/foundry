@@ -1,5 +1,6 @@
 import { createServiceClient } from '@/lib/supabase/server'
 import { getStep } from '@/config/helix-process'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 export interface StepArtifactResult {
   saved: boolean
@@ -57,11 +58,6 @@ function evidenceToMarkdown(stepKey: string, evidence: unknown): string | null {
   }
 }
 
-/**
- * Save step evidence as a project artifact so it survives mode switches.
- * Uses upsert logic: updates existing artifact if one with the same name exists.
- * Returns a result object indicating success/failure for diagnostics.
- */
 /** Timeout wrapper — rejects after ms. */
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   return Promise.race([
@@ -72,20 +68,31 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   ])
 }
 
+/**
+ * Save step evidence as a project artifact.
+ * Accepts an optional supabase client — when called from a server action, pass the
+ * user's authenticated client so we don't depend on the service role key.
+ * Falls back to the service client for backward compat (auto-save route).
+ */
 export async function saveStepArtifact(
   projectId: string,
   stepKey: string,
   evidence: unknown,
-  userId: string
+  userId: string,
+  supabaseClient?: SupabaseClient
 ): Promise<StepArtifactResult> {
-  return withTimeout(saveStepArtifactInner(projectId, stepKey, evidence, userId), 10_000)
+  return withTimeout(
+    saveStepArtifactInner(projectId, stepKey, evidence, userId, supabaseClient),
+    10_000
+  )
 }
 
 async function saveStepArtifactInner(
   projectId: string,
   stepKey: string,
   evidence: unknown,
-  userId: string
+  userId: string,
+  supabaseClient?: SupabaseClient
 ): Promise<StepArtifactResult> {
   const stepConfig = getStep(stepKey)
   if (!stepConfig) {
@@ -94,45 +101,65 @@ async function saveStepArtifactInner(
 
   const markdown = evidenceToMarkdown(stepKey, evidence)
   if (!markdown) {
-    return { saved: false, error: `No markdown produced for step "${stepKey}" (evidence keys: ${evidence && typeof evidence === 'object' ? Object.keys(evidence as Record<string, unknown>).join(', ') : 'none'})` }
+    return {
+      saved: false,
+      error: `No markdown produced for step "${stepKey}" (evidence keys: ${
+        evidence && typeof evidence === 'object'
+          ? Object.keys(evidence as Record<string, unknown>).join(', ')
+          : 'none'
+      })`,
+    }
   }
 
   const artifactName = `Helix Step ${stepKey} — ${stepConfig.title}`
   const storagePath = `projects/${projectId}/artifacts/helix-step-${stepKey}.md`
-  const supabase = createServiceClient()
 
-  // Upload markdown file to storage (upsert: true to overwrite if exists)
+  // Use the provided client (user-authenticated) or fall back to service client
+  const supabase = supabaseClient ?? createServiceClient()
+
+  // Upload markdown file to storage (best-effort — DB content_text is the source of truth)
   const fileBuffer = Buffer.from(markdown, 'utf-8')
-  let { error: uploadError } = await supabase.storage
-    .from('artifacts')
-    .upload(storagePath, fileBuffer, {
-      contentType: 'text/markdown',
-      upsert: true,
-    })
-
-  // Auto-create the storage bucket if it doesn't exist, then retry
-  if (uploadError?.message === 'Bucket not found') {
-    await supabase.storage.createBucket('artifacts', { public: false })
-    const retry = await supabase.storage
+  let storageError: string | null = null
+  try {
+    let { error: uploadError } = await supabase.storage
       .from('artifacts')
       .upload(storagePath, fileBuffer, {
         contentType: 'text/markdown',
         upsert: true,
       })
-    uploadError = retry.error
+
+    // Auto-create the storage bucket if it doesn't exist, then retry
+    if (uploadError?.message === 'Bucket not found') {
+      await supabase.storage.createBucket('artifacts', { public: false })
+      const retry = await supabase.storage
+        .from('artifacts')
+        .upload(storagePath, fileBuffer, {
+          contentType: 'text/markdown',
+          upsert: true,
+        })
+      uploadError = retry.error
+    }
+
+    if (uploadError) {
+      storageError = uploadError.message
+      console.error('[saveStepArtifact] Storage upload failed (continuing with DB save):', uploadError.message)
+    }
+  } catch (err) {
+    storageError = String(err)
+    console.error('[saveStepArtifact] Storage upload threw (continuing with DB save):', err)
   }
 
-  if (uploadError) {
-    return { saved: false, name: artifactName, error: `Storage upload failed: ${uploadError.message}` }
-  }
-
-  // Check if artifact with this name already exists for this project
-  const { data: existing } = await supabase
+  // Save artifact DB record regardless of storage upload result — content_text is what the UI displays
+  const { data: existing, error: selectError } = await supabase
     .from('artifacts')
     .select('id')
     .eq('project_id', projectId)
     .eq('name', artifactName)
-    .single()
+    .maybeSingle()
+
+  if (selectError) {
+    return { saved: false, name: artifactName, error: `DB select failed: ${selectError.message}` }
+  }
 
   if (existing) {
     const { error: updateError } = await supabase
@@ -165,6 +192,10 @@ async function saveStepArtifactInner(
     if (insertError) {
       return { saved: false, name: artifactName, error: `DB insert failed: ${insertError.message}` }
     }
+  }
+
+  if (storageError) {
+    return { saved: true, name: artifactName, error: `Saved to DB but storage upload failed: ${storageError}` }
   }
 
   return { saved: true, name: artifactName }

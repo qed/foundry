@@ -136,7 +136,15 @@ export default function Step1_1Content({
     if (!validateForm()) return
     try {
       setIsSaving(true)
-      await completeHelixStep(projectId, '1.1', formData, 'Project Idea Definition')
+      const result = await completeHelixStep(projectId, '1.1', formData, 'Project Idea Definition')
+      if (!result.success) {
+        setValidationError(result.error || 'Failed to complete step')
+        return
+      }
+      if (!result.artifactSaved) {
+        setValidationError(result.error || 'Step saved but artifact failed — check console')
+        return
+      }
       window.location.reload()
     } catch (error) {
       setValidationError(error instanceof Error ? error.message : 'Failed to complete step')

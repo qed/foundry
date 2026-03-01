@@ -6,12 +6,19 @@ import { getNextStep, getStep, getStageSteps } from '@/config/helix-process'
 import { saveStepArtifact } from '@/lib/helix/step-artifacts'
 import type { Json } from '@/types/database'
 
+export interface CompleteStepResult {
+  success: boolean
+  error?: string
+  artifactSaved?: boolean
+  artifactError?: string
+}
+
 export async function completeHelixStep(
   projectId: string,
   stepKey: string,
   evidence: unknown,
   _artifactTitle?: string
-) {
+): Promise<CompleteStepResult> {
   const supabase = await createClient()
 
   // Get current user
@@ -20,7 +27,7 @@ export async function completeHelixStep(
     error: authError,
   } = await supabase.auth.getUser()
   if (authError || !user) {
-    throw new Error('Not authenticated')
+    return { success: false, error: 'Not authenticated' }
   }
 
   // Update step as complete
@@ -36,7 +43,7 @@ export async function completeHelixStep(
     .eq('step_key', stepKey)
 
   if (stepError) {
-    throw new Error('Failed to complete step')
+    return { success: false, error: `Failed to complete step: ${stepError.message}` }
   }
 
   // Unlock next step
@@ -91,16 +98,27 @@ export async function completeHelixStep(
     }
   }
 
-  // Await artifact save so it completes before the server action returns
+  // Await artifact save — pass the user's authenticated client
+  let artifactResult: { saved: boolean; error?: string }
   try {
-    await saveStepArtifact(projectId, stepKey, evidence, user.id)
+    artifactResult = await saveStepArtifact(projectId, stepKey, evidence, user.id, supabase)
   } catch (err) {
-    console.error('[completeHelixStep] Failed to save step artifact:', err)
-    // Don't throw — step completion itself succeeded
+    artifactResult = { saved: false, error: `Threw: ${err}` }
   }
 
   // Revalidate helix pages
   revalidatePath(`/org/[orgSlug]/project/${projectId}/helix`, 'layout')
+
+  if (!artifactResult.saved) {
+    return {
+      success: true,
+      error: `Step completed but artifact save failed: ${artifactResult.error}`,
+      artifactSaved: false,
+      artifactError: artifactResult.error,
+    }
+  }
+
+  return { success: true, artifactSaved: true }
 }
 
 export async function autoSaveStepEvidence(

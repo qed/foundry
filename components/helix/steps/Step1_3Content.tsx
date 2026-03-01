@@ -61,7 +61,11 @@ export default function Step1_3Content({
     try {
       setIsSaving(true)
       setError(null)
-      await completeHelixStep(projectId, '1.3', brief, 'Project Brief')
+      const result = await completeHelixStep(projectId, '1.3', brief, 'Project Brief')
+      if (!result.success) {
+        setError(result.error || 'Failed to save project brief')
+        return
+      }
       setBriefContent(brief)
       window.location.reload()
     } catch (err) {
