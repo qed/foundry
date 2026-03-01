@@ -25,15 +25,17 @@ export function ProgressBar({ stage, isActive = false }: ProgressBarProps) {
 
   return (
     <div className={`p-4 rounded-lg border ${
-      isActive
-        ? 'border-accent-cyan/30 bg-accent-cyan/5'
-        : 'border-bg-tertiary bg-bg-secondary'
+      isComplete
+        ? 'border-green-500/30 bg-green-500/5'
+        : isActive
+          ? 'border-accent-cyan/30 bg-accent-cyan/5'
+          : 'border-bg-tertiary bg-bg-secondary'
     }`}>
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           {isComplete && <CheckCircle2 size={14} className="text-green-500" />}
           <span className={`text-sm font-medium ${
-            isActive ? 'text-accent-cyan' : 'text-text-primary'
+            isComplete ? 'text-green-400' : isActive ? 'text-accent-cyan' : 'text-text-primary'
           }`}>
             Stage {stage.stageNumber}: {stage.stageTitle}
           </span>
