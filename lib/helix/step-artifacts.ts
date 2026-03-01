@@ -29,8 +29,18 @@ function evidenceToMarkdown(stepKey: string, evidence: unknown): string | null {
       if (data.problemStatement) sections.push(`## Problem Statement\n\n${data.problemStatement}\n`)
       if (data.targetUsers) sections.push(`## Target Users\n\n${data.targetUsers}\n`)
       if (data.vision) sections.push(`## Vision\n\n${data.vision}\n`)
-      if (data.ideaText) sections.push(`## Project Idea\n\n${data.ideaText}\n`)
+      if (data.ideaText) {
+        // Strip HTML tags from TipTap editor output for clean markdown
+        const plain = (data.ideaText as string).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+        if (plain) sections.push(`## Project Idea\n\n${plain}\n`)
+      }
       return sections.length > 0 ? sections.join('\n') : null
+    }
+
+    case '1.2': {
+      // Brainstorming prompt text generated for the user
+      const prompt = data.prompt as string | undefined
+      return prompt && prompt.trim().length > 0 ? prompt : null
     }
 
     case '1.3': {

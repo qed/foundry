@@ -77,7 +77,7 @@ Put as many details as possible into this brief. It should be specific enough th
     try {
       setIsSaving(true)
       setError(null)
-      await completeHelixStep(projectId, '1.2', { completedAt: new Date().toISOString() }, 'Brainstorming Prompt')
+      await completeHelixStep(projectId, '1.2', { prompt: promptText, completedAt: new Date().toISOString() }, 'Brainstorming Prompt')
       window.location.reload()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to mark step as complete')
