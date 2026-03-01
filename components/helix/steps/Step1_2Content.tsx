@@ -9,7 +9,7 @@ interface Step1_2ContentProps {
   step: HelixStep
   projectId: string
   orgSlug: string
-  projectIdea: string
+  companyName: string
 }
 
 interface BrainstormingOutput {
@@ -23,7 +23,7 @@ export default function Step1_2Content({
   step,
   projectId,
   orgSlug,
-  projectIdea,
+  companyName,
 }: Step1_2ContentProps) {
   const [brainstormingOutput, setBrainstormingOutput] = useState<BrainstormingOutput | null>(
     step.evidence_data as BrainstormingOutput | null
@@ -35,7 +35,7 @@ export default function Step1_2Content({
   const [copiedToClipboard, setCopiedToClipboard] = useState(false)
 
   const generatePrompt = (): string => {
-    const name = projectIdea || '[Company Name]'
+    const name = companyName || '[Company Name]'
     return `Prompt: ${name} Hackathon Project Brief
 
 Part 1: Business Context

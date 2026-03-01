@@ -19,10 +19,10 @@ export default async function StepPage({ params }: StepPageProps) {
   const { orgSlug, projectId, stepKey } = await params
   const supabase = await createClient()
 
-  // Verify project access
+  // Verify project access and get org name
   const { data: project, error: projectError } = await supabase
     .from('projects')
-    .select('id, org_id')
+    .select('id, org_id, organizations(name)')
     .eq('id', projectId)
     .single()
 
@@ -62,10 +62,10 @@ export default async function StepPage({ params }: StepPageProps) {
   }
 
   if (stepKey === '1.2') {
-    // Get Step 1.1 evidence for prompt generation
+    // Verify Step 1.1 is complete before allowing 1.2
     const { data: step1_1 } = await supabase
       .from('helix_steps')
-      .select('status, evidence_data')
+      .select('status')
       .eq('project_id', projectId)
       .eq('step_key', '1.1')
       .single()
@@ -74,15 +74,15 @@ export default async function StepPage({ params }: StepPageProps) {
       redirect(`/org/${orgSlug}/project/${projectId}/helix/step/1.1`)
     }
 
-    const evidence = step1_1.evidence_data as Record<string, unknown> | null
-    const projectIdea = evidence?.projectName as string || ''
+    const orgData = project.organizations as unknown as { name: string } | null
+    const companyName = orgData?.name || ''
 
     return (
       <Step1_2Content
         step={typedStep}
         projectId={projectId}
         orgSlug={orgSlug}
-        projectIdea={projectIdea}
+        companyName={companyName}
       />
     )
   }
