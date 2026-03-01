@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { DashboardClient } from '@/components/dashboard/dashboard-client'
 
 const MODULES = [
@@ -47,12 +47,17 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   const supabase = await createClient()
   const { data: project } = await supabase
     .from('projects')
-    .select('name')
+    .select('name, mode')
     .eq('id', projectId)
     .single()
 
   if (!project) {
     notFound()
+  }
+
+  // Redirect to Helix dashboard when project is in Helix mode
+  if (project.mode === 'helix') {
+    redirect(`/org/${orgSlug}/project/${projectId}/helix`)
   }
 
   return (

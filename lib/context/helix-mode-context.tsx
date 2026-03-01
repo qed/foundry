@@ -36,20 +36,35 @@ export function HelixModeProvider({ children }: HelixModeProviderProps) {
   const { project } = useProject()
   const [isHelixMode, setIsHelixMode] = useState(project.mode === 'helix')
   const [isLoading, setIsLoading] = useState(true)
+
+  // Keep isHelixMode in sync when project.mode changes (e.g., after RSC re-render)
+  useEffect(() => {
+    setIsHelixMode(project.mode === 'helix')
+  }, [project.mode])
   const [allSteps, setAllSteps] = useState<HelixStep[]>([])
   const [stageGates, setStageGates] = useState<HelixStageGate[]>([])
   const [toggleError, setToggleError] = useState<string | null>(null)
 
   const loadHelixData = useCallback(async () => {
-    if (!isHelixMode) {
-      setAllSteps([])
-      setStageGates([])
-      setIsLoading(false)
-      return
-    }
-
     try {
       setIsLoading(true)
+
+      // Always verify mode directly from DB (server-provided project data may be cached)
+      const { data: freshProject } = await supabase
+        .from('projects')
+        .select('mode')
+        .eq('id', project.id)
+        .single()
+
+      const modeIsHelix = freshProject?.mode === 'helix'
+      setIsHelixMode(modeIsHelix)
+
+      if (!modeIsHelix) {
+        setAllSteps([])
+        setStageGates([])
+        return
+      }
+
       const [stepsResult, gatesResult] = await Promise.all([
         supabase
           .from('helix_steps')
@@ -74,7 +89,7 @@ export function HelixModeProvider({ children }: HelixModeProviderProps) {
     } finally {
       setIsLoading(false)
     }
-  }, [isHelixMode, project.id])
+  }, [project.id])
 
   useEffect(() => {
     loadHelixData()

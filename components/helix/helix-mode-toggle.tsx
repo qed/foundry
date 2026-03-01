@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useProject } from '@/lib/context/project-context'
+import { useOrg } from '@/lib/context/org-context'
 import { supabase } from '@/lib/supabase/client'
 
 interface HelixModeToggleProps {
@@ -17,6 +18,7 @@ interface HelixProgress {
 
 export function HelixModeToggle({ onToggled, showProgress = false }: HelixModeToggleProps) {
   const { project } = useProject()
+  const { org } = useOrg()
   const [isToggling, setIsToggling] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -83,7 +85,9 @@ export function HelixModeToggle({ onToggled, showProgress = false }: HelixModeTo
       }
 
       onToggled?.()
-      window.location.reload()
+      // Navigate to the correct dashboard for the new mode
+      const base = `/org/${org.slug}/project/${project.id}`
+      window.location.href = newMode === 'helix' ? `${base}/helix` : base
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to toggle mode')
     } finally {
