@@ -81,6 +81,9 @@ export function Sidebar({ onClose }: SidebarProps) {
   const { project } = useProject()
   const { canProject } = usePermission()
 
+  // Hide this sidebar when in Helix mode — HelixSidebar takes over
+  if (project.mode === 'helix') return null
+
   const baseUrl = `/org/${org.slug}/project/${project.id}`
 
   const isDashboard = pathname === baseUrl || pathname === `${baseUrl}/`
@@ -125,11 +128,11 @@ export function Sidebar({ onClose }: SidebarProps) {
               ? 'bg-accent-cyan/10 text-accent-cyan'
               : 'text-text-secondary hover:bg-bg-tertiary hover:text-text-primary'
           }`}
-          title={isCollapsed ? 'Dashboard' : undefined}
+          title={isCollapsed ? 'Open Dashboard' : undefined}
         >
           <LayoutDashboard className="w-5 h-5 flex-shrink-0" />
           {!isCollapsed && (
-            <span className="text-sm font-medium truncate">Dashboard</span>
+            <span className="text-sm font-medium truncate">Open Dashboard</span>
           )}
         </Link>
 

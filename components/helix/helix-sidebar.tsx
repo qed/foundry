@@ -21,7 +21,13 @@ import {
   Hammer,
   TestTube2,
   Rocket,
+  FileBox,
+  Settings,
 } from 'lucide-react'
+import { OrgSwitcher } from '@/components/layout/org-switcher'
+import { ProjectSwitcher } from '@/components/layout/project-switcher'
+import { KeyboardHint } from '@/components/layout/keyboard-hint'
+import { PresenceWidget } from '@/components/presence/presence-widget'
 
 const STAGE_CONFIG: {
   number: number
@@ -72,8 +78,14 @@ export function HelixSidebar({ onClose }: HelixSidebarProps) {
 
   return (
     <div className="w-64 h-full bg-bg-secondary border-r border-border-default flex flex-col">
+      {/* Org / Project switchers */}
+      <div className="p-4 border-b border-border-default space-y-1">
+        <OrgSwitcher />
+        <ProjectSwitcher />
+      </div>
+
       {/* Header */}
-      <div className="p-4 border-b border-border-default">
+      <div className="px-4 pt-3 pb-2">
         <Link
           href={dashboardUrl}
           onClick={onClose}
@@ -175,6 +187,43 @@ export function HelixSidebar({ onClose }: HelixSidebarProps) {
           )
         })}
       </nav>
+
+      {/* Artifacts & Settings */}
+      <div className="px-3 py-2 border-t border-border-default space-y-1">
+        <Link
+          href={`/org/${org.slug}/project/${project.id}/artifacts`}
+          onClick={onClose}
+          className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+            pathname.includes('/artifacts')
+              ? 'bg-accent-cyan/10 text-accent-cyan'
+              : 'text-text-secondary hover:bg-bg-tertiary hover:text-text-primary'
+          }`}
+        >
+          <FileBox className="w-4 h-4 shrink-0" />
+          <span className="truncate">Artifacts</span>
+        </Link>
+        <Link
+          href={`/org/${org.slug}/project/${project.id}/settings/insights`}
+          onClick={onClose}
+          className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+            pathname.includes('/settings')
+              ? 'bg-accent-cyan/10 text-accent-cyan'
+              : 'text-text-secondary hover:bg-bg-tertiary hover:text-text-primary'
+          }`}
+        >
+          <Settings className="w-4 h-4 shrink-0" />
+          <span className="truncate">Settings</span>
+        </Link>
+      </div>
+
+      {/* Presence widget */}
+      <PresenceWidget collapsed={false} />
+
+      {/* Footer */}
+      <div className="p-4 border-t border-border-default space-y-3">
+        <KeyboardHint />
+        <p className="text-xs text-text-tertiary">Helix Foundry v0.1</p>
+      </div>
     </div>
   )
 }

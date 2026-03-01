@@ -66,7 +66,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
         <h1 className="text-2xl font-bold text-text-primary">
           {project.name}
         </h1>
-        <p className="text-text-secondary text-sm mt-1">Project Dashboard</p>
+        <p className="text-text-secondary text-sm mt-1">Open Dashboard</p>
       </div>
 
       {/* Module cards */}
