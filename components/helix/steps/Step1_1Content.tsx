@@ -389,7 +389,7 @@ export default function Step1_1Content({
                     </div>
                     <EditorContent
                       editor={editor}
-                      className="prose prose-sm prose-invert max-w-none p-4 bg-bg-primary min-h-[16rem] focus-within:outline-none [&_.tiptap]:outline-none [&_.tiptap]:min-h-[14rem]"
+                      className="prose-foundry p-4 bg-bg-primary min-h-[16rem] focus-within:outline-none [&_.tiptap]:outline-none [&_.tiptap]:min-h-[14rem]"
                     />
                   </div>
                   <p
