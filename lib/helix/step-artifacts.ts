@@ -52,7 +52,26 @@ function evidenceToMarkdown(stepKey: string, evidence: unknown): string | null {
  * Uses upsert logic: updates existing artifact if one with the same name exists.
  * Returns a result object indicating success/failure for diagnostics.
  */
+/** Timeout wrapper — rejects after ms. */
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`Artifact save timed out after ${ms}ms`)), ms)
+    ),
+  ])
+}
+
 export async function saveStepArtifact(
+  projectId: string,
+  stepKey: string,
+  evidence: unknown,
+  userId: string
+): Promise<StepArtifactResult> {
+  return withTimeout(saveStepArtifactInner(projectId, stepKey, evidence, userId), 10_000)
+}
+
+async function saveStepArtifactInner(
   projectId: string,
   stepKey: string,
   evidence: unknown,
