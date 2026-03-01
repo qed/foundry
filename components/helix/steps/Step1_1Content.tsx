@@ -56,6 +56,7 @@ export default function Step1_1Content({
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
   const [validationError, setValidationError] = useState<string | null>(null)
   const [saveResult, setSaveResult] = useState<CompleteStepResult | null>(null)
+  const [clientLog, setClientLog] = useState<string[]>([])
 
   // TipTap editor for the full project idea text
   const editor = useEditor({
@@ -135,21 +136,43 @@ export default function Step1_1Content({
   }, [formData])
 
   const handleComplete = async () => {
-    if (!validateForm()) return
+    const log: string[] = []
+    const addLog = (msg: string) => {
+      const entry = `[${new Date().toISOString()}] ${msg}`
+      log.push(entry)
+      setClientLog([...log])
+      console.log('[Step1.1 Debug]', entry)
+    }
+
+    addLog('handleComplete CALLED')
+    addLog(`formData keys: ${Object.keys(formData).join(', ')}`)
+    addLog(`projectName: "${formData.projectName.slice(0, 30)}"`)
+
+    if (!validateForm()) {
+      addLog('validateForm returned false — aborting')
+      return
+    }
+    addLog('Validation passed')
+
     setSaveResult(null)
     try {
       setIsSaving(true)
+      addLog('Calling completeHelixStep server action...')
       const result = await completeHelixStep(projectId, '1.1', formData, 'Project Idea Definition')
-      // ALWAYS show diagnostics — never auto-reload
+      addLog(`Server action returned: success=${result?.success}, artifactSaved=${result?.artifactSaved}`)
+      addLog(`Result type: ${typeof result}, keys: ${result ? Object.keys(result).join(', ') : 'null'}`)
       setSaveResult(result)
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error)
+      addLog(`CAUGHT ERROR: ${msg}`)
       setSaveResult({
         success: false,
-        error: `Client-side catch: ${error instanceof Error ? error.message : String(error)}`,
+        error: `Client-side catch: ${msg}`,
         diagnostics: ['Server action threw — this means the return value was not received'],
       })
     } finally {
       setIsSaving(false)
+      addLog('handleComplete FINISHED')
     }
   }
 
@@ -194,39 +217,6 @@ export default function Step1_1Content({
                       You can still edit and re-save your project idea.
                     </p>
                   </div>
-                </div>
-              )}
-
-              {/* Save Diagnostics Panel — always shown after save */}
-              {saveResult && (
-                <div className={`p-4 rounded-lg border ${
-                  saveResult.success && saveResult.artifactSaved
-                    ? 'bg-green-900/20 border-green-800/30'
-                    : 'bg-yellow-900/20 border-yellow-800/30'
-                }`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-sm font-semibold text-text-primary">
-                      Save Result: {saveResult.success ? 'Step OK' : 'Step FAILED'}
-                      {saveResult.success && ` / Artifact: ${saveResult.artifactSaved ? 'OK' : 'FAILED'}`}
-                    </h3>
-                    <button
-                      onClick={() => window.location.reload()}
-                      className="text-xs px-2 py-1 bg-accent-cyan text-white rounded hover:bg-opacity-80"
-                    >
-                      Reload Page
-                    </button>
-                  </div>
-                  {saveResult.error && (
-                    <p className="text-sm text-yellow-300 mb-2">{saveResult.error}</p>
-                  )}
-                  <details open>
-                    <summary className="text-xs text-text-secondary cursor-pointer mb-1">
-                      Diagnostics Trace ({saveResult.diagnostics?.length ?? 0} entries)
-                    </summary>
-                    <pre className="text-xs text-text-secondary bg-bg-primary rounded p-3 overflow-x-auto max-h-64 overflow-y-auto whitespace-pre-wrap">
-                      {saveResult.diagnostics?.join('\n') || 'No diagnostics collected'}
-                    </pre>
-                  </details>
                 </div>
               )}
 
@@ -404,6 +394,49 @@ export default function Step1_1Content({
                 {isSaving && <Loader2 size={20} className="animate-spin" />}
                 {isComplete ? 'Re-save Changes' : 'Save and Complete'}
               </button>
+
+              {/* Client-side debug log — shows immediately on click */}
+              {clientLog.length > 0 && (
+                <div className="mt-3 p-3 bg-blue-900/30 border border-blue-700/50 rounded-lg">
+                  <h4 className="text-xs font-bold text-blue-300 mb-1">Client Log ({clientLog.length})</h4>
+                  <pre className="text-[10px] text-blue-200 whitespace-pre-wrap max-h-40 overflow-y-auto">
+                    {clientLog.join('\n')}
+                  </pre>
+                </div>
+              )}
+
+              {/* Server diagnostics — shows after server action returns */}
+              {saveResult && (
+                <div className={`mt-3 p-3 rounded-lg border ${
+                  saveResult.success && saveResult.artifactSaved
+                    ? 'bg-green-900/30 border-green-700/50'
+                    : 'bg-red-900/30 border-red-700/50'
+                }`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-xs font-bold text-text-primary">
+                      {saveResult.success ? 'Step OK' : 'Step FAILED'}
+                      {saveResult.success && ` / Artifact: ${saveResult.artifactSaved ? 'OK' : 'FAILED'}`}
+                    </h4>
+                    <button
+                      onClick={() => window.location.reload()}
+                      className="text-[10px] px-2 py-0.5 bg-accent-cyan text-white rounded"
+                    >
+                      Reload
+                    </button>
+                  </div>
+                  {saveResult.error && (
+                    <p className="text-xs text-red-300 mb-1">{saveResult.error}</p>
+                  )}
+                  <details>
+                    <summary className="text-[10px] text-text-secondary cursor-pointer">
+                      Server Trace ({saveResult.diagnostics?.length ?? 0})
+                    </summary>
+                    <pre className="text-[10px] text-text-secondary whitespace-pre-wrap max-h-40 overflow-y-auto mt-1">
+                      {saveResult.diagnostics?.join('\n') || 'none'}
+                    </pre>
+                  </details>
+                </div>
+              )}
 
               {/* Auto-Save Status */}
               <div className="mt-3 flex items-center justify-center gap-1.5 h-5">
