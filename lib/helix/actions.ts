@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { getNextStep } from '@/config/helix-process'
+import { getNextStep, getStep, getStageSteps } from '@/config/helix-process'
 import type { Json } from '@/types/database'
 
 export async function completeHelixStep(
@@ -47,6 +47,47 @@ export async function completeHelixStep(
       .eq('project_id', projectId)
       .eq('step_key', nextStepConfig.key)
       .eq('status', 'locked')
+  }
+
+  // Check if all steps in this stage are now complete — if so, pass the gate and unlock the next stage
+  const currentStepConfig = getStep(stepKey)
+  if (currentStepConfig) {
+    const stageSteps = getStageSteps(currentStepConfig.stageNumber)
+    const otherStepKeys = stageSteps
+      .map((s) => s.key)
+      .filter((k) => k !== stepKey)
+
+    let allComplete = true
+    if (otherStepKeys.length > 0) {
+      const { data: otherSteps } = await supabase
+        .from('helix_steps')
+        .select('status')
+        .eq('project_id', projectId)
+        .in('step_key', otherStepKeys)
+
+      allComplete = otherSteps?.every((s) => s.status === 'complete') ?? false
+    }
+
+    if (allComplete) {
+      // Mark current stage gate as passed
+      await supabase
+        .from('helix_stage_gates')
+        .update({
+          status: 'passed' as const,
+          passed_at: new Date().toISOString(),
+          passed_by: user.id,
+        })
+        .eq('project_id', projectId)
+        .eq('stage_number', currentStepConfig.stageNumber)
+
+      // Unlock next stage gate
+      await supabase
+        .from('helix_stage_gates')
+        .update({ status: 'active' as const })
+        .eq('project_id', projectId)
+        .eq('stage_number', currentStepConfig.stageNumber + 1)
+        .eq('status', 'locked')
+    }
   }
 
   // Revalidate helix pages
