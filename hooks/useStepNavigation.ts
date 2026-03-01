@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useHelixMode } from '@/lib/context/helix-mode-context'
 import { useProject } from '@/lib/context/project-context'
 import { useOrg } from '@/lib/context/org-context'
-import { helixRoutes, STAGE_NUMBER_TO_SLUG } from '@/types/helix-routes'
+import { helixRoutes } from '@/types/helix-routes'
 import type { HelixStep } from '@/types/database'
 
 interface StepNavigationResult {
@@ -47,9 +47,7 @@ export function useStepNavigation(activeStepKey?: string): StepNavigationResult 
 
   const navigateToStep = useCallback(
     (step: HelixStep) => {
-      const stageSlug = STAGE_NUMBER_TO_SLUG[step.stage_number]
-      if (!stageSlug) return
-      const url = helixRoutes.step(org.slug, project.id, stageSlug, step.step_key)
+      const url = helixRoutes.step(org.slug, project.id, step.step_key)
       router.push(url)
     },
     [org.slug, project.id, router]

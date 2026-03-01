@@ -27,10 +27,10 @@ export function buildHelixUrl(link: HelixDeepLink): string {
       }
       return helixRoutes.stage(link.orgSlug, link.projectId, link.stageSlug)
     case 'step':
-      if (!link.stageSlug || !link.stepKey) {
+      if (!link.stepKey) {
         return helixRoutes.dashboard(link.orgSlug, link.projectId)
       }
-      return helixRoutes.step(link.orgSlug, link.projectId, link.stageSlug, link.stepKey)
+      return helixRoutes.step(link.orgSlug, link.projectId, link.stepKey)
     default:
       return helixRoutes.dashboard(link.orgSlug, link.projectId)
   }
@@ -45,12 +45,7 @@ export function buildStepUrl(
   projectId: string,
   stepKey: string
 ): string {
-  const stageNumber = parseInt(stepKey.split('.')[0], 10)
-  const stageSlug = STAGE_NUMBER_TO_SLUG[stageNumber]
-  if (!stageSlug) {
-    return helixRoutes.dashboard(orgSlug, projectId)
-  }
-  return helixRoutes.step(orgSlug, projectId, stageSlug, stepKey)
+  return helixRoutes.step(orgSlug, projectId, stepKey)
 }
 
 /**
@@ -73,39 +68,40 @@ export function buildStageUrl(
  * Returns null if the path is not a valid helix URL.
  */
 export function parseHelixUrl(pathname: string): HelixDeepLink | null {
-  // Expected format: /org/{orgSlug}/project/{projectId}/helix/...
-  const match = pathname.match(
-    /^\/org\/([^/]+)\/project\/([^/]+)\/helix(?:\/([^/]+)(?:\/([^/]+))?)?$/
+  // Expected formats:
+  //   /org/{orgSlug}/project/{projectId}/helix
+  //   /org/{orgSlug}/project/{projectId}/helix/{stageSlug}
+  //   /org/{orgSlug}/project/{projectId}/helix/step/{stepKey}
+  const base = pathname.match(
+    /^\/org\/([^/]+)\/project\/([^/]+)\/helix(?:\/(.+))?$/
   )
-  if (!match) return null
+  if (!base) return null
 
-  const [, orgSlug, projectId, stageSlug, stepKey] = match
+  const [, orgSlug, projectId, rest] = base
 
   if (!orgSlug || !projectId) return null
 
-  if (stepKey && stageSlug) {
+  if (!rest) {
+    return { type: 'dashboard', orgSlug, projectId }
+  }
+
+  // Step URL: /helix/step/{stepKey}
+  const stepMatch = rest.match(/^step\/([^/]+)$/)
+  if (stepMatch) {
     return {
       type: 'step',
       orgSlug,
       projectId,
-      stageSlug: stageSlug as HelixStageSlug,
-      stepKey,
+      stepKey: stepMatch[1],
     }
   }
 
-  if (stageSlug) {
-    return {
-      type: 'stage',
-      orgSlug,
-      projectId,
-      stageSlug: stageSlug as HelixStageSlug,
-    }
-  }
-
+  // Stage URL: /helix/{stageSlug}
   return {
-    type: 'dashboard',
+    type: 'stage',
     orgSlug,
     projectId,
+    stageSlug: rest as HelixStageSlug,
   }
 }
 

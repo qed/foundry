@@ -137,7 +137,6 @@ export function HelixSidebar({ onClose }: HelixSidebarProps) {
                     const stepUrl = helixRoutes.step(
                       org.slug,
                       project.id,
-                      stageSlug,
                       step.step_key
                     )
                     const isStepActive = pathname === stepUrl

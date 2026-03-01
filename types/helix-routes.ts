@@ -21,7 +21,7 @@ export interface HelixStageRouteParams extends HelixRouteParams {
   stageSlug: HelixStageSlug
 }
 
-export interface HelixStepRouteParams extends HelixStageRouteParams {
+export interface HelixStepRouteParams extends HelixRouteParams {
   stepKey: string
 }
 
@@ -38,8 +38,8 @@ export const helixRoutes = {
     `${HELIX_BASE(orgSlug, projectId)}/${stageSlug}`,
 
   /** Step page */
-  step: (orgSlug: string, projectId: string, stageSlug: HelixStageSlug, stepKey: string) =>
-    `${HELIX_BASE(orgSlug, projectId)}/${stageSlug}/${stepKey}`,
+  step: (orgSlug: string, projectId: string, stepKey: string) =>
+    `${HELIX_BASE(orgSlug, projectId)}/step/${stepKey}`,
 } as const
 
 /** Map stage numbers to URL slugs */
