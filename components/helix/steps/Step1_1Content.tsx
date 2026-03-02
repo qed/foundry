@@ -136,6 +136,9 @@ export default function Step1_1Content({
   }, [formData])
 
   const handleComplete = async () => {
+    // Cancel any pending auto-save to prevent race conditions
+    debouncedAutoSave.cancel()
+
     const log: string[] = []
     const addLog = (msg: string) => {
       const entry = `[${new Date().toISOString()}] ${msg}`

@@ -1,6 +1,5 @@
 import { createServiceClient } from '@/lib/supabase/server'
 import { getStep } from '@/config/helix-process'
-import type { SupabaseClient } from '@supabase/supabase-js'
 
 export interface StepArtifactResult {
   saved: boolean
@@ -71,19 +70,17 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 
 /**
  * Save step evidence as a project artifact.
- * Accepts an optional supabase client — when called from a server action, pass the
- * user's authenticated client so we don't depend on the service role key.
- * Falls back to the service client for backward compat (auto-save route).
+ * Always uses the service client (bypasses RLS) for reliable DB operations.
+ * The user's identity is recorded via the `userId` parameter.
  */
 export async function saveStepArtifact(
   projectId: string,
   stepKey: string,
   evidence: unknown,
   userId: string,
-  supabaseClient?: SupabaseClient
 ): Promise<StepArtifactResult> {
   return withTimeout(
-    saveStepArtifactInner(projectId, stepKey, evidence, userId, supabaseClient),
+    saveStepArtifactInner(projectId, stepKey, evidence, userId),
     10_000
   )
 }
@@ -93,7 +90,6 @@ async function saveStepArtifactInner(
   stepKey: string,
   evidence: unknown,
   userId: string,
-  supabaseClient?: SupabaseClient
 ): Promise<StepArtifactResult> {
   const diag: string[] = []
 
@@ -123,11 +119,10 @@ async function saveStepArtifactInner(
   diag.push(`Artifact name: "${artifactName}"`)
   diag.push(`Storage path: "${storagePath}"`)
 
-  // Use service client for storage (bypasses RLS), user client for DB if available
+  // Use service client for both storage and DB (bypasses RLS for reliable saves)
   const serviceClient = createServiceClient()
-  const dbClient = supabaseClient ?? serviceClient
-  const clientType = supabaseClient ? 'user-auth' : 'service-role'
-  diag.push(`DB client: ${clientType}, Storage client: service-role`)
+  const dbClient = serviceClient
+  diag.push(`DB client: service-role, Storage client: service-role`)
 
   // Upload markdown file to storage (best-effort — DB content_text is the source of truth)
   const fileBuffer = Buffer.from(markdown, 'utf-8')
@@ -210,6 +205,7 @@ async function saveStepArtifactInner(
         content_text: markdown,
         processing_status: 'complete',
         uploaded_by: userId,
+        folder_id: null,
       })
 
     if (insertError) {

@@ -107,11 +107,11 @@ export async function completeHelixStep(
     }
   }
 
-  // Await artifact save — pass the user's authenticated client
+  // Await artifact save — uses service client internally for reliable saves
   diag.push('Starting artifact save...')
   let artifactResult: { saved: boolean; error?: string; diagnostics?: string[] }
   try {
-    artifactResult = await saveStepArtifact(projectId, stepKey, evidence, user.id, supabase)
+    artifactResult = await saveStepArtifact(projectId, stepKey, evidence, user.id)
   } catch (err) {
     artifactResult = { saved: false, error: `Threw: ${err}` }
   }

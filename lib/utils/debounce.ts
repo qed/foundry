@@ -4,11 +4,20 @@ export function debounce<T extends unknown[]>(
 ) {
   let timeout: ReturnType<typeof setTimeout> | null = null
 
-  return (...args: T) => {
+  const debounced = (...args: T) => {
     if (timeout) clearTimeout(timeout)
     timeout = setTimeout(() => {
       func(...args)
       timeout = null
     }, wait)
   }
+
+  debounced.cancel = () => {
+    if (timeout) {
+      clearTimeout(timeout)
+      timeout = null
+    }
+  }
+
+  return debounced
 }
