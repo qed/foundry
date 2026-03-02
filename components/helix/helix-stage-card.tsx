@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useProject } from '@/lib/context/project-context'
 import { useOrg } from '@/lib/context/org-context'
+import { useHelixMode } from '@/lib/context/helix-mode-context'
 import { helixRoutes } from '@/types/helix-routes'
 import type { StageConfig } from '@/config/helix-process'
 import type { HelixStageGate } from '@/types/database'
@@ -41,6 +42,7 @@ interface HelixStageCardProps {
 export function HelixStageCard({ stage, gate, completedSteps, totalSteps }: HelixStageCardProps) {
   const { project } = useProject()
   const { org } = useOrg()
+  const { allSteps } = useHelixMode()
 
   const percentage = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0
   const isActive = gate?.status === 'active'
@@ -49,11 +51,11 @@ export function HelixStageCard({ stage, gate, completedSteps, totalSteps }: Heli
   const isStageComplete = isPassed || percentage === 100
   const Icon = STAGE_ICONS[stage.number] || Compass
 
-  const stageUrl = helixRoutes.stage(
-    org.slug,
-    project.id,
-    stage.slug as Parameters<typeof helixRoutes.stage>[2]
-  )
+  const stageSteps = allSteps.filter((s) => s.stage_number === stage.number)
+  const targetStep = stageSteps.find((s) => s.status !== 'complete') ?? stageSteps[0]
+  const cardUrl = targetStep
+    ? helixRoutes.step(org.slug, project.id, targetStep.step_key)
+    : helixRoutes.stage(org.slug, project.id, stage.slug as Parameters<typeof helixRoutes.stage>[2])
 
   const content = (
     <div
@@ -139,7 +141,7 @@ export function HelixStageCard({ stage, gate, completedSteps, totalSteps }: Heli
   }
 
   return (
-    <Link href={stageUrl}>
+    <Link href={cardUrl}>
       {content}
     </Link>
   )
