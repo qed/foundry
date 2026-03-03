@@ -67,6 +67,49 @@ function evidenceToMarkdown(stepKey: string, evidence: unknown): string | null {
       return parts.length > 1 ? parts.join('\n') : null
     }
 
+    case '2.4': {
+      // Documentation Verification: gap analysis with acknowledgments
+      if (data.evidence_type !== 'documentation_verification') return null
+      const verification = data.verification as Record<string, unknown> | undefined
+      const categoryGaps = data.category_gaps as Array<Record<string, unknown>> | undefined
+      if (!verification || !categoryGaps) return null
+
+      const sections: string[] = ['# Documentation Verification\n']
+      sections.push(`**Status:** ${verification.verification_status === 'passed' ? 'Passed' : 'Gaps Remaining'}\n`)
+      sections.push(`| Metric | Count |`)
+      sections.push(`|--------|-------|`)
+      sections.push(`| Complete | ${verification.categories_complete} |`)
+      sections.push(`| Partial | ${verification.categories_partial} |`)
+      sections.push(`| Missing | ${verification.categories_missing} |`)
+      sections.push(`| N/A | ${verification.categories_not_applicable} |`)
+      sections.push('')
+
+      if (categoryGaps.length > 0) {
+        sections.push('## Category Details\n')
+        for (const gap of categoryGaps) {
+          const status = gap.gap_status as string
+          const icon = status === 'complete' ? '✅' : status === 'partial' ? '⚠️' : status === 'missing' ? '❌' : '⬜'
+          let line = `${icon} **${gap.category_name}** — ${status}`
+          if (gap.files_uploaded !== undefined) line += ` (${gap.files_uploaded} files)`
+          if (gap.acknowledged) {
+            const reason = gap.gap_reason as string | null
+            if (reason) line += ` — *${reason.replace(/_/g, ' ')}*`
+            const notes = gap.gap_notes as string
+            if (notes) line += `: ${notes}`
+          }
+          sections.push(line)
+        }
+      }
+
+      const summary = data.completion_summary as string | undefined
+      if (summary) {
+        sections.push('')
+        sections.push(`**Summary:** ${summary}`)
+      }
+
+      return sections.join('\n')
+    }
+
     case '2.3': {
       // Documentation Files: list of uploaded files with categories
       if (data.evidence_type !== 'documentation_files') return null

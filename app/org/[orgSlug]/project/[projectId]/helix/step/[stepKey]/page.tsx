@@ -8,6 +8,7 @@ import Step1_3Content from '@/components/helix/steps/Step1_3Content'
 import Step2_1Content from '@/components/helix/steps/Step2_1Content'
 import Step2_2Content from '@/components/helix/steps/Step2_2Content'
 import Step2_3Content from '@/components/helix/steps/Step2_3Content'
+import Step2_4Content from '@/components/helix/steps/Step2_4Content'
 import type { HelixStep, Json } from '@/types/database'
 
 interface StepPageProps {
@@ -174,6 +175,45 @@ export default async function StepPage({ params }: StepPageProps) {
         step={typedStep}
         projectId={projectId}
         orgSlug={orgSlug}
+      />
+    )
+  }
+
+  if (stepKey === '2.4') {
+    // Verify Step 2.3 is complete
+    const { data: step2_3 } = await supabase
+      .from('helix_steps')
+      .select('status')
+      .eq('project_id', projectId)
+      .eq('step_key', '2.3')
+      .single()
+
+    if (!step2_3 || step2_3.status !== 'complete') {
+      redirect(`/org/${orgSlug}/project/${projectId}/helix/step/2.3`)
+    }
+
+    // Load evidence from prerequisite steps
+    const { data: step2_1 } = await supabase
+      .from('helix_steps')
+      .select('evidence_data')
+      .eq('project_id', projectId)
+      .eq('step_key', '2.1')
+      .single()
+
+    const { data: step2_3Files } = await supabase
+      .from('helix_steps')
+      .select('evidence_data')
+      .eq('project_id', projectId)
+      .eq('step_key', '2.3')
+      .single()
+
+    return (
+      <Step2_4Content
+        step={typedStep}
+        projectId={projectId}
+        orgSlug={orgSlug}
+        inventoryEvidence={step2_1?.evidence_data}
+        filesEvidence={step2_3Files?.evidence_data}
       />
     )
   }
