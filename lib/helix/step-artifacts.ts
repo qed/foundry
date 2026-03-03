@@ -67,6 +67,32 @@ function evidenceToMarkdown(stepKey: string, evidence: unknown): string | null {
       return parts.length > 1 ? parts.join('\n') : null
     }
 
+    case '2.3': {
+      // Documentation Files: list of uploaded files with categories
+      if (data.evidence_type !== 'documentation_files') return null
+      const files = data.files as Array<Record<string, unknown>> | undefined
+      if (!files || files.length === 0) return null
+
+      const sections: string[] = ['# Documentation Files\n']
+      const totalSize = data.total_size_bytes as number
+      sections.push(`**${files.length} files** uploaded (${Math.round(totalSize / 1024)} KB total).\n`)
+
+      const covered = data.categories_covered as string[] | undefined
+      if (covered && covered.length > 0) {
+        sections.push(`**Categories covered:** ${covered.join(', ')}\n`)
+      }
+
+      sections.push('## Files\n')
+      for (const file of files) {
+        const name = file.file_name as string
+        const size = file.file_size_bytes as number
+        const cat = file.category as string
+        sections.push(`- **${name}** (${Math.round(size / 1024)} KB) — ${cat}`)
+      }
+
+      return sections.join('\n')
+    }
+
     case '2.1': {
       // Documentation Inventory: checklist of categories
       if (data.inventory_type !== 'documentation_inventory') return null
