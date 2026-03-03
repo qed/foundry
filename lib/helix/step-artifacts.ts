@@ -50,6 +50,33 @@ function evidenceToMarkdown(stepKey: string, evidence: unknown): string | null {
       return content && content.trim().length > 0 ? content : null
     }
 
+    case '2.1': {
+      // Documentation Inventory: checklist of categories
+      if (data.inventory_type !== 'documentation_inventory') return null
+      const categories = data.categories as Array<Record<string, unknown>> | undefined
+      if (!categories || categories.length === 0) return null
+
+      const sections: string[] = ['# Documentation Inventory\n']
+      const checked = categories.filter((c) => c.exists)
+      const total = categories.length
+      sections.push(`**${checked.length} of ${total} categories** have existing documentation.\n`)
+
+      for (const cat of categories) {
+        const status = cat.exists ? '- [x]' : '- [ ]'
+        const name = cat.category_name as string
+        const notes = cat.location_notes as string
+        const count = cat.file_count_estimate as number
+        const custom = cat.is_custom ? ' *(custom)*' : ''
+
+        let line = `${status} **${name}**${custom}`
+        if (notes) line += ` — ${notes}`
+        if (count > 0) line += ` (≈${count} files)`
+        sections.push(line)
+      }
+
+      return sections.join('\n')
+    }
+
     default: {
       // Generic fallback: stringify as JSON in a code block
       const json = JSON.stringify(evidence, null, 2)
@@ -231,6 +258,9 @@ async function saveStepArtifactInner(
   } else {
     diag.push(`Verified: id=${verify.id}, size=${verify.file_size}, status=${verify.processing_status}, content_length=${verify.content_text?.length ?? 0}, folder_id=${verify.folder_id ?? 'null'}`)
   }
+
+  // Log full diagnostics server-side for debugging
+  console.log(`[saveStepArtifact] Step ${stepKey} complete:`, diag.join(' | '))
 
   if (storageError) {
     return { saved: true, name: artifactName, error: `Saved to DB but storage upload failed: ${storageError}`, diagnostics: diag }
