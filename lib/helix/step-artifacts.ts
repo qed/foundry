@@ -50,6 +50,23 @@ function evidenceToMarkdown(stepKey: string, evidence: unknown): string | null {
       return content && content.trim().length > 0 ? content : null
     }
 
+    case '2.2': {
+      // Knowledge Capture: 8 structured sections
+      if (data.evidence_type !== 'knowledge_capture') return null
+      const sections = data.sections as Record<string, { title: string; content: string }> | undefined
+      if (!sections || Object.keys(sections).length === 0) return null
+
+      const parts: string[] = ['# Domain Knowledge Capture\n']
+      for (const [, section] of Object.entries(sections)) {
+        if (!section.content) continue
+        const plain = (section.content as string).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+        if (plain) {
+          parts.push(`## ${section.title}\n\n${plain}\n`)
+        }
+      }
+      return parts.length > 1 ? parts.join('\n') : null
+    }
+
     case '2.1': {
       // Documentation Inventory: checklist of categories
       if (data.inventory_type !== 'documentation_inventory') return null

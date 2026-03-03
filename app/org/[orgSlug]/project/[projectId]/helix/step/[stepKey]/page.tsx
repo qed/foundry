@@ -6,6 +6,7 @@ import Step1_1Content from '@/components/helix/steps/Step1_1Content'
 import Step1_2Content from '@/components/helix/steps/Step1_2Content'
 import Step1_3Content from '@/components/helix/steps/Step1_3Content'
 import Step2_1Content from '@/components/helix/steps/Step2_1Content'
+import Step2_2Content from '@/components/helix/steps/Step2_2Content'
 import type { HelixStep, Json } from '@/types/database'
 
 interface StepPageProps {
@@ -125,6 +126,28 @@ export default async function StepPage({ params }: StepPageProps) {
 
     return (
       <Step2_1Content
+        step={typedStep}
+        projectId={projectId}
+        orgSlug={orgSlug}
+      />
+    )
+  }
+
+  if (stepKey === '2.2') {
+    // Verify Step 2.1 is complete
+    const { data: step2_1 } = await supabase
+      .from('helix_steps')
+      .select('status')
+      .eq('project_id', projectId)
+      .eq('step_key', '2.1')
+      .single()
+
+    if (!step2_1 || step2_1.status !== 'complete') {
+      redirect(`/org/${orgSlug}/project/${projectId}/helix/step/2.1`)
+    }
+
+    return (
+      <Step2_2Content
         step={typedStep}
         projectId={projectId}
         orgSlug={orgSlug}
